@@ -1,21 +1,16 @@
-name: Rider Tests — PR Validation
+name: Rider Tests — Staging
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  # Scheduled runs
+  schedule:
+    # Smoke tests: Mon-Fri 6 AM UTC
+    - cron: '0 6 * * 1-5'
+    # Full regression: Tue & Thu 8 AM UTC
+    - cron: '0 8 * * 2,4'
+
+  # Manual trigger
   workflow_dispatch:
     inputs:
-      environment:
-        description: 'Environment to test'
-        required: false
-        default: 'staging'
-        type: choice
-        options:
-          - staging
-          - preproduction
-          - production
       test_type:
         description: 'Test type to run'
         required: false
@@ -23,8 +18,8 @@ on:
         type: choice
         options:
           - smoke
-          - sanity
           - regression
+          - sanity
           - safe
           - all
 
@@ -36,14 +31,14 @@ permissions:
 env:
   CI: true
   NODE_ENV: test
+  ENV: staging
 
 jobs:
-  test:
+  rider-tests:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       checks: write
-      pull-requests: write
     outputs:
       total: ${{ steps.parse.outputs.total }}
       passed: ${{ steps.parse.outputs.passed }}
@@ -64,31 +59,29 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      - name: Determine test config
-        id: config
+      - name: Determine test type
+        id: test-type
         run: |
-          ENV="${{ github.event.inputs.environment || 'staging' }}"
-          TYPE="${{ github.event.inputs.test_type || 'smoke' }}"
-
-          # For PRs, always run smoke tests on staging
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            ENV="staging"
-            TYPE="smoke"
+          if [ "${{ github.event_name }}" == "schedule" ]; then
+            HOUR=$(date -u +%H)
+            if [ "$HOUR" == "06" ]; then
+              TYPE="smoke"
+            else
+              TYPE="regression"
+            fi
+          else
+            TYPE="${{ github.event.inputs.test_type || 'smoke' }}"
           fi
-
-          echo "env=$ENV" >> $GITHUB_OUTPUT
           echo "type=$TYPE" >> $GITHUB_OUTPUT
-          echo "Running $TYPE tests on $ENV"
+          echo "Running: $TYPE tests"
 
       - name: Run rider tests
-        env:
-          ENV: ${{ steps.config.outputs.env }}
         run: |
-          TYPE="${{ steps.config.outputs.type }}"
+          TYPE="${{ steps.test-type.outputs.type }}"
           if [ "$TYPE" == "all" ]; then
-            ./run-tests -e $ENV -u all --bc
+            ./run-tests -e staging -u all --bc
           else
-            ./run-tests -e $ENV --tag @${TYPE} --bc
+            ./run-tests -e staging --tag @${TYPE} --bc
           fi
 
       - name: Generate dashboard report
@@ -108,42 +101,43 @@ jobs:
             echo "failed=$FAILED" >> $GITHUB_OUTPUT
           fi
 
-      - name: Upload reports
+      - name: Upload HTML report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: rider-report-${{ steps.config.outputs.env }}-${{ steps.config.outputs.type }}
+          name: rider-report-${{ steps.test-type.outputs.type }}
           path: |
             playwright-report/
             dashboard-report.html
             results.xml
           retention-days: 14
 
-      - name: Publish JUnit results
+      - name: Upload dashboard
         if: always()
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: actions/upload-artifact@v4
         with:
-          files: results.xml
-          check_name: Rider Test Results
-          comment_mode: always
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          name: dashboard-${{ steps.test-type.outputs.type }}
+          path: dashboard-report.html
+          retention-days: 30
 
   notify:
-    needs: test
+    needs: rider-tests
     runs-on: ubuntu-latest
     if: always()
     steps:
       - name: Send Slack notification
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          if [ -z "${{ secrets.SLACK_WEBHOOK_URL }}" ]; then
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
             echo "Slack webhook not configured, skipping"
             exit 0
           fi
 
-          RESULT="${{ needs.test.result }}"
-          TOTAL="${{ needs.test.outputs.total }}"
-          PASSED="${{ needs.test.outputs.passed }}"
-          FAILED="${{ needs.test.outputs.failed }}"
+          RESULT="${{ needs.rider-tests.result }}"
+          TOTAL="${{ needs.rider-tests.outputs.total }}"
+          PASSED="${{ needs.rider-tests.outputs.passed }}"
+          FAILED="${{ needs.rider-tests.outputs.failed }}"
 
           if [ "$RESULT" == "success" ]; then
             EMOJI="✅"; COLOR="#36a64f"; HEADER="Rider Tests Passed"
@@ -151,7 +145,7 @@ jobs:
             EMOJI="❌"; COLOR="#dc3545"; HEADER="Rider Tests Failed"
           fi
 
-          curl -s -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
+          curl -s -X POST "$SLACK_WEBHOOK_URL" \
             -H 'Content-type: application/json' \
             --data "{
               \"attachments\": [{
@@ -159,16 +153,11 @@ jobs:
                 \"blocks\": [
                   {\"type\":\"header\",\"text\":{\"type\":\"plain_text\",\"text\":\"$EMOJI $HEADER\",\"emoji\":true}},
                   {\"type\":\"section\",\"fields\":[
-                    {\"type\":\"mrkdwn\",\"text\":\"*Environment:*\n${{ github.event.inputs.environment || 'staging' }}\"},
-                    {\"type\":\"mrkdwn\",\"text\":\"*Type:*\n${{ github.event.inputs.test_type || 'smoke' }}\"},
-                    {\"type\":\"mrkdwn\",\"text\":\"*Total:* $TOTAL | *Passed:* $PASSED | *Failed:* $FAILED\"},
-                    {\"type\":\"mrkdwn\",\"text\":\"*Branch:*\n${{ github.ref_name }}\"}
-                  ]},
-                  {\"type\":\"actions\",\"elements\":[{
-                    \"type\":\"button\",
-                    \"text\":{\"type\":\"plain_text\",\"text\":\"View Results\"},
-                    \"url\":\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"
-                  }]}
+                    {\"type\":\"mrkdwn\",\"text\":\"*Environment:*\nStaging\"},
+                    {\"type\":\"mrkdwn\",\"text\":\"*Test Type:*\n${{ github.event.inputs.test_type || 'scheduled' }}\"},
+                    {\"type\":\"mrkdwn\",\"text\":\"*Total:* $TOTAL\"},
+                    {\"type\":\"mrkdwn\",\"text\":\"*Passed:* $PASSED | *Failed:* $FAILED\"}
+                  ]}
                 ]
               }]
             }"

@@ -1,100 +1,98 @@
-# AI TMS Playwright E2E Tests ✅
+# TMS Rider Web App — E2E Tests
 
-This repository contains end-to-end (E2E) test automation for the TrackMyShuttle web application using Playwright + TypeScript.
+Playwright + TypeScript end-to-end tests for the TrackMyShuttle Rider Web Application.
 
-## Workflows Status
-
-[![Playwright Tests](https://github.com/Dhanbad94/ai-tms-playwright-e2e-tests/actions/workflows/playwright.yml/badge.svg)](https://github.com/Dhanbad94/ai-tms-playwright-e2e-tests/actions/workflows/playwright.yml)
-[![Scheduled Tests - Staging](https://github.com/Dhanbad94/ai-tms-playwright-e2e-tests/actions/workflows/scheduled-staging.yml/badge.svg)](https://github.com/Dhanbad94/ai-tms-playwright-e2e-tests/actions/workflows/scheduled-staging.yml)
-[![Scheduled Tests - Full Suite](https://github.com/Dhanbad94/ai-tms-playwright-e2e-tests/actions/workflows/scheduled-full.yml/badge.svg)](https://github.com/Dhanbad94/ai-tms-playwright-e2e-tests/actions/workflows/scheduled-full.yml)
-[![Scheduled Tests - Production](https://github.com/Dhanbad94/ai-tms-playwright-e2e-tests/actions/workflows/scheduled-production.yml/badge.svg)](https://github.com/Dhanbad94/ai-tms-playwright-e2e-tests/actions/workflows/scheduled-production.yml)
-
-See [.github/workflows/README.md](.github/workflows/README.md) for detailed workflow documentation.
-
-## Quick overview
-
-- Tests are in: `tests/TMS/*.spec.ts`
-- Page objects live in: `pages/*.ts`
-- Helpers and scripts are in: `helpers/` and `common/`
-- Test runner script: `./run-tests` (helper that constructs an `npx playwright test` command)
-- Playwright test results and artifacts: `test-results/` and `playwright-report/`
-
-## Requirements
-
-- Node.js (LTS) — this repo was verified with Node 22+.
-- npm (or yarn) — to install dev dependencies.
-- Playwright browsers and system deps — install with `npx playwright install --with-deps`.
-
-Make sure you have a current Node install and permissions to install Playwright browsers.
-
-## Install
+## Quick Start
 
 ```bash
-# install dependencies
-npm ci
+npm install
+npx playwright install chromium
 
-# install Playwright browsers and system dependencies
-npx playwright install --with-deps
+# Run all rider tests (staging)
+./run-tests -e staging -u all --bc
+
+# Run smoke tests only
+./run-tests -e staging --tag @smoke --bc
+
+# Generate dashboard report
+npm run report:dashboard
 ```
 
-If you prefer not to modify your global environment you can run the suite inside Docker or CI.
+## Test Structure
 
-## Running tests locally
+```
+tests/on-demand/asap-only/
+├── asap-location.spec.ts      19 tests  @ui-only @safe
+├── asap-form.spec.ts          23 tests  @ui-only @safe
+├── asap-validation.spec.ts    16 tests  @ui-only @safe
+├── asap-api-payload.spec.ts   10 tests  @payload @safe
+├── asap-confirmation.spec.ts  11 tests  @creates-ride
+├── asap-cancellation.spec.ts  27 tests  @creates-ride
+├── asap-feedback.spec.ts      20 tests  @creates-ride
+└── asap-e2e.spec.ts            9 tests  @creates-ride
+                               ─────────
+                               135 total
+```
 
-Run the repo-provided helper script (it defaults to the `staging` environment and runs all browsers):
+## Run Commands
 
 ```bash
-# run all tests (chromium + firefox + webkit)
-./run-tests
+# By environment
+./run-tests -e staging -f asap --bc
+./run-tests -e preproduction -f asap --bc
+./run-tests -e production --tag @safe --bc   # Production: safe tests only
 
-# run a subset using a filename filter (example: login) and Chromium only
-./run-tests -f login --bc
+# By tag
+./run-tests -e staging --tag @smoke --bc     # 20 tests, ~2 min
+./run-tests -e staging --tag @sanity --bc    # 9 tests, ~1 min
+./run-tests -e staging --tag @regression --bc # All 135, ~10 min
+./run-tests -e staging --tag @safe --bc      # 67 tests, ~3 min
 
-# run all (convenience alias):
-./run-tests -u
+# By spec file
+./run-tests -e staging -f asap-location --bc
+./run-tests -e staging -f asap-cancellation --bc
+
+# Options
+./run-tests -e staging -f asap --bc --headed      # Visible browser
+./run-tests -e staging -f asap --bc --workers 1    # Sequential
+./run-tests -e staging -f asap --bc --debug        # Playwright Inspector
 ```
 
-You can also run tests directly with Playwright commands:
+## Tags
 
-```bash
-npx playwright test --project=chromium
-npx playwright show-report   # open HTML report from last run
-npx playwright show-trace test-results/<run-folder>/trace.zip  # inspect trace for a failing test
+| Tag | Description | Tests |
+|---|---|---|
+| `@smoke` | Critical happy paths | 20 |
+| `@sanity` | Post-deploy checks | 9 |
+| `@regression` | Full coverage | 135 |
+| `@safe` | No ride creation — safe for production | 67 |
+| `@ui-only` | UI verification only | 57 |
+| `@creates-ride` | Creates real rides on staging | 67 |
+| `@payload` | API payload verification | 10 |
+
+## Reports
+
+- **Playwright HTML Report:** `npm run report`
+- **Custom Dashboard:** `npm run report:dashboard`
+- **JUnit XML:** `results.xml`
+- **JSON:** `test-results.json`
+
+## Environment Configuration
+
+All environment-specific data (URLs, org codes, stops, phone numbers) is in:
+- `utils/rider-config.ts` — Rider web app config per environment
+- `utils/test-data.ts` — Admin app credentials (from env vars)
+
+## CI/CD
+
+- GitHub Actions workflows in `.github/workflows/`
+- `rider-staging.yml` — Scheduled smoke (daily) + regression (Tue/Thu)
+- Slack notifications via `SLACK_WEBHOOK_URL` secret
+
+## GitHub Secrets Required
+
 ```
-
-## Test artifacts
-
-After a run Playwright stores screenshots, traces and video in `test-results/` and builds an HTML report under `playwright-report/`.
-
-Helpful commands:
-
-```bash
-npx playwright show-report    # opens the HTML report
-npx playwright show-trace test-results/<folder>/trace.zip
+STAGING_MANAGER_EMAIL
+STAGING_MANAGER_PASSWORD
+SLACK_WEBHOOK_URL (optional)
 ```
-
-## Troubleshooting / common failures
-
-- Exit code 126 when executing `./run-tests` indicates the script is not executable. Fix with:
-	```bash
-	chmod +x run-tests
-	```
-- Playwright timeouts/navigation issues: increase timeout in tests, use `page.waitForURL(..., {timeout: <ms>})` or add more robust checks.
-- Selector strict mode failures: refine locators to be unique (avoid locators that resolve to multiple elements).
-
-## CI / GitHub Actions
-
-This repo includes an example GitHub Actions workflow (`.github/workflows/playwright.yml`) you can use as a starting point. Ensure the runner environment includes required credentials and secrets.
-
-## Contributing
-
-If you contribute fixes or new tests please:
-
-1. Create a feature branch
-2. Run and verify tests locally
-3. Add/update tests and adjust selectors/timeouts as needed
-4. Open a PR with details and any failing test artifacts
-
----
-
-If you'd like, I can also add CI improvements, convert JS helpers to TypeScript, and fix the failing tests listed when you ran the suite — shall I continue with the conversion step now? 🚀

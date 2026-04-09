@@ -1,34 +1,22 @@
 {
-  "name": "ai-tms-playwright-ts-e2e-tests",
-  "version": "1.1.0",
-  "main": "index.js",
+  "name": "ai-tms-riderapp-playwright-e2e-tests",
+  "version": "1.0.0",
+  "description": "Playwright E2E tests for TMS Rider Web App",
   "scripts": {
     "test": "npx playwright test",
+    "test:rider": "npx playwright test --project=rider-chromium",
+    "test:rider:staging": "ENV=staging npx playwright test --project=rider-chromium",
+    "test:rider:preprod": "ENV=preproduction npx playwright test --project=rider-chromium",
+    "test:rider:prod": "ENV=production npx playwright test --project=rider-chromium",
+    "test:asap": "npx playwright test --project=rider-chromium tests/on-demand/asap-only/",
     "test:smoke": "npx playwright test --grep @smoke",
-    "test:regression": "npx playwright test --grep @regression",
-    "test:critical": "npx playwright test --grep @critical",
-    "test:chromium": "npx playwright test --project=chromium",
-    "test:firefox": "npx playwright test --project=firefox",
-    "test:headed": "npx playwright test --headed",
-    "test:debug": "npx playwright test --debug",
-    "test:ui": "npx playwright test --ui",
-    "test:staging": "cross-env ENV=staging npx playwright test",
-    "test:preprod": "cross-env ENV=preproduction npx playwright test",
-    "test:prod": "cross-env ENV=production npx playwright test",
     "report": "npx playwright show-report",
-    "codegen": "npx playwright codegen",
-    "install:browsers": "npx playwright install --with-deps"
+    "report:dashboard": "npx tsx helpers/generate-report.ts && open dashboard-report.html || xdg-open dashboard-report.html"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "devDependencies": {
-    "@axe-core/playwright": "^4.10.0",
-    "@playwright/test": "^1.54.2",
-    "@types/node": "^24.1.0",
-    "cross-env": "^7.0.3",
-    "dotenv": "^17.2.1",
-    "typescript": "^5.9.2"
+    "@playwright/test": "^1.50.0",
+    "@types/node": "^22.0.0",
+    "dotenv": "^16.4.0",
+    "typescript": "^6.0.2"
   }
 }

@@ -1,368 +1,326 @@
-<testsuites id="" name="" tests="204" failures="0" skipped="2" errors="0" time="1055.648696">
-<testsuite name="auth.teardown.ts" timestamp="2026-02-17T11:10:27.828Z" hostname="cleanup" tests="1" failures="0" skipped="0" time="0.004" errors="0">
-<testcase name="cleanup auth state" classname="auth.teardown.ts" time="0.004">
-<system-out>
-<![CDATA[🧹 Auth state cleaned up
-]]>
-</system-out>
+<testsuites id="" name="" tests="158" failures="1" skipped="8" errors="0" time="492.66857899999997">
+<testsuite name="asap-only/asap-api-payload.spec.ts" timestamp="2026-04-09T10:34:28.941Z" hostname="rider-mobile-chrome" tests="10" failures="0" skipped="3" time="292.058" errors="0">
+<testcase name="ASAP Only — API Payload Verification @asap @payload @regression @safe › @smoke @sanity ASAP_027: No booking object in payload" classname="asap-only/asap-api-payload.spec.ts" time="45.879">
+</testcase>
+<testcase name="ASAP Only — API Payload Verification @asap @payload @regression @safe › ASAP_028: No flight/room/riderType in payload" classname="asap-only/asap-api-payload.spec.ts" time="49.256">
+</testcase>
+<testcase name="ASAP Only — API Payload Verification @asap @payload @regression @safe › ASAP_029: Stop IDs are real values (not 0)" classname="asap-only/asap-api-payload.spec.ts" time="46.477">
+</testcase>
+<testcase name="ASAP Only — API Payload Verification @asap @payload @regression @safe › @smoke ASAP_030: API uses /rider/api/v1 endpoint" classname="asap-only/asap-api-payload.spec.ts" time="48.33">
+</testcase>
+<testcase name="ASAP Only — API Payload Verification @asap @payload @regression @safe › ASAP_031: Submit uses /request (no type suffix)" classname="asap-only/asap-api-payload.spec.ts" time="45.358">
+</testcase>
+<testcase name="ASAP Only — API Payload Verification @asap @payload @regression @safe › ASAP_044: Payload has correct rider details" classname="asap-only/asap-api-payload.spec.ts" time="43.366">
+</testcase>
+<testcase name="ASAP Only — API Payload Verification @asap @payload @regression @safe › Payload has pickup/dropoff coordinates" classname="asap-only/asap-api-payload.spec.ts" time="13.392">
+</testcase>
+<testcase name="ASAP Only — API Payload Verification @asap @payload @regression @safe › ASAP_045: Loader appears during submission" classname="asap-only/asap-api-payload.spec.ts">
+<properties>
+<property name="fixme" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — API Payload Verification @asap @payload @regression @safe › ASAP_046: Toast error on API failure" classname="asap-only/asap-api-payload.spec.ts">
+<properties>
+<property name="fixme" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — API Payload Verification @asap @payload @regression @safe › API timeout shows error state" classname="asap-only/asap-api-payload.spec.ts">
+<properties>
+<property name="fixme" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
 </testcase>
 </testsuite>
-<testsuite name="auth.setup.ts" timestamp="2026-02-17T11:10:27.828Z" hostname="setup" tests="1" failures="0" skipped="0" time="8.377" errors="0">
-<testcase name="authenticate" classname="auth.setup.ts" time="8.377">
-<system-out>
-<![CDATA[🔐 Authenticating as: automated.manager@trackmyshuttle.com
-✅ Authentication successful
-💾 Auth state saved to: playwright/.auth/user.json
-]]>
-</system-out>
+<testsuite name="asap-only/asap-cancellation.spec.ts" timestamp="2026-04-09T10:34:28.941Z" hostname="rider-mobile-chrome" tests="27" failures="0" skipped="0" time="508.358" errors="0">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_001: Cancel Ride link visible when ride active" classname="asap-only/asap-cancellation.spec.ts" time="17.136">
 </testcase>
-</testsuite>
-<testsuite name="ASAPSettings/alerts-settings.spec.ts" timestamp="2026-02-17T11:10:27.828Z" hostname="chromium" tests="11" failures="0" skipped="0" time="270.833" errors="0">
-<testcase name="ASAP Alerts Settings Tests @asap @settings › AL-001: Verify Alert Settings page loads @smoke @manager" classname="ASAPSettings/alerts-settings.spec.ts" time="22.746">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_002: Call Operator link visible alongside Cancel" classname="asap-only/asap-cancellation.spec.ts" time="16.448">
 </testcase>
-<testcase name="ASAP Alerts Settings Tests @asap @settings › AL-002: Verify User notification section @smoke @manager" classname="ASAPSettings/alerts-settings.spec.ts" time="20.266">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_003: Cancel Ride hidden after cancellation" classname="asap-only/asap-cancellation.spec.ts" time="19.44">
 </testcase>
-<testcase name="ASAP Alerts Settings Tests @asap @settings › User Notification Section › AL-003: Verify user search input @regression @manager" classname="ASAPSettings/alerts-settings.spec.ts" time="30.307">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › @smoke CANCEL_004: Cancel dialog opens with heading" classname="asap-only/asap-cancellation.spec.ts" time="14.775">
 </testcase>
-<testcase name="ASAP Alerts Settings Tests @asap @settings › User Notification Section › AL-004: Verify already added users display @regression @manager" classname="ASAPSettings/alerts-settings.spec.ts" time="54.148">
-<system-out>
-<![CDATA[
-[[ATTACHMENT|test-results/ASAPSettings-alerts-settin-b808c--display-regression-manager-chromium/test-failed-1.png]]
-
-[[ATTACHMENT|test-results/ASAPSettings-alerts-settin-b808c--display-regression-manager-chromium/video.webm]]
-
-[[ATTACHMENT|test-results/ASAPSettings-alerts-settin-b808c--display-regression-manager-chromium/error-context.md]]
-
-[[ATTACHMENT|test-results/ASAPSettings-alerts-settin-b808c--display-regression-manager-chromium/trace.zip]]
-]]>
-</system-out>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_005: Dialog shows all 5 cancellation reasons" classname="asap-only/asap-cancellation.spec.ts" time="16.091">
 </testcase>
-<testcase name="ASAP Alerts Settings Tests @asap @settings › Alerts Table › AL-005: Verify alerts table headers @regression @manager" classname="ASAPSettings/alerts-settings.spec.ts" time="28.782">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_006: Dialog shows Back and Cancel Ride buttons" classname="asap-only/asap-cancellation.spec.ts" time="16.144">
 </testcase>
-<testcase name="ASAP Alerts Settings Tests @asap @settings › Alerts Table › AL-006: Verify page content is visible @regression @manager" classname="ASAPSettings/alerts-settings.spec.ts" time="17.522">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_007: Cancel Ride button disabled when no reason selected" classname="asap-only/asap-cancellation.spec.ts" time="17.603">
 </testcase>
-<testcase name="ASAP Alerts Settings Tests @asap @settings › Geolocation Section › AL-007: Verify Geolocation section @smoke @manager" classname="ASAPSettings/alerts-settings.spec.ts" time="19.069">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_008: Back button closes dialog without canceling" classname="asap-only/asap-cancellation.spec.ts" time="15.619">
 </testcase>
-<testcase name="ASAP Alerts Settings Tests @asap @settings › Geolocation Section › AL-008: Verify Geofence Alert section @regression @manager" classname="ASAPSettings/alerts-settings.spec.ts" time="20.291">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_009: &quot;Ride request was not accepted&quot; — enables submit" classname="asap-only/asap-cancellation.spec.ts" time="19.234">
 </testcase>
-<testcase name="ASAP Alerts Settings Tests @asap @settings › Geolocation Section › AL-009: Verify default geofence radius @regression @manager" classname="ASAPSettings/alerts-settings.spec.ts" time="19.483">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_010: Cancel with &quot;Ride request was not accepted&quot; succeeds" classname="asap-only/asap-cancellation.spec.ts" time="19.821">
 </testcase>
-<testcase name="ASAP Alerts Settings Tests @asap @settings › Geolocation Section › AL-010: Verify Email notification checkbox @regression @manager" classname="ASAPSettings/alerts-settings.spec.ts" time="19.64">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_011: &quot;Wait time was too long&quot; — enables submit" classname="asap-only/asap-cancellation.spec.ts" time="17.839">
 </testcase>
-<testcase name="ASAP Alerts Settings Tests @asap @settings › Geolocation Section › AL-011: Verify SMS notification checkbox @regression @manager" classname="ASAPSettings/alerts-settings.spec.ts" time="18.579">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_012: Cancel with &quot;Wait time was too long&quot; succeeds" classname="asap-only/asap-cancellation.spec.ts" time="19.791">
 </testcase>
-</testsuite>
-<testsuite name="ASAPSettings/driver-app-settings.spec.ts" timestamp="2026-02-17T11:10:27.828Z" hostname="chromium" tests="16" failures="0" skipped="0" time="376.007" errors="0">
-<testcase name="ASAP Driver App Settings Tests @asap @settings › DA-001: Verify Driver App page loads @smoke @manager" classname="ASAPSettings/driver-app-settings.spec.ts" time="19.165">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_013: &quot;Change in travel plans&quot; — enables submit" classname="asap-only/asap-cancellation.spec.ts" time="17.351">
 </testcase>
-<testcase name="ASAP Driver App Settings Tests @asap @settings › DA-002: Verify all accordion sections visible @smoke @manager" classname="ASAPSettings/driver-app-settings.spec.ts" time="19.853">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › @smoke @sanity CANCEL_014: Cancel with &quot;Change in travel plans&quot; succeeds" classname="asap-only/asap-cancellation.spec.ts" time="18.714">
 </testcase>
-<testcase name="ASAP Driver App Settings Tests @asap @settings › Introduction Section › DA-003: Verify Introduction section content @regression @manager" classname="ASAPSettings/driver-app-settings.spec.ts" time="23.03">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_015: &quot;Found alternative ride&quot; — enables submit" classname="asap-only/asap-cancellation.spec.ts" time="17.208">
 </testcase>
-<testcase name="ASAP Driver App Settings Tests @asap @settings › Introduction Section › DA-004: Verify click here link for adding drivers @regression @manager" classname="ASAPSettings/driver-app-settings.spec.ts" time="21.301">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_016: Cancel with &quot;Found alternative ride&quot; succeeds" classname="asap-only/asap-cancellation.spec.ts" time="18.109">
 </testcase>
-<testcase name="ASAP Driver App Settings Tests @asap @settings › Smart Tablet Section › DA-005: Verify Smart Tablet section @regression @manager" classname="ASAPSettings/driver-app-settings.spec.ts" time="19.31">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_017: &quot;App or technical issue&quot; shows textarea" classname="asap-only/asap-cancellation.spec.ts" time="17.798">
 </testcase>
-<testcase name="ASAP Driver App Settings Tests @asap @settings › Smart Tablet Section › DA-006: Verify Smart Tablet content @regression @manager" classname="ASAPSettings/driver-app-settings.spec.ts" time="24.799">
-</testcase>
-<testcase name="ASAP Driver App Settings Tests @asap @settings › Download App Section › DA-007: Verify Download App section @smoke @manager" classname="ASAPSettings/driver-app-settings.spec.ts" time="19.822">
-</testcase>
-<testcase name="ASAP Driver App Settings Tests @asap @settings › Download App Section › DA-008: Verify Download App content @regression @manager" classname="ASAPSettings/driver-app-settings.spec.ts" time="27.533">
-</testcase>
-<testcase name="ASAP Driver App Settings Tests @asap @settings › Download App Section › DA-009: Verify Google Play Store image @regression @manager" classname="ASAPSettings/driver-app-settings.spec.ts" time="20.207">
-</testcase>
-<testcase name="ASAP Driver App Settings Tests @asap @settings › Download App Section › DA-010: Verify Apple App Store image @regression @manager" classname="ASAPSettings/driver-app-settings.spec.ts" time="21.413">
-</testcase>
-<testcase name="ASAP Driver App Settings Tests @asap @settings › Download App Section › DA-011: Verify Quick Start Guides available @regression @manager" classname="ASAPSettings/driver-app-settings.spec.ts" time="55.23">
-<system-out>
-<![CDATA[
-[[ATTACHMENT|test-results/ASAPSettings-driver-app-se-200b6-vailable-regression-manager-chromium/test-failed-1.png]]
-
-[[ATTACHMENT|test-results/ASAPSettings-driver-app-se-200b6-vailable-regression-manager-chromium/video.webm]]
-
-[[ATTACHMENT|test-results/ASAPSettings-driver-app-se-200b6-vailable-regression-manager-chromium/error-context.md]]
-
-[[ATTACHMENT|test-results/ASAPSettings-driver-app-se-200b6-vailable-regression-manager-chromium/trace.zip]]
-]]>
-</system-out>
-</testcase>
-<testcase name="ASAP Driver App Settings Tests @asap @settings › Download App Section › DA-012: Verify English Quick Start Guide link @regression @manager" classname="ASAPSettings/driver-app-settings.spec.ts" time="23.036">
-</testcase>
-<testcase name="ASAP Driver App Settings Tests @asap @settings › Download App Section › DA-013: Verify Spanish Quick Start Guide link @regression @manager" classname="ASAPSettings/driver-app-settings.spec.ts" time="18.848">
-</testcase>
-<testcase name="ASAP Driver App Settings Tests @asap @settings › Notification Settings Section › DA-014: Verify Notification Settings section @regression @manager" classname="ASAPSettings/driver-app-settings.spec.ts" time="20.96">
-</testcase>
-<testcase name="ASAP Driver App Settings Tests @asap @settings › Notification Settings Section › DA-015: Verify Notification Settings content @regression @manager" classname="ASAPSettings/driver-app-settings.spec.ts" time="20.847">
-</testcase>
-<testcase name="ASAP Driver App Settings Tests @asap @settings › Notification Settings Section › DA-016: Verify SMS notification option exists @regression @manager" classname="ASAPSettings/driver-app-settings.spec.ts" time="20.653">
-</testcase>
-</testsuite>
-<testsuite name="ASAPSettings/escalations-settings.spec.ts" timestamp="2026-02-17T11:10:27.828Z" hostname="chromium" tests="10" failures="0" skipped="0" time="238.313" errors="0">
-<testcase name="ASAP Escalations Settings Tests @asap @settings › ES-001: Verify Escalation Settings page loads @smoke @manager" classname="ASAPSettings/escalations-settings.spec.ts" time="25.829">
-</testcase>
-<testcase name="ASAP Escalations Settings Tests @asap @settings › ES-002: Verify page content is visible @regression @manager" classname="ASAPSettings/escalations-settings.spec.ts" time="22.59">
-</testcase>
-<testcase name="ASAP Escalations Settings Tests @asap @settings › Ride Request Escalation Section › ES-003: Verify Ride Request escalation section @smoke @manager" classname="ASAPSettings/escalations-settings.spec.ts" time="21.587">
-</testcase>
-<testcase name="ASAP Escalations Settings Tests @asap @settings › Ride Request Escalation Section › ES-004: Verify Ride Request checkbox exists @regression @manager" classname="ASAPSettings/escalations-settings.spec.ts" time="22.843">
-</testcase>
-<testcase name="ASAP Escalations Settings Tests @asap @settings › Ride Request Escalation Section › ES-005: Verify Ride Request See Example link @regression @manager" classname="ASAPSettings/escalations-settings.spec.ts" time="24.664">
-</testcase>
-<testcase name="ASAP Escalations Settings Tests @asap @settings › Trip Not Started Escalation Section › ES-006: Verify Trip Not Started section @smoke @manager" classname="ASAPSettings/escalations-settings.spec.ts" time="25.462">
-</testcase>
-<testcase name="ASAP Escalations Settings Tests @asap @settings › Trip Not Started Escalation Section › ES-007: Verify Trip Not Started checkbox exists @regression @manager" classname="ASAPSettings/escalations-settings.spec.ts" time="23.931">
-</testcase>
-<testcase name="ASAP Escalations Settings Tests @asap @settings › Trip Not Started Escalation Section › ES-008: Verify Trip Not Started See Example link @regression @manager" classname="ASAPSettings/escalations-settings.spec.ts" time="27.143">
-</testcase>
-<testcase name="ASAP Escalations Settings Tests @asap @settings › Escalation Configuration › ES-009: Verify escalation configuration UI elements @regression @manager" classname="ASAPSettings/escalations-settings.spec.ts" time="22.447">
-</testcase>
-<testcase name="ASAP Escalations Settings Tests @asap @settings › Escalation Configuration › ES-010: Verify Add More button exists @regression @manager" classname="ASAPSettings/escalations-settings.spec.ts" time="21.817">
-</testcase>
-</testsuite>
-<testsuite name="ASAPSettings/live-display-settings.spec.ts" timestamp="2026-02-17T11:10:27.828Z" hostname="chromium" tests="7" failures="0" skipped="0" time="182.825" errors="0">
-<testcase name="ASAP Live Display Settings Tests @asap @settings › LD-001: Verify Live Display Settings page loads @smoke @manager" classname="ASAPSettings/live-display-settings.spec.ts" time="21.367">
-</testcase>
-<testcase name="ASAP Live Display Settings Tests @asap @settings › LD-002: Verify section heading @regression @manager" classname="ASAPSettings/live-display-settings.spec.ts" time="20.384">
-</testcase>
-<testcase name="ASAP Live Display Settings Tests @asap @settings › LD-003: Verify section description @regression @manager" classname="ASAPSettings/live-display-settings.spec.ts" time="19.404">
-</testcase>
-<testcase name="ASAP Live Display Settings Tests @asap @settings › LD-004: Verify warning message @regression @manager" classname="ASAPSettings/live-display-settings.spec.ts" time="58.975">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_018: &quot;App or technical issue&quot; + details enables submit" classname="asap-only/asap-cancellation.spec.ts" time="44.583">
 <system-out>
 <![CDATA[
-[[ATTACHMENT|test-results/ASAPSettings-live-display--4e36d--message-regression-manager-chromium/test-failed-1.png]]
+[[ATTACHMENT|test-results/asap-only-asap-cancellatio-50f2f-ssue-details-enables-submit-rider-mobile-chrome/test-failed-1.png]]
 
-[[ATTACHMENT|test-results/ASAPSettings-live-display--4e36d--message-regression-manager-chromium/video.webm]]
+[[ATTACHMENT|test-results/asap-only-asap-cancellatio-50f2f-ssue-details-enables-submit-rider-mobile-chrome/video.webm]]
 
-[[ATTACHMENT|test-results/ASAPSettings-live-display--4e36d--message-regression-manager-chromium/error-context.md]]
+[[ATTACHMENT|test-results/asap-only-asap-cancellatio-50f2f-ssue-details-enables-submit-rider-mobile-chrome/error-context.md]]
 
-[[ATTACHMENT|test-results/ASAPSettings-live-display--4e36d--message-regression-manager-chromium/trace.zip]]
+[[ATTACHMENT|test-results/asap-only-asap-cancellatio-50f2f-ssue-details-enables-submit-rider-mobile-chrome/trace.zip]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="ASAP Live Display Settings Tests @asap @settings › LD-005: Verify Create Live Display button @smoke @manager" classname="ASAPSettings/live-display-settings.spec.ts" time="21.156">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_019: Cancel with &quot;App or technical issue&quot; + details succeeds" classname="asap-only/asap-cancellation.spec.ts" time="17.834">
 </testcase>
-<testcase name="ASAP Live Display Settings Tests @asap @settings › LD-006: Verify Create Live Display button is enabled @regression @manager" classname="ASAPSettings/live-display-settings.spec.ts" time="19.237">
-</testcase>
-<testcase name="ASAP Live Display Settings Tests @asap @settings › LD-007: Verify page content is complete @regression @manager" classname="ASAPSettings/live-display-settings.spec.ts" time="22.302">
-</testcase>
-</testsuite>
-<testsuite name="ASAPSettings/operation-hours.spec.ts" timestamp="2026-02-17T11:10:27.828Z" hostname="chromium" tests="8" failures="0" skipped="0" time="190.244" errors="0">
-<testcase name="ASAP Operation Hours Tests @asap @settings › OH-001: Verify Operation Hours page loads @smoke @manager" classname="ASAPSettings/operation-hours.spec.ts" time="27.733">
-</testcase>
-<testcase name="ASAP Operation Hours Tests @asap @settings › OH-002: Verify Run 24/7 option visible @smoke @manager" classname="ASAPSettings/operation-hours.spec.ts" time="23.12">
-</testcase>
-<testcase name="ASAP Operation Hours Tests @asap @settings › OH-003: Verify Custom Hours option visible @smoke @manager" classname="ASAPSettings/operation-hours.spec.ts" time="22.999">
-</testcase>
-<testcase name="ASAP Operation Hours Tests @asap @settings › OH-004: Verify Run 24/7 is default for ASAP @smoke @manager" classname="ASAPSettings/operation-hours.spec.ts" time="22.557">
-</testcase>
-<testcase name="ASAP Operation Hours Tests @asap @settings › OH-005: Verify option descriptions @regression @manager" classname="ASAPSettings/operation-hours.spec.ts" time="23.212">
-</testcase>
-<testcase name="ASAP Operation Hours Tests @asap @settings › OH-006: Verify all options are visible @regression @manager" classname="ASAPSettings/operation-hours.spec.ts" time="24.179">
-</testcase>
-<testcase name="ASAP Operation Hours Tests @asap @settings › OH-007: Verify Run 24/7 option is not disabled @regression @manager" classname="ASAPSettings/operation-hours.spec.ts" time="23.061">
-</testcase>
-<testcase name="ASAP Operation Hours Tests @asap @settings › OH-008: Verify Custom Hours option is not disabled @regression @manager" classname="ASAPSettings/operation-hours.spec.ts" time="23.383">
-</testcase>
-</testsuite>
-<testsuite name="ASAPSettings/operation-settings.spec.ts" timestamp="2026-02-17T11:10:27.828Z" hostname="chromium" tests="25" failures="0" skipped="0" time="612.4" errors="0">
-<testcase name="ASAP Operation Settings Tests @asap @settings › OPS-001: Verify Operation Settings page loads @smoke @manager" classname="ASAPSettings/operation-settings.spec.ts" time="20.671">
-</testcase>
-<testcase name="ASAP Operation Settings Tests @asap @settings › OPS-002: Verify all 5 accordion sections visible @smoke @manager" classname="ASAPSettings/operation-settings.spec.ts" time="21.303">
-</testcase>
-<testcase name="ASAP Operation Settings Tests @asap @settings › Pick-up Time Section › OPS-003: Verify Pick-up Time section expands @regression @manager" classname="ASAPSettings/operation-settings.spec.ts" time="19.716">
-</testcase>
-<testcase name="ASAP Operation Settings Tests @asap @settings › Pick-up Time Section › OPS-004: Verify ASAP Pickup is default selected @smoke @manager" classname="ASAPSettings/operation-settings.spec.ts" time="22.269">
-</testcase>
-<testcase name="ASAP Operation Settings Tests @asap @settings › Pick-up Time Section › OPS-005: Verify Future Pickup option exists @regression @manager" classname="ASAPSettings/operation-settings.spec.ts" time="21.851">
-</testcase>
-<testcase name="ASAP Operation Settings Tests @asap @settings › Pick-up Time Section › OPS-006: Verify Both ASAP &amp; Future option exists @regression @manager" classname="ASAPSettings/operation-settings.spec.ts" time="22.217">
-</testcase>
-<testcase name="ASAP Operation Settings Tests @asap @settings › Pick-up Time Section › OPS-007: Verify current pickup time setting matches ASAP default @regression @manager" classname="ASAPSettings/operation-settings.spec.ts" time="22.287">
-</testcase>
-<testcase name="ASAP Operation Settings Tests @asap @settings › Pick-up Stops Section › OPS-008: Verify Pick-up Stops section expands @regression @manager" classname="ASAPSettings/operation-settings.spec.ts" time="22.601">
-</testcase>
-<testcase name="ASAP Operation Settings Tests @asap @settings › Pick-up Stops Section › OPS-009: Verify Pre-Defined Stops Only option @regression @manager" classname="ASAPSettings/operation-settings.spec.ts" time="56.93">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_020: Switching reasons keeps submit enabled" classname="asap-only/asap-cancellation.spec.ts" time="22.75">
 <system-out>
 <![CDATA[
-[[ATTACHMENT|test-results/ASAPSettings-operation-set-da75f-y-option-regression-manager-chromium/test-failed-1.png]]
+[[ATTACHMENT|test-results/asap-only-asap-cancellatio-7fcab-easons-keeps-submit-enabled-rider-mobile-chrome/test-failed-1.png]]
 
-[[ATTACHMENT|test-results/ASAPSettings-operation-set-da75f-y-option-regression-manager-chromium/video.webm]]
+[[ATTACHMENT|test-results/asap-only-asap-cancellatio-7fcab-easons-keeps-submit-enabled-rider-mobile-chrome/video.webm]]
 
-[[ATTACHMENT|test-results/ASAPSettings-operation-set-da75f-y-option-regression-manager-chromium/error-context.md]]
+[[ATTACHMENT|test-results/asap-only-asap-cancellatio-7fcab-easons-keeps-submit-enabled-rider-mobile-chrome/error-context.md]]
 
-[[ATTACHMENT|test-results/ASAPSettings-operation-set-da75f-y-option-regression-manager-chromium/trace.zip]]
+[[ATTACHMENT|test-results/asap-only-asap-cancellatio-7fcab-easons-keeps-submit-enabled-rider-mobile-chrome/trace.zip]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="ASAP Operation Settings Tests @asap @settings › Pick-up Stops Section › OPS-010: Verify Pre-Defined + Service Area option @regression @manager" classname="ASAPSettings/operation-settings.spec.ts" time="19.84">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_021: Payload contains ride code and reason" classname="asap-only/asap-cancellation.spec.ts" time="16.404">
 </testcase>
-<testcase name="ASAP Operation Settings Tests @asap @settings › Pick-up Stops Section › OPS-011: Verify Add Service Area link exists @regression @manager" classname="ASAPSettings/operation-settings.spec.ts" time="22.736">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_022: Endpoint is /cancel-ride (no type suffix for ASAP)" classname="asap-only/asap-cancellation.spec.ts" time="15.946">
 </testcase>
-<testcase name="ASAP Operation Settings Tests @asap @settings › Ride Sharing Section › OPS-012: Verify Ride Sharing section expands @regression @manager" classname="ASAPSettings/operation-settings.spec.ts" time="20.209">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › @smoke CANCEL_023: &quot;Ride Canceled Successfully!&quot; banner shown" classname="asap-only/asap-cancellation.spec.ts" time="19.184">
 </testcase>
-<testcase name="ASAP Operation Settings Tests @asap @settings › Ride Sharing Section › OPS-013: Verify Shared Rides option selected (ASAP default) @smoke @manager" classname="ASAPSettings/operation-settings.spec.ts" time="20.81">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_024: &quot;Request Again&quot; button visible after cancel" classname="asap-only/asap-cancellation.spec.ts" time="17.672">
 </testcase>
-<testcase name="ASAP Operation Settings Tests @asap @settings › Ride Sharing Section › OPS-014: Verify Private Rides option exists @regression @manager" classname="ASAPSettings/operation-settings.spec.ts" time="20.282">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_025: &quot;Provide Feedback&quot; link visible after cancel" classname="asap-only/asap-cancellation.spec.ts" time="18.135">
 </testcase>
-<testcase name="ASAP Operation Settings Tests @asap @settings › Ride Sharing Section › OPS-015: Verify current ride sharing setting matches ASAP default @regression @manager" classname="ASAPSettings/operation-settings.spec.ts" time="20.259">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_026: &quot;Call Operator&quot; link visible after cancel" classname="asap-only/asap-cancellation.spec.ts" time="19.895">
 </testcase>
-<testcase name="ASAP Operation Settings Tests @asap @settings › Driver Assignment Section › OPS-016: Verify Driver Assignment section expands @regression @manager" classname="ASAPSettings/operation-settings.spec.ts" time="24.492">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_027: &quot;Request Again&quot; button is visible on post-cancel screen" classname="asap-only/asap-cancellation.spec.ts" time="16.834">
 </testcase>
-<testcase name="ASAP Operation Settings Tests @asap @settings › Driver Assignment Section › OPS-017: Verify Operator Assignment option exists @regression @manager" classname="ASAPSettings/operation-settings.spec.ts" time="21.036">
+</testsuite>
+<testsuite name="asap-only/asap-confirmation.spec.ts" timestamp="2026-04-09T10:34:28.941Z" hostname="rider-mobile-chrome" tests="11" failures="0" skipped="0" time="232.885" errors="0">
+<testcase name="ASAP Only — Confirmation Page @asap @creates-ride @regression › @smoke @sanity ASAP_032: Shows status text, not TrackingCard" classname="asap-only/asap-confirmation.spec.ts" time="15.737">
 </testcase>
-<testcase name="ASAP Operation Settings Tests @asap @settings › Driver Assignment Section › OPS-018: Verify Driver Self-Assignment option exists @regression @manager" classname="ASAPSettings/operation-settings.spec.ts" time="61.764">
+<testcase name="ASAP Only — Confirmation Page @asap @creates-ride @regression › ASAP_033: Pickup and dropoff names are NOT shown in ASAP mode" classname="asap-only/asap-confirmation.spec.ts" time="15.948">
+</testcase>
+<testcase name="ASAP Only — Confirmation Page @asap @creates-ride @regression › @smoke ASAP_034: Shows ride status message" classname="asap-only/asap-confirmation.spec.ts" time="18.084">
+</testcase>
+<testcase name="ASAP Only — Confirmation Page @asap @creates-ride @regression › ASAP_035: Page has status heading elements" classname="asap-only/asap-confirmation.spec.ts" time="14.846">
+</testcase>
+<testcase name="ASAP Only — Confirmation Page @asap @creates-ride @regression › TrackingCard &quot;View All Bookings&quot; NOT visible" classname="asap-only/asap-confirmation.spec.ts" time="12.909">
+</testcase>
+<testcase name="ASAP Only — Confirmation Page @asap @creates-ride @regression › Map area present" classname="asap-only/asap-confirmation.spec.ts" time="67.653">
 <system-out>
 <![CDATA[
-[[ATTACHMENT|test-results/ASAPSettings-operation-set-dbe81-n-exists-regression-manager-chromium/test-failed-1.png]]
+[[ATTACHMENT|test-results/asap-only-asap-confirmatio-c65fb-regression-Map-area-present-rider-mobile-chrome/test-failed-1.png]]
 
-[[ATTACHMENT|test-results/ASAPSettings-operation-set-dbe81-n-exists-regression-manager-chromium/video.webm]]
+[[ATTACHMENT|test-results/asap-only-asap-confirmatio-c65fb-regression-Map-area-present-rider-mobile-chrome/video.webm]]
 
-[[ATTACHMENT|test-results/ASAPSettings-operation-set-dbe81-n-exists-regression-manager-chromium/error-context.md]]
+[[ATTACHMENT|test-results/asap-only-asap-confirmatio-c65fb-regression-Map-area-present-rider-mobile-chrome/error-context.md]]
 
-[[ATTACHMENT|test-results/ASAPSettings-operation-set-dbe81-n-exists-regression-manager-chromium/trace.zip]]
+[[ATTACHMENT|test-results/asap-only-asap-confirmatio-c65fb-regression-Map-area-present-rider-mobile-chrome/trace.zip]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="ASAP Operation Settings Tests @asap @settings › Driver Assignment Section › OPS-019: Verify current driver assignment setting @regression @manager" classname="ASAPSettings/operation-settings.spec.ts" time="29.57">
+<testcase name="ASAP Only — Confirmation Page @asap @creates-ride @regression › Call Operator or Cancel Ride visible" classname="asap-only/asap-confirmation.spec.ts" time="16.841">
 </testcase>
-<testcase name="ASAP Operation Settings Tests @asap @settings › Shuttle Capacity Section › OPS-020: Verify Shuttle Capacity section expands @regression @manager" classname="ASAPSettings/operation-settings.spec.ts" time="23.068">
+<testcase name="ASAP Only — Confirmation Page @asap @creates-ride @regression › ASAP_040: Client-side fetch includes ride code" classname="asap-only/asap-confirmation.spec.ts" time="13.055">
 </testcase>
-<testcase name="ASAP Operation Settings Tests @asap @settings › Shuttle Capacity Section › OPS-021: Verify Static Capacity selected (ASAP default) @smoke @manager" classname="ASAPSettings/operation-settings.spec.ts" time="23.881">
-</testcase>
-<testcase name="ASAP Operation Settings Tests @asap @settings › Shuttle Capacity Section › OPS-022: Verify Dynamic Capacity option exists @regression @manager" classname="ASAPSettings/operation-settings.spec.ts" time="19.389">
-</testcase>
-<testcase name="ASAP Operation Settings Tests @asap @settings › Shuttle Capacity Section › OPS-023: Verify current shuttle capacity setting @regression @manager" classname="ASAPSettings/operation-settings.spec.ts" time="19.79">
-</testcase>
-<testcase name="ASAP Operation Settings Tests @asap @settings › Shuttle Capacity Section › OPS-024: Verify Max Riders input is visible @regression @manager" classname="ASAPSettings/operation-settings.spec.ts" time="18.733">
-</testcase>
-<testcase name="ASAP Operation Settings Tests @asap @settings › Shuttle Capacity Section › OPS-025: Verify Max Riders value can be retrieved @regression @manager" classname="ASAPSettings/operation-settings.spec.ts" time="16.696">
-</testcase>
-</testsuite>
-<testsuite name="ASAPSettings/organization-settings.spec.ts" timestamp="2026-02-17T11:10:27.828Z" hostname="chromium" tests="8" failures="0" skipped="0" time="173.937" errors="0">
-<testcase name="ASAP Organization Settings Tests @asap @settings › OS-001: Verify Organization Settings page loads @smoke @manager" classname="ASAPSettings/organization-settings.spec.ts" time="17.266">
-</testcase>
-<testcase name="ASAP Organization Settings Tests @asap @settings › OS-002: Verify organization name display @smoke @manager" classname="ASAPSettings/organization-settings.spec.ts" time="15.941">
-</testcase>
-<testcase name="ASAP Organization Settings Tests @asap @settings › OS-004: Verify tracking ID display @smoke @manager" classname="ASAPSettings/organization-settings.spec.ts" time="16.646">
-</testcase>
-<testcase name="ASAP Organization Settings Tests @asap @settings › OS-005: Verify timezone display @regression @manager" classname="ASAPSettings/organization-settings.spec.ts" time="17.391">
-</testcase>
-<testcase name="ASAP Organization Settings Tests @asap @settings › OS-007: Verify map is visible @smoke @manager" classname="ASAPSettings/organization-settings.spec.ts" time="51.357">
+<testcase name="ASAP Only — Confirmation Page @asap @creates-ride @regression › No critical JavaScript errors" classname="asap-only/asap-confirmation.spec.ts" time="34.093">
 <system-out>
 <![CDATA[
-[[ATTACHMENT|test-results/ASAPSettings-organization--2a2a4-ap-is-visible-smoke-manager-chromium/test-failed-1.png]]
+[[ATTACHMENT|test-results/asap-only-asap-confirmatio-5e80b--critical-JavaScript-errors-rider-mobile-chrome/test-failed-1.png]]
 
-[[ATTACHMENT|test-results/ASAPSettings-organization--2a2a4-ap-is-visible-smoke-manager-chromium/video.webm]]
+[[ATTACHMENT|test-results/asap-only-asap-confirmatio-5e80b--critical-JavaScript-errors-rider-mobile-chrome/video.webm]]
 
-[[ATTACHMENT|test-results/ASAPSettings-organization--2a2a4-ap-is-visible-smoke-manager-chromium/error-context.md]]
+[[ATTACHMENT|test-results/asap-only-asap-confirmatio-5e80b--critical-JavaScript-errors-rider-mobile-chrome/error-context.md]]
 
-[[ATTACHMENT|test-results/ASAPSettings-organization--2a2a4-ap-is-visible-smoke-manager-chromium/trace.zip]]
+[[ATTACHMENT|test-results/asap-only-asap-confirmatio-5e80b--critical-JavaScript-errors-rider-mobile-chrome/trace.zip]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="ASAP Organization Settings Tests @asap @settings › OS-008: Verify map zoom controls @regression @manager" classname="ASAPSettings/organization-settings.spec.ts" time="20.409">
+<testcase name="ASAP Only — Confirmation Page @asap @creates-ride @regression › Confirmation page renders content" classname="asap-only/asap-confirmation.spec.ts" time="11.469">
 </testcase>
-<testcase name="ASAP Organization Settings Tests @asap @settings › OS-009: Verify map type switch (Map/Satellite) @regression @manager" classname="ASAPSettings/organization-settings.spec.ts" time="18.912">
-</testcase>
-<testcase name="ASAP Organization Settings Tests @asap @settings › OS-010: Verify edit organization button exists @regression @manager" classname="ASAPSettings/organization-settings.spec.ts" time="16.015">
+<testcase name="ASAP Only — Confirmation Page @asap @creates-ride @regression › Progress animation or status card visible" classname="asap-only/asap-confirmation.spec.ts" time="12.25">
 </testcase>
 </testsuite>
-<testsuite name="ASAPSettings/rider-app-settings.spec.ts" timestamp="2026-02-17T11:10:27.828Z" hostname="chromium" tests="15" failures="0" skipped="0" time="261.209" errors="0">
-<testcase name="ASAP Rider App Settings Tests @asap @settings › RA-001: Verify Rider App Settings page loads @smoke @manager" classname="ASAPSettings/rider-app-settings.spec.ts" time="16.651">
+<testsuite name="asap-only/asap-e2e.spec.ts" timestamp="2026-04-09T10:34:28.941Z" hostname="rider-mobile-chrome" tests="10" failures="0" skipped="4" time="74.556" errors="0">
+<testcase name="ASAP Only — End-to-End Flows @asap @creates-ride @regression › @smoke @sanity ASAP_047: Full happy path — Location → Form → Submit → Confirmation" classname="asap-only/asap-e2e.spec.ts" time="12.275">
 </testcase>
-<testcase name="ASAP Rider App Settings Tests @asap @settings › RA-002: Verify all accordion sections visible @smoke @manager" classname="ASAPSettings/rider-app-settings.spec.ts" time="25.851">
+<testcase name="ASAP Only — End-to-End Flows @asap @creates-ride @regression › Full flow with minimum fields" classname="asap-only/asap-e2e.spec.ts" time="12.029">
 </testcase>
-<testcase name="ASAP Rider App Settings Tests @asap @settings › RA-003: Verify Enable Rider App checkbox exists @smoke @manager" classname="ASAPSettings/rider-app-settings.spec.ts" time="23.984">
+<testcase name="ASAP Only — End-to-End Flows @asap @creates-ride @regression › Full flow with all optional fields" classname="asap-only/asap-e2e.spec.ts" time="12.357">
 </testcase>
-<testcase name="ASAP Rider App Settings Tests @asap @settings › Configure Cover Page Section › RA-004: Verify Configure Cover Page section @regression @manager" classname="ASAPSettings/rider-app-settings.spec.ts" time="17.992">
+<testcase name="ASAP Only — End-to-End Flows @asap @creates-ride @regression › Full flow verifies no future booking data in payload" classname="asap-only/asap-e2e.spec.ts" time="11.984">
 </testcase>
-<testcase name="ASAP Rider App Settings Tests @asap @settings › Configure Contact Settings Section › RA-006: Verify Contact Settings section @regression @manager" classname="ASAPSettings/rider-app-settings.spec.ts" time="15.304">
+<testcase name="ASAP Only — End-to-End Flows @asap @creates-ride @regression › Full flow with different stops" classname="asap-only/asap-e2e.spec.ts" time="16.542">
 </testcase>
-<testcase name="ASAP Rider App Settings Tests @asap @settings › Share Rider App Access Section › RA-009: Verify Share Rider App Access section @smoke @manager" classname="ASAPSettings/rider-app-settings.spec.ts" time="15.626">
+<testcase name="ASAP Only — End-to-End Flows @asap @creates-ride @regression › ASAP mode — no Future Booking elements anywhere" classname="asap-only/asap-e2e.spec.ts" time="9.369">
 </testcase>
-<testcase name="ASAP Rider App Settings Tests @asap @settings › Share Rider App Access Section › RA-011: Verify Share Tracking Code heading @regression @manager" classname="ASAPSettings/rider-app-settings.spec.ts" time="15.628">
+<testcase name="ASAP Only — End-to-End Flows @asap @creates-ride @regression › Error flow — API failure stays on form" classname="asap-only/asap-e2e.spec.ts">
+<properties>
+<property name="fixme" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
 </testcase>
-<testcase name="ASAP Rider App Settings Tests @asap @settings › Share Rider App Access Section › RA-012: Verify Share Link &amp; QR Code heading @regression @manager" classname="ASAPSettings/rider-app-settings.spec.ts" time="16.131">
+<testcase name="ASAP Only — End-to-End Flows @asap @creates-ride @regression › Error flow — API timeout stays on form" classname="asap-only/asap-e2e.spec.ts">
+<properties>
+<property name="fixme" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
 </testcase>
-<testcase name="ASAP Rider App Settings Tests @asap @settings › Share Rider App Access Section › RA-013: Verify tracking link URL format @regression @manager" classname="ASAPSettings/rider-app-settings.spec.ts" time="16.214">
+<testcase name="ASAP Only — End-to-End Flows @asap @creates-ride @regression › ASAP_043: Guest data restored from cookies" classname="asap-only/asap-e2e.spec.ts">
+<properties>
+<property name="fixme" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
 </testcase>
-<testcase name="ASAP Rider App Settings Tests @asap @settings › Share Rider App Access Section › RA-014: Verify Copy Link button exists @regression @manager" classname="ASAPSettings/rider-app-settings.spec.ts" time="16.21">
-</testcase>
-<testcase name="ASAP Rider App Settings Tests @asap @settings › Share Rider App Access Section › RA-015: Verify QR Code button exists @regression @manager" classname="ASAPSettings/rider-app-settings.spec.ts" time="16.746">
-</testcase>
-<testcase name="ASAP Rider App Settings Tests @asap @settings › Share Rider App Access Section › RA-016: Verify Voicemail Script heading @regression @manager" classname="ASAPSettings/rider-app-settings.spec.ts" time="16.066">
-</testcase>
-<testcase name="ASAP Rider App Settings Tests @asap @settings › Share Rider App Access Section › RA-017: Verify Display QR Signage heading @regression @manager" classname="ASAPSettings/rider-app-settings.spec.ts" time="15.529">
-</testcase>
-<testcase name="ASAP Rider App Settings Tests @asap @settings › Share Rider App Access Section › RA-018: Verify PDF download options @regression @manager" classname="ASAPSettings/rider-app-settings.spec.ts" time="16.095">
-</testcase>
-<testcase name="ASAP Rider App Settings Tests @asap @settings › Ride Cancellation Options Section › RA-019: Verify Ride Cancellation section @regression @manager" classname="ASAPSettings/rider-app-settings.spec.ts" time="17.182">
-</testcase>
-</testsuite>
-<testsuite name="ASAPSettings/settings-navigation.spec.ts" timestamp="2026-02-17T11:10:27.828Z" hostname="chromium" tests="3" failures="0" skipped="0" time="62.412" errors="0">
-<testcase name="ASAP Settings Navigation Tests @asap @settings › SN-001: Verify all 9 settings tabs are visible @smoke @manager" classname="ASAPSettings/settings-navigation.spec.ts" time="23.926">
-</testcase>
-<testcase name="ASAP Settings Navigation Tests @asap @settings › SN-005: Verify settings page loads within threshold @performance" classname="ASAPSettings/settings-navigation.spec.ts" time="19.826">
-</testcase>
-<testcase name="ASAP Settings Navigation Tests @asap @settings › SN-006: Verify URL hash persistence on page refresh @regression @manager" classname="ASAPSettings/settings-navigation.spec.ts" time="18.66">
-</testcase>
-</testsuite>
-<testsuite name="ASAPSettings/settings-rbac.spec.ts" timestamp="2026-02-17T11:10:27.828Z" hostname="chromium" tests="9" failures="0" skipped="0" time="108.743" errors="0">
-<testcase name="ASAP Settings RBAC Tests @asap @settings @rbac › Manager Role Access @manager › RBAC-002: Manager can access User Management tab @regression" classname="ASAPSettings/settings-rbac.spec.ts" time="16.87">
-</testcase>
-<testcase name="ASAP Settings RBAC Tests @asap @settings @rbac › Manager Role Access @manager › RBAC-003: Manager can see Add User button @regression" classname="ASAPSettings/settings-rbac.spec.ts" time="13.938">
-</testcase>
-<testcase name="ASAP Settings RBAC Tests @asap @settings @rbac › Manager Role Access @manager › RBAC-004: Manager can open Edit User dialog @regression" classname="ASAPSettings/settings-rbac.spec.ts" time="18.501">
-</testcase>
-<testcase name="ASAP Settings RBAC Tests @asap @settings @rbac › Manager Role Access @manager › RBAC-005: Manager can see Delete option @regression" classname="ASAPSettings/settings-rbac.spec.ts" time="15.593">
-</testcase>
-<testcase name="ASAP Settings RBAC Tests @asap @settings @rbac › Manager Role Access @manager › RBAC-006: Manager sees Manage link in sidebar @smoke" classname="ASAPSettings/settings-rbac.spec.ts" time="8.708">
-</testcase>
-<testcase name="ASAP Settings RBAC Tests @asap @settings @rbac › Operator Role Access @operator @negative › RBAC-008: Operator cannot see Stops menu @regression" classname="ASAPSettings/settings-rbac.spec.ts" time="8.01">
-</testcase>
-<testcase name="ASAP Settings RBAC Tests @asap @settings @rbac › Operator Role Access @operator @negative › RBAC-009: Operator cannot see Analytics menu @regression" classname="ASAPSettings/settings-rbac.spec.ts" time="8.123">
-</testcase>
-<testcase name="ASAP Settings RBAC Tests @asap @settings @rbac › Operator Role Access @operator @negative › RBAC-010: Operator cannot see Manage/Settings link @smoke" classname="ASAPSettings/settings-rbac.spec.ts" time="8.154">
-</testcase>
-<testcase name="ASAP Settings RBAC Tests @asap @settings @rbac › Operator Role Access @operator @negative › RBAC-011: Operator direct navigation to settings redirects @regression" classname="ASAPSettings/settings-rbac.spec.ts" time="10.846">
+<testcase name="ASAP Only — End-to-End Flows @asap @creates-ride @regression › ASAP_044: Auth removed when phone changes" classname="asap-only/asap-e2e.spec.ts">
+<properties>
+<property name="fixme" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
 </testcase>
 </testsuite>
-<testsuite name="ASAPSettings/user-management.spec.ts" timestamp="2026-02-17T11:10:27.828Z" hostname="chromium" tests="34" failures="0" skipped="2" time="818.638" errors="0">
-<testcase name="ASAP User Management Tests @asap @settings › Read Operations @crud › UM-R001: Verify User Management page loads @smoke @manager" classname="ASAPSettings/user-management.spec.ts" time="14.135">
+<testsuite name="asap-only/asap-feedback.spec.ts" timestamp="2026-04-09T10:34:28.941Z" hostname="rider-mobile-chrome" tests="20" failures="0" skipped="0" time="403.72" errors="0">
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › @smoke FB_001: Feedback modal opens with heading" classname="asap-only/asap-feedback.spec.ts" time="20.275">
 </testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Read Operations @crud › UM-R002: Verify users table headers @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="15.537">
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_002: Subheading visible" classname="asap-only/asap-feedback.spec.ts" time="20.499">
 </testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Read Operations @crud › UM-R003: Verify existing users displayed @smoke @manager" classname="ASAPSettings/user-management.spec.ts" time="19.714">
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_003: 3 emoji rating buttons visible" classname="asap-only/asap-feedback.spec.ts" time="18.267">
 </testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Read Operations @crud › UM-R004: Verify user search functionality @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="19.286">
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_004: Textarea visible with &quot;Type your feedback&quot; placeholder" classname="asap-only/asap-feedback.spec.ts" time="16.747">
 </testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Read Operations @crud › UM-R005: Verify user role display @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="19.914">
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_005: &quot;Share Feedback&quot; button visible but disabled" classname="asap-only/asap-feedback.spec.ts" time="16.846">
 </testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Read Operations @crud › UM-R006: Verify user status display @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="21.221">
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_006: Selecting Sad enables &quot;Share Feedback&quot;" classname="asap-only/asap-feedback.spec.ts" time="18.202">
 </testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Read Operations @crud › UM-R007: Verify table sorting by Name @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="15.93">
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_007: Submit with Sad rating + text succeeds" classname="asap-only/asap-feedback.spec.ts" time="18.359">
 </testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Read Operations @crud › UM-R008: Verify table sorting by Role @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="16.374">
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_008: Selecting Neutral enables &quot;Share Feedback&quot;" classname="asap-only/asap-feedback.spec.ts" time="17.792">
 </testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Read Operations @crud › UM-R009: Verify table sorting by Last Login @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="17.103">
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_009: Submit with Neutral rating + text succeeds" classname="asap-only/asap-feedback.spec.ts" time="23.525">
 </testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Read Operations @crud › UM-R010: Verify table sorting by Status @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="16.767">
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_010: Selecting Happy enables &quot;Share Feedback&quot;" classname="asap-only/asap-feedback.spec.ts" time="17.754">
 </testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Read Operations @crud › UM-R011: Verify user data retrieval @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="17.213">
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_011: Submit with Happy rating (no text) succeeds" classname="asap-only/asap-feedback.spec.ts" time="24.095">
 </testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Create Operations @crud › UM-C001: Verify Add User button is visible @smoke @manager" classname="ASAPSettings/user-management.spec.ts" time="14.442">
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › @smoke @sanity FB_012: Submit with Happy rating + text succeeds" classname="asap-only/asap-feedback.spec.ts" time="20.922">
 </testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Create Operations @crud › UM-C002: Verify Add User dialog opens @smoke @manager" classname="ASAPSettings/user-management.spec.ts" time="18.462">
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_013: Selecting any rating enables submit" classname="asap-only/asap-feedback.spec.ts" time="20.227">
 </testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Create Operations @crud › UM-C003: Verify role dropdown options @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="19.126">
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_014: Textarea sanitizes XSS input" classname="asap-only/asap-feedback.spec.ts" time="18.087">
 </testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Create Operations @crud › UM-C004: Verify Continue button disabled without email @regression @manager @negative" classname="ASAPSettings/user-management.spec.ts" time="17.27">
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_015: Feedback text retained when switching ratings" classname="asap-only/asap-feedback.spec.ts" time="19.539">
 </testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Create Operations @crud › UM-C005: Verify Step 2 form fields @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="19.149">
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_016: Feedback API called on submit" classname="asap-only/asap-feedback.spec.ts" time="18.852">
 </testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Create Operations @crud › UM-C006: Verify Cancel button closes dialog @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="26.949">
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_017: Thank You screen shown after feedback" classname="asap-only/asap-feedback.spec.ts" time="19.419">
 </testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Create Operations @crud › UM-C007: Add new Operator user (Data Modification) @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="0">
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_018: &quot;Request Again&quot; button visible on Thank You" classname="asap-only/asap-feedback.spec.ts" time="18.796">
+</testcase>
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_019: &quot;Request Again&quot; navigates to org page" classname="asap-only/asap-feedback.spec.ts" time="34.414">
+</testcase>
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_020: Browser back blocked on Thank You" classname="asap-only/asap-feedback.spec.ts" time="21.103">
+</testcase>
+</testsuite>
+<testsuite name="asap-only/asap-form.spec.ts" timestamp="2026-04-09T10:34:28.941Z" hostname="rider-mobile-chrome" tests="24" failures="0" skipped="1" time="297.482" errors="0">
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › @smoke @sanity ASAP_009: Full form opens with &quot;Enter Ride Details&quot; heading" classname="asap-only/asap-form.spec.ts" time="11.277">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › ASAP_011: Special Assistance checkbox visible" classname="asap-only/asap-form.spec.ts" time="11.209">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › ASAP_012: ADA label shows &quot;Special Assistance&quot;" classname="asap-only/asap-form.spec.ts" time="11.254">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › ASAP_013: Notes textarea visible" classname="asap-only/asap-form.spec.ts" time="12.852">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › ASAP_014: Notes placeholder shows &quot;Note&quot;" classname="asap-only/asap-form.spec.ts" time="14.198">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › @smoke ASAP_015: Flight number field hidden" classname="asap-only/asap-form.spec.ts" time="13.371">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › ASAP_016: Room number field hidden" classname="asap-only/asap-form.spec.ts" time="6.153">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › ASAP_017: Rider type radios hidden" classname="asap-only/asap-form.spec.ts" time="9.752">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › ASAP_010: Rider count dropdown exists in flow" classname="asap-only/asap-form.spec.ts" time="9.957">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › ASAP_018: Notes textarea enforces maxLength" classname="asap-only/asap-form.spec.ts" time="9.234">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › Name input accepts text" classname="asap-only/asap-form.spec.ts" time="13.006">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › Phone input accepts numeric input" classname="asap-only/asap-form.spec.ts" time="13.376">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › Special Assistance checkbox toggles" classname="asap-only/asap-form.spec.ts" time="15.246">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › Notes textarea accepts text up to maxLength" classname="asap-only/asap-form.spec.ts" time="11.23">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › Country code selector opens" classname="asap-only/asap-form.spec.ts" time="11.429">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › Country code dropdown filters by search" classname="asap-only/asap-form.spec.ts" time="9.286">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › Back button shows Go Back confirmation dialog" classname="asap-only/asap-form.spec.ts" time="33.471">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/asap-only-asap-form-ASAP-O-390a5-Go-Back-confirmation-dialog-rider-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/asap-only-asap-form-ASAP-O-390a5-Go-Back-confirmation-dialog-rider-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|test-results/asap-only-asap-form-ASAP-O-390a5-Go-Back-confirmation-dialog-rider-mobile-chrome/error-context.md]]
+
+[[ATTACHMENT|test-results/asap-only-asap-form-ASAP-O-390a5-Go-Back-confirmation-dialog-rider-mobile-chrome/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › Back dialog Cancel keeps user on form" classname="asap-only/asap-form.spec.ts" time="30.506">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/asap-only-asap-form-ASAP-O-ee1ec-g-Cancel-keeps-user-on-form-rider-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/asap-only-asap-form-ASAP-O-ee1ec-g-Cancel-keeps-user-on-form-rider-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|test-results/asap-only-asap-form-ASAP-O-ee1ec-g-Cancel-keeps-user-on-form-rider-mobile-chrome/error-context.md]]
+
+[[ATTACHMENT|test-results/asap-only-asap-form-ASAP-O-ee1ec-g-Cancel-keeps-user-on-form-rider-mobile-chrome/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › Back dialog Go Back returns to location page" classname="asap-only/asap-form.spec.ts" time="14.201">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › @smoke &quot;Request Ride&quot; button visible" classname="asap-only/asap-form.spec.ts" time="10.826">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › Terms of Service link visible" classname="asap-only/asap-form.spec.ts" time="8.78">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › Privacy Policy link visible" classname="asap-only/asap-form.spec.ts" time="7.985">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › Riders dropdown was pre-selected" classname="asap-only/asap-form.spec.ts" time="8.883">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › ASAP_042: Guest data saved to cookies" classname="asap-only/asap-form.spec.ts">
 <properties>
 <property name="skip" value="">
 </property>
@@ -370,171 +328,245 @@
 <skipped>
 </skipped>
 </testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Update Operations @crud › UM-U001: Verify action menu opens on click @smoke @manager" classname="ASAPSettings/user-management.spec.ts" time="16.038">
-</testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Update Operations @crud › UM-U002: Verify Edit dialog opens @smoke @manager" classname="ASAPSettings/user-management.spec.ts" time="21.57">
-</testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Update Operations @crud › UM-U003: Verify Edit form displays current values @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="20.186">
-</testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Update Operations @crud › UM-U004: Verify Update button is visible @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="18.88">
-</testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Update Operations @crud › UM-U005: Verify close button closes Edit dialog @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="19.497">
-</testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Update Operations @crud › UM-U006: Verify Also add as Driver checkbox @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="20.342">
-</testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Delete Operations @crud › UM-D001: Verify Delete option in action menu @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="15.94">
-</testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Delete Operations @crud › UM-D002: Verify Delete button in Edit dialog @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="18.942">
-</testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Delete Operations @crud › UM-D003: Delete user via action menu (Data Modification) @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="0">
-<properties>
-<property name="skip" value="">
-</property>
-</properties>
-<skipped>
-</skipped>
-</testcase>
-<testcase name="ASAP User Management Tests @asap @settings › Password Reset › UM-P001: Verify Reset Password option in menu @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="24.639">
-</testcase>
-<testcase name="ASAP User Management Tests @asap @settings › CRUD Lifecycle Tests @crud @e2e › UM-CRUD-001: Manager role - Create, Read, Update, Delete lifecycle @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="52.912">
-</testcase>
-<testcase name="ASAP User Management Tests @asap @settings › CRUD Lifecycle Tests @crud @e2e › UM-CRUD-002: Operator role - Create, Read, Update, Reset Password, Delete lifecycle @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="64.971">
-</testcase>
-<testcase name="ASAP User Management Tests @asap @settings › CRUD Lifecycle Tests @crud @e2e › UM-CRUD-003: Driver role - Create, Read, Update, Delete lifecycle @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="51.46">
-</testcase>
-<testcase name="ASAP User Management Tests @asap @settings › CRUD Lifecycle Tests @crud @e2e › UM-CRUD-004: Operator with Also-Add-As-Driver - Create, Read, Update, Delete lifecycle @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="60.426">
-</testcase>
-<testcase name="ASAP User Management Tests @asap @settings › CRUD Lifecycle Tests @crud @e2e › UM-CRUD-005: Role change - Create Operator, Update to Manager, Delete @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="54.453">
-</testcase>
-<testcase name="ASAP User Management Tests @asap @settings › CRUD Lifecycle Tests @crud @e2e › UM-CRUD-006: Reset Password - Create Manager, Reset Password, Delete @regression @manager" classname="ASAPSettings/user-management.spec.ts" time="49.79">
-</testcase>
 </testsuite>
-<testsuite name="TMSOnboarding/dashboard.spec.ts" timestamp="2026-02-17T11:10:27.828Z" hostname="chromium" tests="9" failures="0" skipped="0" time="138.848" errors="0">
-<testcase name="Role-Based Dashboard Access Tests › Operator: Login, verify menus, and logout @smoke @operator" classname="TMSOnboarding/dashboard.spec.ts" time="16.681">
-<system-err>
-<![CDATA[⚠️ RBAC Issue: Operator has access to Alerts menu
-]]>
-</system-err>
+<testsuite name="asap-only/asap-location-advanced.spec.ts" timestamp="2026-04-09T10:34:28.941Z" hostname="rider-mobile-chrome" tests="23" failures="1" skipped="0" time="271.383" errors="0">
+<testcase name="ASAP Only — Stop Search @asap @ui-only @regression @safe › @smoke SEARCH_001: Search pickup stops by partial name" classname="asap-only/asap-location-advanced.spec.ts" time="5.509">
 </testcase>
-<testcase name="Role-Based Dashboard Access Tests › Manager: Login, verify menus, and logout @smoke @manager" classname="TMSOnboarding/dashboard.spec.ts" time="12.986">
+<testcase name="ASAP Only — Stop Search @asap @ui-only @regression @safe › SEARCH_002: Search dropoff stops by partial name" classname="asap-only/asap-location-advanced.spec.ts" time="7.029">
 </testcase>
-<testcase name="Role-Based Dashboard Access Tests › Compare operator vs manager role-based access @smoke @rbac" classname="TMSOnboarding/dashboard.spec.ts" time="18.95">
+<testcase name="ASAP Only — Stop Search @asap @ui-only @regression @safe › SEARCH_003: Search with no results shows empty state" classname="asap-only/asap-location-advanced.spec.ts" time="6.782">
 </testcase>
-<testcase name="Role-Based Dashboard Access Tests › Performance: Dashboard load time measurement @performance" classname="TMSOnboarding/dashboard.spec.ts" time="10.919">
+<testcase name="ASAP Only — Stop Search @asap @ui-only @regression @safe › SEARCH_004: Clearing search restores full stop list" classname="asap-only/asap-location-advanced.spec.ts" time="7.226">
 </testcase>
-<testcase name="Role-Based Dashboard Access Tests › Menu Navigation: Test all accessible menus with 5 second intervals @navigation" classname="TMSOnboarding/dashboard.spec.ts" time="13.693">
+<testcase name="ASAP Only — Stop Search @asap @ui-only @regression @safe › SEARCH_005: Search is case-insensitive" classname="asap-only/asap-location-advanced.spec.ts" time="8.589">
 </testcase>
-<testcase name="Role-Based Dashboard Access Tests › Manager Menu Navigation: Simplified test @navigation @manager" classname="TMSOnboarding/dashboard.spec.ts" time="17.677">
+<testcase name="ASAP Only — Stop Search @asap @ui-only @regression @safe › SEARCH_006: Select a stop from search results" classname="asap-only/asap-location-advanced.spec.ts" time="6.235">
 </testcase>
-<testcase name="Role-Based Dashboard Access Tests › Operator: Profile access and functionality @smoke @operator @profile" classname="TMSOnboarding/dashboard.spec.ts" time="15.43">
+<testcase name="ASAP Only — Stop Search @asap @ui-only @regression @safe › SEARCH_007: Search by single character returns results" classname="asap-only/asap-location-advanced.spec.ts" time="8.302">
 </testcase>
-<testcase name="Role-Based Dashboard Access Tests › Manager: Profile access and functionality @smoke @manager @profile" classname="TMSOnboarding/dashboard.spec.ts" time="15.161">
+<testcase name="ASAP Only — Random Stops &amp; Dynamic Riders @asap @regression @safe › @smoke RANDOM_001: Select random pickup and dropoff stops" classname="asap-only/asap-location-advanced.spec.ts" time="11.765">
 </testcase>
-<testcase name="Role-Based Dashboard Access Tests › Profile: Role comparison test @smoke @profile @rbac" classname="TMSOnboarding/dashboard.spec.ts" time="17.351">
+<testcase name="ASAP Only — Random Stops &amp; Dynamic Riders @asap @regression @safe › RANDOM_002: All available stops are listed for pickup" classname="asap-only/asap-location-advanced.spec.ts" time="5.866">
 </testcase>
-</testsuite>
-<testsuite name="TMSOnboarding/example-improved.spec.ts" timestamp="2026-02-17T11:10:27.828Z" hostname="chromium" tests="14" failures="0" skipped="0" time="43.833" errors="0">
-<testcase name="Login Tests with Fixtures @smoke @critical › should display login form elements" classname="TMSOnboarding/example-improved.spec.ts" time="3.464">
+<testcase name="ASAP Only — Random Stops &amp; Dynamic Riders @asap @regression @safe › RANDOM_003: Selected pickup is removed from dropoff list" classname="asap-only/asap-location-advanced.spec.ts" time="13.327">
 </testcase>
-<testcase name="Login Tests with Fixtures @smoke @critical › should show error for invalid credentials @regression" classname="TMSOnboarding/example-improved.spec.ts" time="5.511">
+<testcase name="ASAP Only — Random Stops &amp; Dynamic Riders @asap @regression @safe › RANDOM_004: Multiple riders can be selected from dropdown" classname="asap-only/asap-location-advanced.spec.ts" time="8.074">
 </testcase>
-<testcase name="Timeout and Path Constants @system › should navigate using path constants" classname="TMSOnboarding/example-improved.spec.ts" time="3.535">
-</testcase>
-<testcase name="Timeout and Path Constants @system › should use timeout constants" classname="TMSOnboarding/example-improved.spec.ts" time="3.213">
-</testcase>
-<testcase name="Tagged Tests › quick login page check @smoke" classname="TMSOnboarding/example-improved.spec.ts" time="2.98">
-</testcase>
-<testcase name="Tagged Tests › login form submission @critical @smoke" classname="TMSOnboarding/example-improved.spec.ts" time="2.856">
-</testcase>
-<testcase name="Tagged Tests › complete form validation @regression" classname="TMSOnboarding/example-improved.spec.ts" time="4.266">
-</testcase>
-<testcase name="Tagged Tests › full page load performance @slow @performance" classname="TMSOnboarding/example-improved.spec.ts" time="2.84">
+<testcase name="ASAP Only — Random Stops &amp; Dynamic Riders @asap @regression @safe › @smoke RANDOM_005: Complete ride request with random stops" classname="asap-only/asap-location-advanced.spec.ts" time="64.053">
 <system-out>
-<![CDATA[Page loaded in 2540ms
+<![CDATA[
+[[ATTACHMENT|test-results/asap-only-asap-location-ad-e6810-e-request-with-random-stops-rider-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/asap-only-asap-location-ad-e6810-e-request-with-random-stops-rider-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|test-results/asap-only-asap-location-ad-e6810-e-request-with-random-stops-rider-mobile-chrome/error-context.md]]
+
+[[ATTACHMENT|test-results/asap-only-asap-location-ad-e6810-e-request-with-random-stops-rider-mobile-chrome/trace.zip]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Independent Tests (Parallel) › email input accepts text" classname="TMSOnboarding/example-improved.spec.ts" time="2.963">
+<testcase name="ASAP Only — Map View @asap @ui-only @regression @safe › @smoke MAP_001: &quot;View on map&quot; is visible and clickable" classname="asap-only/asap-location-advanced.spec.ts" time="6.335">
 </testcase>
-<testcase name="Independent Tests (Parallel) › password input accepts text" classname="TMSOnboarding/example-improved.spec.ts" time="2.864">
+<testcase name="ASAP Only — Map View @asap @ui-only @regression @safe › MAP_002: Clicking &quot;View on map&quot; changes page view" classname="asap-only/asap-location-advanced.spec.ts" time="7.628">
 </testcase>
-<testcase name="Independent Tests (Parallel) › remember me checkbox toggles" classname="TMSOnboarding/example-improved.spec.ts" time="2.794">
+<testcase name="ASAP Only — Map View @asap @ui-only @regression @safe › MAP_003: Map area loads after selecting both stops" classname="asap-only/asap-location-advanced.spec.ts" time="21.027">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/asap-only-asap-location-ad-b8571--after-selecting-both-stops-rider-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/asap-only-asap-location-ad-b8571--after-selecting-both-stops-rider-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|test-results/asap-only-asap-location-ad-b8571--after-selecting-both-stops-rider-mobile-chrome/error-context.md]]
+
+[[ATTACHMENT|test-results/asap-only-asap-location-ad-b8571--after-selecting-both-stops-rider-mobile-chrome/trace.zip]]
+]]>
+</system-out>
 </testcase>
-<testcase name="Dependent Tests (Serial) › step 1: enter email" classname="TMSOnboarding/example-improved.spec.ts" time="2.784">
+<testcase name="ASAP Only — Map View @asap @ui-only @regression @safe › MAP_004: Map container has Google Maps elements" classname="asap-only/asap-location-advanced.spec.ts" time="23.286">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/asap-only-asap-location-ad-be902-er-has-Google-Maps-elements-rider-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/asap-only-asap-location-ad-be902-er-has-Google-Maps-elements-rider-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|test-results/asap-only-asap-location-ad-be902-er-has-Google-Maps-elements-rider-mobile-chrome/error-context.md]]
+
+[[ATTACHMENT|test-results/asap-only-asap-location-ad-be902-er-has-Google-Maps-elements-rider-mobile-chrome/trace.zip]]
+]]>
+</system-out>
 </testcase>
-<testcase name="Dependent Tests (Serial) › step 2: verify email was entered" classname="TMSOnboarding/example-improved.spec.ts" time="0.157">
+<testcase name="ASAP Only — Use Current Location @asap @ui-only @regression @safe › @smoke LOC_001: &quot;Use Current Location&quot; button is visible" classname="asap-only/asap-location-advanced.spec.ts" time="7.052">
 </testcase>
-<testcase name="Test Steps for Reporting › complete login flow with steps @smoke" classname="TMSOnboarding/example-improved.spec.ts" time="3.606">
+<testcase name="ASAP Only — Use Current Location @asap @ui-only @regression @safe › LOC_002: Clicking &quot;Use Current Location&quot; triggers location dialog or action" classname="asap-only/asap-location-advanced.spec.ts" time="11.467">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/asap-only-asap-location-ad-72e38-s-location-dialog-or-action-rider-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/asap-only-asap-location-ad-72e38-s-location-dialog-or-action-rider-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|test-results/asap-only-asap-location-ad-72e38-s-location-dialog-or-action-rider-mobile-chrome/error-context.md]]
+
+[[ATTACHMENT|test-results/asap-only-asap-location-ad-72e38-s-location-dialog-or-action-rider-mobile-chrome/trace.zip]]
+
+[[ATTACHMENT|test-results/asap-only-asap-location-ad-72e38-s-location-dialog-or-action-rider-mobile-chrome-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/asap-only-asap-location-ad-72e38-s-location-dialog-or-action-rider-mobile-chrome-retry1/video.webm]]
+
+[[ATTACHMENT|test-results/asap-only-asap-location-ad-72e38-s-location-dialog-or-action-rider-mobile-chrome-retry1/error-context.md]]
+
+[[ATTACHMENT|test-results/asap-only-asap-location-ad-72e38-s-location-dialog-or-action-rider-mobile-chrome-retry1/trace.zip]]
+]]>
+</system-out>
+<failure message="expect(received).toBe(expected) // Object.is equality" type="expect.toBe">
+<![CDATA[  [rider-mobile-chrome] › asap-only/asap-location-advanced.spec.ts:206:7 › ASAP Only — Use Current Location @asap @ui-only @regression @safe › LOC_002: Clicking "Use Current Location" triggers location dialog or action 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      211 |     const pickupFilled = await selectLocationPage.pickupInput.inputValue();
+      212 |     // At least one of these should happen
+    > 213 |     expect(hasDialog || hasDenied || pickupFilled.length > 0).toBe(true);
+          |                                                               ^
+      214 |   });
+      215 |
+      216 |   test('LOC_003: Location permission dialog shows Allow and Not Now buttons', async ({ selectLocationPage, page, context }) => {
+        at /home/user/Desktop/ai-tms-riderapp-playwright-e2e-tests/tests/on-demand/asap-only/asap-location-advanced.spec.ts:213:63
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../test-results/asap-only-asap-location-ad-72e38-s-location-dialog-or-action-rider-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../test-results/asap-only-asap-location-ad-72e38-s-location-dialog-or-action-rider-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../test-results/asap-only-asap-location-ad-72e38-s-location-dialog-or-action-rider-mobile-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../test-results/asap-only-asap-location-ad-72e38-s-location-dialog-or-action-rider-mobile-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace ../../test-results/asap-only-asap-location-ad-72e38-s-location-dialog-or-action-rider-mobile-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      211 |     const pickupFilled = await selectLocationPage.pickupInput.inputValue();
+      212 |     // At least one of these should happen
+    > 213 |     expect(hasDialog || hasDenied || pickupFilled.length > 0).toBe(true);
+          |                                                               ^
+      214 |   });
+      215 |
+      216 |   test('LOC_003: Location permission dialog shows Allow and Not Now buttons', async ({ selectLocationPage, page, context }) => {
+        at /home/user/Desktop/ai-tms-riderapp-playwright-e2e-tests/tests/on-demand/asap-only/asap-location-advanced.spec.ts:213:63
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../test-results/asap-only-asap-location-ad-72e38-s-location-dialog-or-action-rider-mobile-chrome-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../test-results/asap-only-asap-location-ad-72e38-s-location-dialog-or-action-rider-mobile-chrome-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../test-results/asap-only-asap-location-ad-72e38-s-location-dialog-or-action-rider-mobile-chrome-retry1/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../test-results/asap-only-asap-location-ad-72e38-s-location-dialog-or-action-rider-mobile-chrome-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../../test-results/asap-only-asap-location-ad-72e38-s-location-dialog-or-action-rider-mobile-chrome-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+</testcase>
+<testcase name="ASAP Only — Use Current Location @asap @ui-only @regression @safe › LOC_003: Location permission dialog shows Allow and Not Now buttons" classname="asap-only/asap-location-advanced.spec.ts" time="4.112">
+</testcase>
+<testcase name="ASAP Only — Use Current Location @asap @ui-only @regression @safe › LOC_004: Clicking &quot;Not Now&quot; dismisses the location dialog" classname="asap-only/asap-location-advanced.spec.ts" time="4.673">
+</testcase>
+<testcase name="ASAP Only — Use Current Location @asap @ui-only @regression @safe › LOC_005: Geolocation granted selects nearest stop" classname="asap-only/asap-location-advanced.spec.ts" time="21.278">
+</testcase>
+<testcase name="ASAP Only — Use Current Location @asap @ui-only @regression @safe › LOC_006: Geolocation denied shows denied modal" classname="asap-only/asap-location-advanced.spec.ts" time="4.802">
+</testcase>
+<testcase name="ASAP Only — Use Current Location @asap @ui-only @regression @safe › LOC_007: &quot;Use Current Location&quot; hidden when dropoff input is focused" classname="asap-only/asap-location-advanced.spec.ts" time="6.966">
 </testcase>
 </testsuite>
-<testsuite name="TMSOnboarding/login.spec.ts" timestamp="2026-02-17T11:10:27.828Z" hostname="chromium" tests="32" failures="0" skipped="0" time="178.268" errors="0">
-<testcase name="TrackMyShuttle Login Tests › should display all login page elements @smoke @system" classname="TMSOnboarding/login.spec.ts" time="3.236">
+<testsuite name="asap-only/asap-location.spec.ts" timestamp="2026-04-09T10:34:28.941Z" hostname="rider-mobile-chrome" tests="19" failures="0" skipped="0" time="142.671" errors="0">
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › @smoke @sanity ASAP_001: Date/time picker is NOT rendered" classname="asap-only/asap-location.spec.ts" time="3.598">
 </testcase>
-<testcase name="TrackMyShuttle Login Tests › should handle empty credentials @smoke @regression" classname="TMSOnboarding/login.spec.ts" time="4.39">
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › ASAP_005: Header shows &quot;Select Location&quot; before stops chosen" classname="asap-only/asap-location.spec.ts" time="7.14">
 </testcase>
-<testcase name="TrackMyShuttle Login Tests › should handle invalid email format @regression" classname="TMSOnboarding/login.spec.ts" time="5.604">
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › ASAP_006: Header shows &quot;Confirm Location&quot; after both stops selected" classname="asap-only/asap-location.spec.ts" time="5.508">
 </testcase>
-<testcase name="TrackMyShuttle Login Tests › should toggle password visibility @system" classname="TMSOnboarding/login.spec.ts" time="3.111">
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › @smoke ASAP_002: Button text shows &quot;Confirm Location&quot; (not &quot;Next&quot;)" classname="asap-only/asap-location.spec.ts" time="6.293">
 </testcase>
-<testcase name="TrackMyShuttle Login Tests › should remember me checkbox functionality @system @regression" classname="TMSOnboarding/login.spec.ts" time="3.024">
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › ASAP_003: Button enabled without time selection" classname="asap-only/asap-location.spec.ts" time="13.268">
 </testcase>
-<testcase name="TrackMyShuttle Login Tests › should navigate to activate account page and verify elements @smoke @system" classname="TMSOnboarding/login.spec.ts" time="7.318">
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › @smoke ASAP_004: &quot;Use Current Location&quot; button visible" classname="asap-only/asap-location.spec.ts" time="7.937">
 </testcase>
-<testcase name="TrackMyShuttle Login Tests › should navigate to forgot password page @smoke @system" classname="TMSOnboarding/login.spec.ts" time="4.2">
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › ASAP_007: No getAvailableDates API call" classname="asap-only/asap-location.spec.ts" time="11.439">
 </testcase>
-<testcase name="TrackMyShuttle Login Tests › should display and submit forgot password page" classname="TMSOnboarding/login.spec.ts" time="8.579">
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › ASAP_008: No getAvailableSlots API call" classname="asap-only/asap-location.spec.ts" time="7.243">
 </testcase>
-<testcase name="TrackMyShuttle Login Tests › should display phone number correctly @system" classname="TMSOnboarding/login.spec.ts" time="2.731">
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › Riders dropdown exists in booking flow" classname="asap-only/asap-location.spec.ts" time="8.549">
 </testcase>
-<testcase name="TrackMyShuttle Login Tests › should have correct form action and method @system @regression" classname="TMSOnboarding/login.spec.ts" time="2.536">
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › @smoke Stop list loads with available stops" classname="asap-only/asap-location.spec.ts" time="7.093">
 </testcase>
-<testcase name="TrackMyShuttle Login Tests › should load login page within acceptable time @system" classname="TMSOnboarding/login.spec.ts" time="4.555">
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › @smoke @sanity Pickup stop selection populates input" classname="asap-only/asap-location.spec.ts" time="5.445">
 </testcase>
-<testcase name="TrackMyShuttle Login Tests › should validate cross-page navigation flow @system @integration" classname="TMSOnboarding/login.spec.ts" time="10.828">
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › Dropoff stop selection populates input" classname="asap-only/asap-location.spec.ts" time="8.271">
 </testcase>
-<testcase name="TrackMyShuttle Login Tests › should maintain consistent UI elements across pages @system" classname="TMSOnboarding/login.spec.ts" time="5.215">
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › Cannot select same stop for both" classname="asap-only/asap-location.spec.ts" time="5.717">
 </testcase>
-<testcase name="TrackMyShuttle Login Tests › should login with valid credentials @smoke @system @regression" classname="TMSOnboarding/login.spec.ts" time="13.934">
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › Stop search filters the list" classname="asap-only/asap-location.spec.ts" time="7.016">
 </testcase>
-<testcase name="TrackMyShuttle Login Tests › should login as operator and manager @smoke @system" classname="TMSOnboarding/login.spec.ts" time="13.804">
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › Search with no results shows not-found message" classname="asap-only/asap-location.spec.ts" time="12.42">
 </testcase>
-<testcase name="TrackMyShuttle Login Tests › should handle session timeout and redirect @system @regression" classname="TMSOnboarding/login.spec.ts" time="9.767">
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › Clear pickup input resets selection" classname="asap-only/asap-location.spec.ts" time="9.14">
 </testcase>
-<testcase name="TrackMyShuttle Login Tests › Activate Account Page Tests › should display all activate account page elements @smoke @system" classname="TMSOnboarding/login.spec.ts" time="4.343">
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › &quot;View on map&quot; button is visible" classname="asap-only/asap-location.spec.ts" time="4.509">
 </testcase>
-<testcase name="TrackMyShuttle Login Tests › Activate Account Page Tests › should have correct form attributes @system" classname="TMSOnboarding/login.spec.ts" time="3.955">
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › Back button triggers confirmation dialog" classname="asap-only/asap-location.spec.ts" time="5.092">
 </testcase>
-<testcase name="TrackMyShuttle Login Tests › Activate Account Page Tests › should require terms acceptance to enable activate button @system @regression" classname="TMSOnboarding/login.spec.ts" time="4.284">
-</testcase>
-<testcase name="TrackMyShuttle Login Tests › Activate Account Page Tests › should handle empty form submission @smoke @regression" classname="TMSOnboarding/login.spec.ts" time="4.982">
-</testcase>
-<testcase name="TrackMyShuttle Login Tests › Activate Account Page Tests › should validate email format @regression" classname="TMSOnboarding/login.spec.ts" time="4.819">
-</testcase>
-<testcase name="TrackMyShuttle Login Tests › Activate Account Page Tests › should validate phone number format @regression" classname="TMSOnboarding/login.spec.ts" time="5.073">
-</testcase>
-<testcase name="TrackMyShuttle Login Tests › Activate Account Page Tests › should validate activation code format @regression" classname="TMSOnboarding/login.spec.ts" time="5.761">
-</testcase>
-<testcase name="TrackMyShuttle Login Tests › Activate Account Page Tests › should toggle password visibility @system" classname="TMSOnboarding/login.spec.ts" time="3.787">
-</testcase>
-<testcase name="TrackMyShuttle Login Tests › Activate Account Page Tests › should validate password requirements @regression" classname="TMSOnboarding/login.spec.ts" time="5.214">
-</testcase>
-<testcase name="TrackMyShuttle Login Tests › Activate Account Page Tests › should validate first name field @regression" classname="TMSOnboarding/login.spec.ts" time="4.967">
-</testcase>
-<testcase name="TrackMyShuttle Login Tests › Activate Account Page Tests › should validate last name field @regression" classname="TMSOnboarding/login.spec.ts" time="5.432">
-</testcase>
-<testcase name="TrackMyShuttle Login Tests › Activate Account Page Tests › should handle country code selection @system" classname="TMSOnboarding/login.spec.ts" time="4.067">
-</testcase>
-<testcase name="TrackMyShuttle Login Tests › Activate Account Page Tests › should clear form fields @system" classname="TMSOnboarding/login.spec.ts" time="4.802">
-</testcase>
-<testcase name="TrackMyShuttle Login Tests › Activate Account Page Tests › should navigate back to login page @system" classname="TMSOnboarding/login.spec.ts" time="5.741">
-</testcase>
-<testcase name="TrackMyShuttle Login Tests › Activate Account Page Tests › should verify privacy policy link @system" classname="TMSOnboarding/login.spec.ts" time="4.185">
-</testcase>
-<testcase name="TrackMyShuttle Login Tests › Activate Account Page Tests › should handle maximum character limits @regression" classname="TMSOnboarding/login.spec.ts" time="4.024">
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › Cancel in back dialog keeps user on page" classname="asap-only/asap-location.spec.ts" time="6.993">
 </testcase>
 </testsuite>
-<testsuite name="TMSOnboarding/settings.spec.ts" timestamp="2026-02-17T11:10:27.828Z" hostname="chromium" tests="1" failures="0" skipped="0" time="12.581" errors="0">
-<testcase name="Settings Page Tests › Performance: Settings load time @performance @settings" classname="TMSOnboarding/settings.spec.ts" time="12.581">
+<testsuite name="asap-only/asap-validation.spec.ts" timestamp="2026-04-09T10:34:28.941Z" hostname="rider-mobile-chrome" tests="14" failures="0" skipped="0" time="158.068" errors="0">
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › @smoke @sanity ASAP_019: Empty form submission blocked — validation errors on name and phone" classname="asap-only/asap-validation.spec.ts" time="11.029">
+</testcase>
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › ASAP_020: Name field shows validation error when empty" classname="asap-only/asap-validation.spec.ts" time="14.889">
+</testcase>
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › ASAP_021: Phone field shows error for too-short phone" classname="asap-only/asap-validation.spec.ts" time="10.121">
+</testcase>
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › Phone field accepts valid phone (10-16 digits)" classname="asap-only/asap-validation.spec.ts" time="12.518">
+</testcase>
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › Phone too-long is truncated" classname="asap-only/asap-validation.spec.ts" time="14.513">
+</testcase>
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › ASAP_022: Riders were required and selected" classname="asap-only/asap-validation.spec.ts" time="10.529">
+</testcase>
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › ASAP_023: No time-related validation error" classname="asap-only/asap-validation.spec.ts" time="10.083">
+</testcase>
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › @smoke ASAP_024: XSS sanitized in name" classname="asap-only/asap-validation.spec.ts" time="11.527">
+</testcase>
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › ASAP_025: XSS sanitized in notes" classname="asap-only/asap-validation.spec.ts" time="10.671">
+</testcase>
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › ASAP_026: Scroll to first error on submit" classname="asap-only/asap-validation.spec.ts" time="11.512">
+</testcase>
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › Form recovery — fixing name clears error" classname="asap-only/asap-validation.spec.ts" time="11.936">
+</testcase>
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › Form recovery — fixing phone clears error" classname="asap-only/asap-validation.spec.ts" time="11.259">
+</testcase>
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › Riders already selected — form functional" classname="asap-only/asap-validation.spec.ts" time="8.587">
+</testcase>
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › Notes textarea respects maxLength" classname="asap-only/asap-validation.spec.ts" time="8.894">
 </testcase>
 </testsuite>
 </testsuites>

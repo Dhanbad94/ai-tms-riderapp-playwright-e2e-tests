@@ -1,137 +1,55 @@
 /**
- * Centralized TypeScript types and interfaces for TMS E2E tests
+ * Centralized TypeScript type definitions for TMS E2E tests
  */
 
-import { Page, Locator, APIResponse } from '@playwright/test';
-
 // ============================================================================
-// Environment & Configuration Types
+// Environment Types
 // ============================================================================
 
 export type Environment = 'staging' | 'preproduction' | 'production';
 
-export interface EnvironmentConfig {
-  baseUrl: string;
-  loginEmail: string;
-  loginPassword: string;
-}
-
-export interface EnvironmentConfigs {
-  staging: EnvironmentConfig;
-  preproduction: EnvironmentConfig;
-  production: EnvironmentConfig;
-}
-
 // ============================================================================
-// API Types
+// Rider Web App Types
 // ============================================================================
 
-export interface ApiResponse<T = unknown> {
-  status: number;
-  statusText: string;
-  data: T;
-  headers: Record<string, string>;
+/** On Demand operation mode */
+export type OnDemandMode = 'asapOnly' | 'futureBookingOnly' | 'asapAndFuture' | 'fixedRoute';
+
+/** Stop configuration for an org */
+export interface StopConfig {
+  pickup: string;
+  dropoff: string;
+  searchKeyword: string;
+  altPickup: string;
+  altDropoff: string;
 }
 
-export interface ApiRequestOptions {
-  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-  endpoint: string;
-  body?: Record<string, unknown>;
-  headers?: Record<string, string>;
-  timeout?: number;
+/** Phone configuration for an org */
+export interface PhoneConfig {
+  countryCode: string;
+  number: string;
 }
 
-export interface LoginResponse {
-  success: boolean;
-  token?: string;
-  user?: UserInfo;
-  error?: string;
+/** Complete configuration for a single org/mode combination */
+export interface OrgModeConfig {
+  trackingId: string;
+  enabled: boolean;
+  stops: StopConfig;
+  phone: PhoneConfig;
+  maxRiders: number;
 }
 
-export interface UserInfo {
-  id: string;
-  email: string;
-  name: string;
-  role: UserRole;
-  organizationId?: string;
+/** URL set for rider web app per environment */
+export interface RiderUrls {
+  base: string;
+  ride: string;
+  api: string;
 }
 
-export type UserRole = 'admin' | 'manager' | 'operator' | 'viewer';
-
-// ============================================================================
-// Test Data Types
-// ============================================================================
-
-export interface TestUser {
-  email: string;
-  password: string;
-  role: UserRole;
-  name?: string;
-}
-
-export interface TestCredentials {
-  manager: TestUser;
-  operator: TestUser;
-  admin?: TestUser;
-}
-
-// ============================================================================
-// Page Object Types
-// ============================================================================
-
-export interface PageObject {
-  readonly page: Page;
-  goto(): Promise<void>;
-  waitForPageLoad(): Promise<void>;
-}
-
-export interface FormField {
-  locator: Locator;
-  name: string;
-  required?: boolean;
-}
-
-export interface ValidationResult {
-  isValid: boolean;
-  errors: string[];
-}
-
-// ============================================================================
-// Test Result Types (for custom reporters)
-// ============================================================================
-
-export interface TestResult {
-  testName: string;
-  status: 'passed' | 'failed' | 'skipped' | 'timedOut';
-  duration: number;
-  error?: string;
-  retries: number;
-}
-
-export interface TestSuiteResult {
-  suiteName: string;
-  tests: TestResult[];
-  totalPassed: number;
-  totalFailed: number;
-  totalSkipped: number;
-  duration: number;
-}
-
-// ============================================================================
-// Utility Types
-// ============================================================================
-
-export type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
-};
-
-export type Awaited<T> = T extends Promise<infer U> ? U : T;
-
-// Selector strategy type
-export type SelectorStrategy = 'role' | 'testId' | 'text' | 'css' | 'xpath';
-
-export interface LocatorConfig {
-  strategy: SelectorStrategy;
-  value: string;
-  fallbacks?: string[];
+/** Full rider environment configuration */
+export interface RiderEnvironmentConfig {
+  name: Environment;
+  urls: RiderUrls;
+  canCreateRides: boolean;
+  orgs: Record<OnDemandMode, OrgModeConfig>;
 }

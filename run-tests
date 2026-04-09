@@ -5,17 +5,54 @@ set -e
 ENV="staging"
 FILE_FILTER=""
 BROWSERS=()
+TAG_FILTER=""
 RUN_ALL=false
+EXTRA_ARGS=""
 
 show_help() {
-  echo "Usage: $0 -e <env> -f <file-filter> [--bc] [--bf] [--bs] [-u]"
-  echo "  -e, --env           Environment: staging, preproduction, prod, production"
-  echo "  -f, --file          Feature/file filter (e.g., login, dashboard)"
-  echo "  --bc                Include Chromium"
-  echo "  --bf                Include Firefox"
-  echo "  --bs                Include Webkit"
-  echo "  -u, --update-all    Execute all test cases (equivalent to: all -e dev --bc)"
+  echo ""
+  echo "Usage: $0 -e <env> -f <feature> [--bc] [--bf] [--bs] [options]"
+  echo ""
+  echo "Environment:"
+  echo "  -e, --env           Environment: staging, preproduction, production"
+  echo ""
+  echo "Feature filter:"
+  echo "  -f, --file          Feature or file filter. Examples:"
+  echo "                        -f asap            → all ASAP tests"
+  echo "                        -f asap-location   → asap-location.spec.ts"
+  echo "                        -f asap-form       → asap-form.spec.ts"
+  echo "                        -f future          → all Future Booking tests"
+  echo "                        -f e2e             → all E2E tests"
+  echo ""
+  echo "Browser/Device:"
+  echo "  --bc                Desktop Chrome (default if none specified)"
+  echo "  --bm                Mobile Chrome (Pixel 7)"
+  echo "  --bs                Mobile Safari (iPhone 14)"
+  echo "  --ba                All devices (desktop + mobile chrome + mobile safari)"
+  echo ""
+  echo "Tags:"
+  echo "  --tag <tag>         Filter by test tag. Examples:"
+  echo "                        --tag @smoke"
+  echo "                        --tag @ui-only"
+  echo "                        --tag @creates-ride"
+  echo "                        --tag @payload"
+  echo "                        --tag @asap"
+  echo ""
+  echo "Other options:"
+  echo "  --headed            Run in headed mode (visible browser)"
+  echo "  --debug             Run in debug mode (Playwright Inspector)"
+  echo "  --workers <n>       Number of parallel workers"
+  echo "  --retry <n>         Number of retries on failure"
+  echo "  -u, --update-all    Run all tests (staging, chromium)"
   echo "  -h, --help          Show this help message"
+  echo ""
+  echo "Examples:"
+  echo "  ./run-tests -e staging -f asap --bc"
+  echo "  ./run-tests -e staging -f asap-location --bc"
+  echo "  ./run-tests -e preproduction -f asap --bc"
+  echo "  ./run-tests -e staging --tag @ui-only --bc"
+  echo "  ./run-tests -e staging -f asap --headed --workers 1"
+  echo ""
 }
 
 while [[ $# -gt 0 ]]; do
@@ -31,27 +68,48 @@ while [[ $# -gt 0 ]]; do
       shift; shift
       ;;
     --bc)
-      BROWSERS+=("chromium")
+      BROWSERS+=("rider-chromium")
       shift
       ;;
-    --bf)
-      BROWSERS+=("firefox")
+    --bm)
+      BROWSERS+=("rider-mobile-chrome")
       shift
       ;;
     --bs)
-      BROWSERS+=("webkit")
+      BROWSERS+=("rider-mobile-safari")
       shift
+      ;;
+    --ba)
+      BROWSERS+=("rider-chromium" "rider-mobile-chrome" "rider-mobile-safari")
+      shift
+      ;;
+    --tag)
+      TAG_FILTER="$2"
+      shift; shift
+      ;;
+    --headed)
+      EXTRA_ARGS+=" --headed"
+      shift
+      ;;
+    --debug)
+      EXTRA_ARGS+=" --debug"
+      shift
+      ;;
+    --workers)
+      EXTRA_ARGS+=" --workers $2"
+      shift; shift
+      ;;
+    --retry)
+      EXTRA_ARGS+=" --retries $2"
+      shift; shift
       ;;
     -u|--update-all)
       RUN_ALL=true
-      # Only set ENV to dev if not already specified via -e
-      if [[ "$ENV" == "staging" && -z "$ENV_SET_EXPLICITLY" ]]; then
-        ENV="dev"
+      if [[ -z "$ENV_SET_EXPLICITLY" ]]; then
+        ENV="staging"
       fi
-      BROWSERS=("chromium")
       FILE_FILTER=""
       shift
-      # Skip optional 'all' argument if provided
       if [[ $# -gt 0 && "$1" == "all" ]]; then
         shift
       fi
@@ -68,55 +126,81 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Handle environment mapping
-if [[ "$ENV" == "staging" ]]; then
-  BASE_URL="https://staging.trackmyshuttle.com/"
-elif [[ "$ENV" == "preproduction" ]]; then
-  BASE_URL="https://preproduction.trackmyshuttle.com/"
-elif [[ "$ENV" == "prod" || "$ENV" == "production" ]]; then
-  BASE_URL="https://trackmyshuttle.com/"
-elif [[ "$ENV" == "dev" ]]; then
-  # Add dev environment URL - adjust as needed
-  BASE_URL="https://dev.trackmyshuttle.com/"
-else
-  echo "Unknown environment: $ENV"
-  exit 1
+# Default browser to rider-chromium if none specified
+if [[ ${#BROWSERS[@]} -eq 0 ]]; then
+  BROWSERS=("rider-chromium")
 fi
 
-# If no browser flags are provided and not using -u, default to all
-if [[ ${#BROWSERS[@]} -eq 0 && "$RUN_ALL" == false ]]; then
-  BROWSERS=("chromium" "firefox" "webkit")
-fi
+# Build the command
+CMD="ENV=\"$ENV\" npx playwright test"
 
-CMD="BASE_URL=\"$BASE_URL\" ENV=\"$ENV\" npx playwright test"
-
+# Add project flags
 for b in "${BROWSERS[@]}"; do
   CMD+=" --project=$b"
 done
 
-if [[ -n "$FILE_FILTER" ]]; then
-  # Check if FILE_FILTER matches a folder name in tests/ (case-insensitive)
-  MATCHED_FOLDER=""
-  for folder in tests/*/; do
-    folder_name=$(basename "$folder")
-    if [[ "${folder_name,,}" == "${FILE_FILTER,,}" ]]; then
-      MATCHED_FOLDER="$folder_name"
-      break
-    fi
-  done
-
-  if [[ -n "$MATCHED_FOLDER" ]]; then
-    # Run all tests in the matched folder
-    CMD+=" tests/$MATCHED_FOLDER/"
-  else
-    # Fallback to file pattern matching
-    CMD+=" tests/**/*$FILE_FILTER*.spec.ts"
-  fi
+# Add tag filter
+if [[ -n "$TAG_FILTER" ]]; then
+  CMD+=" --grep \"$TAG_FILTER\""
 fi
+
+# Add feature/file filter
+if [[ -n "$FILE_FILTER" ]]; then
+  # Map shorthand names to paths
+  case "${FILE_FILTER,,}" in
+    asap)
+      CMD+=" tests/on-demand/asap-only/"
+      ;;
+    future|future-booking)
+      CMD+=" tests/on-demand/future-booking-only/"
+      ;;
+    both|asap-and-future)
+      CMD+=" tests/on-demand/asap-and-future/"
+      ;;
+    fr|fixed-route)
+      CMD+=" tests/on-demand/fixed-route/"
+      ;;
+    *)
+      # Check if it matches a folder in tests/on-demand/
+      MATCHED=""
+      for folder in tests/on-demand/*/; do
+        folder_name=$(basename "$folder")
+        if [[ "${folder_name,,}" == *"${FILE_FILTER,,}"* ]]; then
+          MATCHED="$folder"
+          break
+        fi
+      done
+
+      if [[ -n "$MATCHED" ]]; then
+        CMD+=" $MATCHED"
+      else
+        # Fallback: find matching spec files
+        SPEC_FILES=$(find tests -name "*${FILE_FILTER}*.spec.ts" 2>/dev/null)
+        if [[ -n "$SPEC_FILES" ]]; then
+          CMD+=" $SPEC_FILES"
+        else
+          echo "No test files matching '$FILE_FILTER' found"
+          exit 1
+        fi
+      fi
+      ;;
+  esac
+fi
+
+# Add extra args
+CMD+="$EXTRA_ARGS"
 
 if [[ "$RUN_ALL" == true ]]; then
-  echo "Running all test cases with: -u all -e dev --bc"
+  echo "Running all rider tests on $ENV"
 fi
 
-echo "Running: $CMD"
+echo ""
+echo "Environment: $ENV"
+echo "Browsers:    ${BROWSERS[*]}"
+[[ -n "$FILE_FILTER" ]] && echo "Feature:     $FILE_FILTER"
+[[ -n "$TAG_FILTER" ]] && echo "Tag:         $TAG_FILTER"
+echo ""
+echo "Command: $CMD"
+echo ""
+
 eval $CMD
