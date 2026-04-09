@@ -1,3 +1,5 @@
+# ai-tms-riderapp-playwright-e2e-tests
+This is end to end riderapp automated tests repo.
 # TMS Rider Web App — E2E Tests
 
 Playwright + TypeScript end-to-end tests for the TrackMyShuttle Rider Web Application.
