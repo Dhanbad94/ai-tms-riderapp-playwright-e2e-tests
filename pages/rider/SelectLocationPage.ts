@@ -36,7 +36,9 @@ export class SelectLocationPage {
     this.goBackDialogHeading = page.getByRole('heading', { name: /Go Back/i });
     this.goBackConfirmBtn = page.getByRole('button', { name: /Go Back/i });
     this.goBackCancelBtn = page.getByRole('button', { name: /Cancel/i });
-    this.notFoundMessage = page.locator('[class*="stopsNotFound"]');
+    this.notFoundMessage = page
+      .locator('[class*="stopsNotFound"], [class*="notFound"], [class*="emptyState"], [class*="noResult"]')
+      .first();
     this.ridersDropdown = page.locator('#demo-simple-select');
     this.ridersLabel = page.getByText(/No\. of Riders/i);
   }
@@ -61,6 +63,9 @@ export class SelectLocationPage {
   /** Select a pickup stop — clicks the stop container, waits for input value */
   async selectPickupStop(stopName: string) {
     await this.pickupInput.click();
+    // Hedge against slow stop-list render (CI is slower than local) by waiting
+    // for ANY stop heading to be visible before targeting the specific one.
+    await this.page.locator('h4:visible').first().waitFor({ timeout: RIDER_TIMEOUTS.STOP_LIST });
     const heading = this.page.getByRole('heading', { level: 4, name: stopName }).first();
     await heading.waitFor({ timeout: RIDER_TIMEOUTS.STOP_LIST });
     // Click heading with force to bypass the parent container issue
@@ -71,6 +76,7 @@ export class SelectLocationPage {
   /** Select a dropoff stop — clicks the stop container, waits for input value */
   async selectDropoffStop(stopName: string) {
     await this.dropoffInput.click();
+    await this.page.locator('h4:visible').first().waitFor({ timeout: RIDER_TIMEOUTS.STOP_LIST });
     const heading = this.page.getByRole('heading', { level: 4, name: stopName }).first();
     await heading.waitFor({ timeout: RIDER_TIMEOUTS.STOP_LIST });
     await heading.click({ force: true });

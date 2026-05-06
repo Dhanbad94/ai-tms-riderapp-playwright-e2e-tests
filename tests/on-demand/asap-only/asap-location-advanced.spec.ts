@@ -203,13 +203,21 @@ test.describe(`ASAP Only — Use Current Location ${RIDER_TAGS.ASAP} ${RIDER_TAG
     await expect(selectLocationPage.useCurrentLocationBtn).toBeVisible();
   });
 
-  test('LOC_002: Clicking "Use Current Location" triggers location dialog or action', async ({ selectLocationPage, page }) => {
+  test('LOC_002: Clicking "Use Current Location" triggers location dialog or action', async ({ selectLocationPage, page, context }) => {
+    // Grant geolocation deterministically — without this, Chromium silently denies
+    // and the app surfaces no visible UI, making the assertion non-deterministic.
+    await context.grantPermissions(['geolocation']);
+    await context.setGeolocation({ latitude: 41.9742, longitude: -87.9073 });
     await selectLocationPage.clickUseCurrentLocation();
-    // Should either show a permission dialog or attempt geolocation
+    // The app should either show a permission dialog, the denied modal, or fill pickup.
     const hasDialog = await selectLocationPage.isLocationPermissionDialogVisible();
     const hasDenied = await selectLocationPage.isLocationDeniedModalVisible();
+    if (hasDialog) {
+      await selectLocationPage.allowLocationPermission();
+    }
+    // Wait briefly for the pickup input to populate from geolocation processing.
+    await expect(selectLocationPage.pickupInput).not.toHaveValue('', { timeout: 15_000 }).catch(() => {});
     const pickupFilled = await selectLocationPage.pickupInput.inputValue();
-    // At least one of these should happen
     expect(hasDialog || hasDenied || pickupFilled.length > 0).toBe(true);
   });
 
