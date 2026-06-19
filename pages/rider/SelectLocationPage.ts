@@ -36,9 +36,7 @@ export class SelectLocationPage {
     this.goBackDialogHeading = page.getByRole('heading', { name: /Go Back/i });
     this.goBackConfirmBtn = page.getByRole('button', { name: /Go Back/i });
     this.goBackCancelBtn = page.getByRole('button', { name: /Cancel/i });
-    this.notFoundMessage = page
-      .locator('[class*="stopsNotFound"], [class*="notFound"], [class*="emptyState"], [class*="noResult"]')
-      .first();
+    this.notFoundMessage = page.getByText(/not found in the defined service area/i);
     this.ridersDropdown = page.locator('#demo-simple-select');
     this.ridersLabel = page.getByText(/No\. of Riders/i);
   }
@@ -60,27 +58,53 @@ export class SelectLocationPage {
     return (await this.confirmButton.textContent()) ?? '';
   }
 
-  /** Select a pickup stop — clicks the stop container, waits for input value */
-  async selectPickupStop(stopName: string) {
-    await this.pickupInput.click();
-    // Hedge against slow stop-list render (CI is slower than local) by waiting
-    // for ANY stop heading to be visible before targeting the specific one.
-    await this.page.locator('h4:visible').first().waitFor({ timeout: RIDER_TIMEOUTS.STOP_LIST });
+  /**
+   * Open a stop-list panel and select a stop by name.
+   *
+   * Resilient against the stop-list render race: clicking the input occasionally
+   * lands before the list is wired up (or the list re-renders and detaches the
+   * heading node). We retry opening the panel a few times, and re-query the
+   * specific heading immediately before clicking to avoid stale-node detach.
+   */
+  private async openStopListAndSelect(input: Locator, stopName: string) {
+    const visibleHeadings = this.page.locator('h4:visible');
+
+    // Retry opening the panel: click input, then poll for ANY stop heading.
+    const MAX_OPEN_ATTEMPTS = 3;
+    let opened = false;
+    for (let attempt = 0; attempt < MAX_OPEN_ATTEMPTS; attempt++) {
+      await input.click();
+      try {
+        await expect
+          .poll(async () => visibleHeadings.count(), { timeout: RIDER_TIMEOUTS.STOP_LIST })
+          .toBeGreaterThan(0);
+        opened = true;
+        break;
+      } catch {
+        // Panel didn't open this attempt — loop and re-click.
+      }
+    }
+    if (!opened) {
+      throw new Error(`Stop list never rendered after ${MAX_OPEN_ATTEMPTS} attempts for "${stopName}"`);
+    }
+
+    // Re-query the heading right before clicking to avoid acting on a stale node
+    // from a list re-render.
     const heading = this.page.getByRole('heading', { level: 4, name: stopName }).first();
     await heading.waitFor({ timeout: RIDER_TIMEOUTS.STOP_LIST });
-    // Click heading with force to bypass the parent container issue
+    // Click heading with force to bypass the parent container issue.
     await heading.click({ force: true });
-    await expect(this.pickupInput).not.toHaveValue('', { timeout: RIDER_TIMEOUTS.STOP_LIST });
+    await expect(input).not.toHaveValue('', { timeout: RIDER_TIMEOUTS.STOP_LIST });
+  }
+
+  /** Select a pickup stop — clicks the stop container, waits for input value */
+  async selectPickupStop(stopName: string) {
+    await this.openStopListAndSelect(this.pickupInput, stopName);
   }
 
   /** Select a dropoff stop — clicks the stop container, waits for input value */
   async selectDropoffStop(stopName: string) {
-    await this.dropoffInput.click();
-    await this.page.locator('h4:visible').first().waitFor({ timeout: RIDER_TIMEOUTS.STOP_LIST });
-    const heading = this.page.getByRole('heading', { level: 4, name: stopName }).first();
-    await heading.waitFor({ timeout: RIDER_TIMEOUTS.STOP_LIST });
-    await heading.click({ force: true });
-    await expect(this.dropoffInput).not.toHaveValue('', { timeout: RIDER_TIMEOUTS.STOP_LIST });
+    await this.openStopListAndSelect(this.dropoffInput, stopName);
   }
 
   async selectBothStops(pickupName: string, dropoffName: string) {

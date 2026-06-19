@@ -44,9 +44,9 @@ const PLACEHOLDER_ORG: OrgModeConfig = {
 const STAGING: RiderEnvironmentConfig = {
   name: 'staging',
   urls: {
-    base: 'https://staging.trackmyshuttle.com',
-    ride: 'https://ride-stag.trackmyshuttle.com',
-    api: 'https://riderapp-stag.trackmyshuttle.com',
+    base: 'https://php-staging.trackmyshuttle.com',
+    ride: 'https://rider-staging.trackmyshuttle.com',
+    api: 'https://riderapi-staging.trackmyshuttle.com',
   },
   canCreateRides: true,
   orgs: {

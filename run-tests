@@ -68,7 +68,8 @@ while [[ $# -gt 0 ]]; do
       shift; shift
       ;;
     --bc)
-      BROWSERS+=("rider-chromium")
+      # Desktop Chrome = parallel UI specs + serialized ride-creating specs
+      BROWSERS+=("rider-chromium" "rider-creates-ride")
       shift
       ;;
     --bm)
@@ -80,7 +81,7 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     --ba)
-      BROWSERS+=("rider-chromium" "rider-mobile-chrome" "rider-mobile-safari")
+      BROWSERS+=("rider-chromium" "rider-creates-ride" "rider-mobile-chrome" "rider-mobile-safari")
       shift
       ;;
     --tag)
@@ -126,9 +127,9 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Default browser to rider-chromium if none specified
+# Default browser to Desktop Chrome (both projects) if none specified
 if [[ ${#BROWSERS[@]} -eq 0 ]]; then
-  BROWSERS=("rider-chromium")
+  BROWSERS=("rider-chromium" "rider-creates-ride")
 fi
 
 # Build the command

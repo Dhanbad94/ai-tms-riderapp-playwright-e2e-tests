@@ -40,6 +40,11 @@ test.describe(`ASAP Only — Cancel Ride ${RIDER_TAGS.ASAP} ${RIDER_TAGS.CREATES
     test.skip(!canCreateRides(), 'Ride creation disabled on this environment');
   });
 
+  // Throttle between tests so successive ride submissions don't trip staging's rate limiter.
+  test.afterEach(async ({ page }) => {
+    await page.waitForTimeout(RIDER_TIMEOUTS.RIDE_COOLDOWN);
+  });
+
   // ── A. Cancel Button Visibility ──────────────────────────────────────
 
   test('CANCEL_001: Cancel Ride link visible when ride active', async ({ page }) => {
@@ -60,7 +65,7 @@ test.describe(`ASAP Only — Cancel Ride ${RIDER_TAGS.ASAP} ${RIDER_TAGS.CREATES
 
   // ── B. Cancel Dialog UI ──────────────────────────────────────────────
 
-  test('@smoke CANCEL_004: Cancel dialog opens with heading', async ({ page, cancellationDialog }) => {
+  test('CANCEL_004: Cancel dialog opens with heading', async ({ page, cancellationDialog }) => {
     await submitAndOpenCancelDialog(page);
     await expect(cancellationDialog.heading).toBeVisible();
   });
@@ -129,7 +134,7 @@ test.describe(`ASAP Only — Cancel Ride ${RIDER_TAGS.ASAP} ${RIDER_TAGS.CREATES
     expect(await cancellationDialog.isCancelButtonDisabled()).toBe(false);
   });
 
-  test('@smoke @sanity CANCEL_014: Cancel with "Change in travel plans" succeeds', async ({ page, cancellationDialog }) => {
+  test('@sanity CANCEL_014: Cancel with "Change in travel plans" succeeds', async ({ page, cancellationDialog }) => {
     await submitAndOpenCancelDialog(page);
     await cancellationDialog.cancelWithReason('Change in travel plans');
     await expect(page.getByText("Ride Canceled Successfully!")).toBeVisible({ timeout: 15_000 });
@@ -213,7 +218,7 @@ test.describe(`ASAP Only — Cancel Ride ${RIDER_TAGS.ASAP} ${RIDER_TAGS.CREATES
 
   // ── F. Post-Cancel Screen ────────────────────────────────────────────
 
-  test('@smoke CANCEL_023: "Ride Canceled Successfully!" banner shown', async ({ page, cancellationDialog }) => {
+  test('CANCEL_023: "Ride Canceled Successfully!" banner shown', async ({ page, cancellationDialog }) => {
     await submitAndOpenCancelDialog(page);
     await cancellationDialog.cancelWithReason('Change in travel plans');
     await expect(page.getByText("Ride Canceled Successfully!")).toBeVisible({ timeout: 15_000 });

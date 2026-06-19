@@ -35,7 +35,9 @@ export class GuestFormSection {
     this.nameInput = page.getByPlaceholder('Name *');
     this.phoneInput = page.getByPlaceholder('Phone number *');
     this.ridersDropdown = page.locator('#demo-simple-select');
-    this.specialAssistanceCheckbox = page.getByText('Special Assistance');
+    // Target the assistance icon (alt is hardcoded in the app source) instead of
+    // the label text, which is org-configurable via futureOthers.ada.name.
+    this.specialAssistanceCheckbox = page.locator('img[alt="Assistance"]');
     this.notesTextarea = page.getByRole('textbox').last();
     this.flightInput = page.getByPlaceholder(/flight/i);
     this.roomInput = page.getByPlaceholder(/room/i);
@@ -112,6 +114,40 @@ export class GuestFormSection {
 
   async submitForm() {
     await this.requestRideButton.click();
+  }
+
+  /**
+   * Submit the ride form and wait for the tracking page (/j/{code}/s).
+   *
+   * Hardens the silent-hang failure mode: instead of clicking once and blindly
+   * waiting up to RIDE_SUBMIT for a navigation that may never come (dropped click
+   * during a re-render, or a rate-limited/failed POST), we:
+   *   1. assert the button is enabled + stable before the single click (no double-submit),
+   *   2. race the navigation against a visible error toast so a failed submit
+   *      surfaces a clear error fast instead of timing out blindly.
+   */
+  async submitAndAwaitTracking(timeout: number = RIDER_TIMEOUTS.RIDE_SUBMIT) {
+    await expect(this.requestRideButton).toBeEnabled({ timeout: RIDER_TIMEOUTS.FORM_LOAD });
+    await this.requestRideButton.scrollIntoViewIfNeeded();
+    // Single click only — never re-click once a POST may be in flight.
+    await this.requestRideButton.click();
+
+    const navigated = this.page
+      .waitForURL(/\/j\/.*\/s/, { timeout })
+      .then(() => 'navigated' as const);
+    const errorToast = this.page.locator('.Toastify__toast--error').first();
+    const errored = errorToast
+      .waitFor({ state: 'visible', timeout })
+      .then(() => 'error' as const)
+      .catch(() => 'no-error' as const);
+
+    const outcome = await Promise.race([navigated, errored]);
+    if (outcome === 'error') {
+      const msg = (await errorToast.textContent().catch(() => ''))?.trim();
+      throw new Error(`Ride submission failed — error toast shown: "${msg}"`);
+    }
+    // Ensure the navigation actually completed (outcome may be 'navigated' already).
+    await navigated;
   }
 
   async clickBack() {

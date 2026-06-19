@@ -60,8 +60,10 @@ export const RIDER_TIMEOUTS = {
   STOP_LIST: 10_000,
   /** Wait for form to appear after confirm */
   FORM_LOAD: 15_000,
-  /** Wait for page redirect after ride submission */
-  RIDE_SUBMIT: 30_000,
+  /** Wait for page redirect after ride submission. Bumped 30→60s for CI staging latency. */
+  RIDE_SUBMIT: 60_000,
+  /** Cooldown after creating a ride to respect staging rate limits. */
+  RIDE_COOLDOWN: 3_000,
   /** Wait for confirmation page elements */
   CONFIRMATION: 15_000,
   /** MUI dropdown animation */
