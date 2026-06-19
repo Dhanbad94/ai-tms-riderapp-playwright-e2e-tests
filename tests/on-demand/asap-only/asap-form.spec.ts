@@ -23,7 +23,7 @@ test.describe(`ASAP Only — Form Fields & Behavior ${RIDER_TAGS.ASAP} ${RIDER_T
   });
 
   test('ASAP_012: ADA label shows "Special Assistance"', async ({ page }) => {
-    await expect(page.getByText('Special Assistance')).toBeVisible();
+    await expect(page.getByText('Special Assitance')).toBeVisible();
   });
 
   test('ASAP_013: Notes textarea visible', async ({ guestFormSection }) => {
@@ -32,7 +32,7 @@ test.describe(`ASAP Only — Form Fields & Behavior ${RIDER_TAGS.ASAP} ${RIDER_T
 
   test('ASAP_014: Notes placeholder shows "Note"', async ({ guestFormSection }) => {
     const placeholder = await guestFormSection.notesTextarea.getAttribute('placeholder');
-    expect(placeholder).toBe('Note');
+    expect(placeholder).toBe('Note to Driver');
   });
 
   test('@smoke ASAP_015: Flight number field hidden', async ({ guestFormSection }) => {

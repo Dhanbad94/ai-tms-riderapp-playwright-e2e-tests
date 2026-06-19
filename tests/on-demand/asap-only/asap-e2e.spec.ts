@@ -11,7 +11,12 @@ test.describe(`ASAP Only — End-to-End Flows ${RIDER_TAGS.ASAP} ${RIDER_TAGS.CR
     test.skip(!canCreateRides(), 'Ride creation disabled on this environment');
   });
 
-  test('@smoke @sanity ASAP_047: Full happy path — Location → Form → Submit → Confirmation', async ({ page, selectLocationPage, guestFormSection }) => {
+  // Throttle between tests so successive ride submissions don't trip staging's rate limiter.
+  test.afterEach(async ({ page }) => {
+    await page.waitForTimeout(RIDER_TIMEOUTS.RIDE_COOLDOWN);
+  });
+
+  test('@sanity ASAP_047: Full happy path — Location → Form → Submit → Confirmation', async ({ page, selectLocationPage, guestFormSection }) => {
     await selectLocationPage.goto(org.trackingId);
     await selectLocationPage.verifyDateTimePickerAbsent();
     await selectLocationPage.selectBothStops(stops.pickup, stops.dropoff);

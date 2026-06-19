@@ -20,9 +20,7 @@ async function submitCancelAndOpenFeedback(page: import('@playwright/test').Page
   await lp.clickConfirm();
   await gf.waitForFormVisible();
   await gf.fillRequiredFields();
-  await gf.requestRideButton.scrollIntoViewIfNeeded();
-  await gf.submitForm();
-  await page.waitForURL(/\/j\/.*\/s/, { timeout: RIDER_TIMEOUTS.RIDE_SUBMIT });
+  await gf.submitAndAwaitTracking();
   const closeBtn = page.locator('[aria-label="Close"], button:has-text("×")').first();
   if (await closeBtn.isVisible({ timeout: 2_000 }).catch(() => false)) await closeBtn.click();
   await page.getByRole("heading").first().waitFor({ state: "visible", timeout: 15_000 });
@@ -40,9 +38,14 @@ test.describe(`ASAP Only — Feedback After Cancel ${RIDER_TAGS.ASAP} ${RIDER_TA
     test.skip(!canCreateRides(), 'Ride creation disabled on this environment');
   });
 
+  // Throttle between tests so successive ride submissions don't trip staging's rate limiter.
+  test.afterEach(async ({ page }) => {
+    await page.waitForTimeout(RIDER_TIMEOUTS.RIDE_COOLDOWN);
+  });
+
   // ── H. Feedback Modal UI ─────────────────────────────────────────────
 
-  test('@smoke FB_001: Feedback modal opens with heading', async ({ page }) => {
+  test('FB_001: Feedback modal opens with heading', async ({ page }) => {
     await submitCancelAndOpenFeedback(page);
     await expect(page.getByText('How Was Your Experience?')).toBeVisible();
   });
@@ -122,7 +125,7 @@ test.describe(`ASAP Only — Feedback After Cancel ${RIDER_TAGS.ASAP} ${RIDER_TA
     await feedbackModal.verifyThankYouScreen();
   });
 
-  test('@smoke @sanity FB_012: Submit with Happy rating + text succeeds', async ({ page, feedbackModal }) => {
+  test('@sanity FB_012: Submit with Happy rating + text succeeds', async ({ page, feedbackModal }) => {
     await submitCancelAndOpenFeedback(page);
     await feedbackModal.submitWithRating('happy', 'Great service!');
     await feedbackModal.verifyThankYouScreen();

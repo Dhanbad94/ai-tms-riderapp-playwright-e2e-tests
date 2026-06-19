@@ -85,8 +85,12 @@ jobs:
           ENV: ${{ steps.config.outputs.env }}
         run: |
           TYPE="${{ steps.config.outputs.type }}"
+          # Regression and "all" runs include @creates-ride tests which submit real rides.
+          # Run them serially (workers=1) so concurrent submissions don't trip staging's rate limiter.
           if [ "$TYPE" == "all" ]; then
-            ./run-tests -e $ENV -u all --bc
+            ./run-tests -e $ENV -u all --bc --workers 1
+          elif [ "$TYPE" == "regression" ]; then
+            ./run-tests -e $ENV --tag @${TYPE} --bc --workers 1
           else
             ./run-tests -e $ENV --tag @${TYPE} --bc
           fi

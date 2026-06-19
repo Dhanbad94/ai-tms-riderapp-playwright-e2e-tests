@@ -16,9 +16,7 @@ async function submitRideAndGetCode(page: import('@playwright/test').Page): Prom
   await lp.clickConfirm();
   await gf.waitForFormVisible();
   await gf.fillRequiredFields();
-  await gf.requestRideButton.scrollIntoViewIfNeeded();
-  await gf.submitForm();
-  await page.waitForURL(/\/j\/.*\/s/, { timeout: RIDER_TIMEOUTS.RIDE_SUBMIT });
+  await gf.submitAndAwaitTracking();
   // Dismiss any dev error overlay
   const closeBtn = page.locator('[aria-label="Close"], button:has-text("×")').first();
   if (await closeBtn.isVisible({ timeout: 2_000 }).catch(() => false)) await closeBtn.click();
@@ -33,7 +31,12 @@ test.describe(`ASAP Only — Confirmation Page ${RIDER_TAGS.ASAP} ${RIDER_TAGS.C
     test.skip(!canCreateRides(), 'Ride creation disabled on this environment');
   });
 
-  test('@smoke @sanity ASAP_032: Shows status text, not TrackingCard', async ({ page }) => {
+  // Throttle between tests so successive ride submissions don't trip staging's rate limiter.
+  test.afterEach(async ({ page }) => {
+    await page.waitForTimeout(RIDER_TIMEOUTS.RIDE_COOLDOWN);
+  });
+
+  test('@sanity ASAP_032: Shows status text, not TrackingCard', async ({ page }) => {
     await submitRideAndGetCode(page);
     const status = page.getByText(/Request Submitted|Finding Driver|Driver Assigned/i);
     await expect(status.first()).toBeVisible({ timeout: RIDER_TIMEOUTS.CONFIRMATION });
@@ -51,7 +54,7 @@ test.describe(`ASAP Only — Confirmation Page ${RIDER_TAGS.ASAP} ${RIDER_TAGS.C
     expect(dropoffVisible).toBe(false);
   });
 
-  test('@smoke ASAP_034: Shows ride status message', async ({ page }) => {
+  test('ASAP_034: Shows ride status message', async ({ page }) => {
     await submitRideAndGetCode(page);
     const status = page.getByText(/Request Submitted|Finding Driver|Driver Assigned|Driver on the way/i);
     await expect(status.first()).toBeVisible({ timeout: RIDER_TIMEOUTS.CONFIRMATION });

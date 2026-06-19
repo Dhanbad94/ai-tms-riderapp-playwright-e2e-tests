@@ -23,6 +23,14 @@ import { getRiderConfig } from "./utils/rider-config";
 const isCI = !!process.env.CI;
 const riderConfig = getRiderConfig();
 
+/**
+ * Specs that submit REAL rides against the shared staging org. These share a
+ * single rate-limited resource, so they must NOT run concurrently — they get a
+ * dedicated project pinned to workers:1 and are excluded from the parallel
+ * Desktop Chrome project to avoid tripping staging's rate limiter.
+ */
+const CREATES_RIDE_FILES = /asap-(confirmation|feedback|cancellation|e2e)\.spec\.ts$/;
+
 export default defineConfig({
   testDir: "./tests/on-demand",
 
@@ -58,9 +66,21 @@ export default defineConfig({
   },
 
   projects: [
-    // Desktop Chrome
+    // Desktop Chrome — UI-only / safe specs, fully parallel.
+    // Ride-creating specs are excluded here and handled by rider-creates-ride.
     {
       name: "rider-chromium",
+      testIgnore: CREATES_RIDE_FILES,
+      use: { ...devices["Desktop Chrome"] },
+    },
+
+    // Desktop Chrome — ride-creating specs only, serialized to one worker so
+    // concurrent submissions don't trip staging's rate limiter.
+    {
+      name: "rider-creates-ride",
+      testMatch: CREATES_RIDE_FILES,
+      fullyParallel: false,
+      workers: 1,
       use: { ...devices["Desktop Chrome"] },
     },
 

@@ -1,6 +1,6 @@
 import { test, expect } from '../../../fixtures/test-fixtures';
 import { getOrgConfig, getRiderConfig } from '../../../utils/rider-config';
-import { RIDER_TAGS } from '../../../constants';
+import { RIDER_TAGS, RIDER_TIMEOUTS } from '../../../constants';
 
 const org = getOrgConfig('asapOnly');
 const { stops } = org;
@@ -124,7 +124,7 @@ test.describe(`ASAP Only — Location Selection ${RIDER_TAGS.ASAP} ${RIDER_TAGS.
   test('Search with no results shows not-found message', async ({ selectLocationPage }) => {
     await selectLocationPage.pickupInput.click();
     await selectLocationPage.pickupInput.fill('zzz_nonexistent_stop');
-    await expect(selectLocationPage.notFoundMessage).toBeVisible({ timeout: 3000 });
+    await expect(selectLocationPage.notFoundMessage).toBeVisible({ timeout: RIDER_TIMEOUTS.STOP_LIST });
   });
 
   test('Clear pickup input resets selection', async ({ selectLocationPage }) => {

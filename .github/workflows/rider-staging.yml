@@ -37,12 +37,15 @@ jobs:
   rider-tests:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write   # needed to push the dashboard to the gh-pages branch
       checks: write
     outputs:
       total: ${{ steps.parse.outputs.total }}
       passed: ${{ steps.parse.outputs.passed }}
       failed: ${{ steps.parse.outputs.failed }}
+      flaky: ${{ steps.parse.outputs.flaky }}
+      duration: ${{ steps.parse.outputs.duration }}
+      report_url: ${{ steps.report-url.outputs.url }}
 
     steps:
       - uses: actions/checkout@v4
@@ -78,8 +81,12 @@ jobs:
       - name: Run rider tests
         run: |
           TYPE="${{ steps.test-type.outputs.type }}"
+          # Regression and "all" runs include @creates-ride tests which submit real rides.
+          # Run them serially (workers=1) so concurrent submissions don't trip staging's rate limiter.
           if [ "$TYPE" == "all" ]; then
-            ./run-tests -e staging -u all --bc
+            ./run-tests -e staging -u all --bc --workers 1
+          elif [ "$TYPE" == "regression" ]; then
+            ./run-tests -e staging --tag @${TYPE} --bc --workers 1
           else
             ./run-tests -e staging --tag @${TYPE} --bc
           fi
@@ -88,17 +95,65 @@ jobs:
         if: always()
         run: npx tsx helpers/generate-report.ts || true
 
+      # Stage the custom dashboard (+ full Playwright report for drill-down) into a
+      # per-run folder so each run gets its own URL and history is preserved.
+      - name: Stage report for Pages
+        id: stage
+        if: always()
+        run: |
+          if [ -f dashboard-report.html ]; then
+            mkdir -p public
+            cp dashboard-report.html public/index.html
+            cp dashboard-report.html public/dashboard-report.html
+            [ -d playwright-report ] && cp -r playwright-report public/playwright-report || true
+            echo "staged=true" >> $GITHUB_OUTPUT
+          else
+            echo "No dashboard-report.html to publish"
+            echo "staged=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Publish report to GitHub Pages
+        id: pages
+        if: always() && steps.stage.outputs.staged == 'true'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          destination_dir: ${{ github.run_id }}
+          keep_files: true
+
+      # Build the CTA target. Use the rendered Pages URL when publishing succeeded,
+      # otherwise fall back to the Actions run page so the button never dead-links.
+      - name: Resolve report URL
+        id: report-url
+        if: always()
+        run: |
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          if [ "${{ steps.pages.outcome }}" == "success" ]; then
+            OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+            REPO="${{ github.event.repository.name }}"
+            echo "url=https://${OWNER_LC}.github.io/${REPO}/${{ github.run_id }}/dashboard-report.html" >> $GITHUB_OUTPUT
+          else
+            echo "url=$RUN_URL" >> $GITHUB_OUTPUT
+          fi
+
       - name: Parse results
         id: parse
         if: always()
         run: |
           if [ -f test-results.json ]; then
-            TOTAL=$(python3 -c "import json; d=json.load(open('test-results.json')); s=d['stats']; print(s['expected']+s['unexpected']+s['skipped'])")
-            PASSED=$(python3 -c "import json; d=json.load(open('test-results.json')); print(d['stats']['expected'])")
-            FAILED=$(python3 -c "import json; d=json.load(open('test-results.json')); print(d['stats']['unexpected'])")
+            # Total includes flaky (a flaky test is counted separately from `expected`).
+            TOTAL=$(python3 -c "import json; s=json.load(open('test-results.json'))['stats']; print(s['expected']+s['unexpected']+s['skipped']+s['flaky'])")
+            PASSED=$(python3 -c "import json; print(json.load(open('test-results.json'))['stats']['expected'])")
+            FAILED=$(python3 -c "import json; print(json.load(open('test-results.json'))['stats']['unexpected'])")
+            FLAKY=$(python3 -c "import json; print(json.load(open('test-results.json'))['stats']['flaky'])")
+            # Human-readable wall-clock duration, e.g. "17m 22s".
+            DURATION=$(python3 -c "import json; ms=json.load(open('test-results.json'))['stats']['duration']; t=int(ms//1000); print(f'{t//60}m {t%60}s')")
             echo "total=$TOTAL" >> $GITHUB_OUTPUT
             echo "passed=$PASSED" >> $GITHUB_OUTPUT
             echo "failed=$FAILED" >> $GITHUB_OUTPUT
+            echo "flaky=$FLAKY" >> $GITHUB_OUTPUT
+            echo "duration=$DURATION" >> $GITHUB_OUTPUT
           fi
 
       - name: Upload HTML report
@@ -138,6 +193,11 @@ jobs:
           TOTAL="${{ needs.rider-tests.outputs.total }}"
           PASSED="${{ needs.rider-tests.outputs.passed }}"
           FAILED="${{ needs.rider-tests.outputs.failed }}"
+          FLAKY="${{ needs.rider-tests.outputs.flaky }}"
+          DURATION="${{ needs.rider-tests.outputs.duration }}"
+          REPORT_URL="${{ needs.rider-tests.outputs.report_url }}"
+          # Fallback so the CTA is always present even if report_url didn't resolve.
+          [ -z "$REPORT_URL" ] && REPORT_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
           if [ "$RESULT" == "success" ]; then
             EMOJI="✅"; COLOR="#36a64f"; HEADER="Rider Tests Passed"
@@ -156,8 +216,15 @@ jobs:
                     {\"type\":\"mrkdwn\",\"text\":\"*Environment:*\nStaging\"},
                     {\"type\":\"mrkdwn\",\"text\":\"*Test Type:*\n${{ github.event.inputs.test_type || 'scheduled' }}\"},
                     {\"type\":\"mrkdwn\",\"text\":\"*Total:* $TOTAL\"},
-                    {\"type\":\"mrkdwn\",\"text\":\"*Passed:* $PASSED | *Failed:* $FAILED\"}
-                  ]}
+                    {\"type\":\"mrkdwn\",\"text\":\"*Duration:* $DURATION\"},
+                    {\"type\":\"mrkdwn\",\"text\":\"*Passed:* $PASSED | *Failed:* $FAILED\"},
+                    {\"type\":\"mrkdwn\",\"text\":\"*Flaky:* $FLAKY\"}
+                  ]},
+                  {\"type\":\"actions\",\"elements\":[{
+                    \"type\":\"button\",
+                    \"text\":{\"type\":\"plain_text\",\"text\":\"View Report Results\",\"emoji\":true},
+                    \"url\":\"$REPORT_URL\"
+                  }]}
                 ]
               }]
             }"

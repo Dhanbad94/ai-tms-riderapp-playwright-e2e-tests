@@ -138,7 +138,7 @@ test.describe(`ASAP Only — Random Stops & Dynamic Riders ${RIDER_TAGS.ASAP} ${
     }
   });
 
-  test('@smoke RANDOM_005: Complete ride request with random stops', async ({ selectLocationPage, guestFormSection, page }) => {
+  test('RANDOM_005: Complete ride request with random stops', async ({ selectLocationPage, guestFormSection, page }) => {
     test.skip(!canCreateRides(), 'Ride creation disabled');
     const { pickup, dropoff } = await selectLocationPage.selectRandomStops();
     await selectLocationPage.clickConfirm();
