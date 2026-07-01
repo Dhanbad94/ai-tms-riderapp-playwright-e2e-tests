@@ -1,0 +1,90 @@
+- generic [ref=e1]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - button "back" [ref=e305] [cursor=pointer]:
+        - img "back" [ref=e306]
+      - heading "Confirm Location" [level=2] [ref=e307]
+      - generic [ref=e11]:
+        - generic [ref=e12]:
+          - img "pickup" [ref=e308]
+          - generic [ref=e15]:
+            - textbox "Pick-up from?" [ref=e309]: Automated OD ASAP
+            - img "clear" [ref=e310] [cursor=pointer]
+        - generic [ref=e17]:
+          - img "dropoff" [ref=e311]
+          - generic [ref=e20]:
+            - textbox "Where to?" [ref=e312]: Terminal 5E
+            - img "clear" [ref=e313] [cursor=pointer]
+    - generic [ref=e120]:
+      - generic [ref=e121]:
+        - generic [ref=e122]:
+          - generic:
+            - button "Keyboard shortcuts"
+          - region "Map" [ref=e314]
+          - generic [ref=e124]:
+            - generic [ref=e207]:
+              - generic:
+                - generic:
+                  - dialog [ref=e211]:
+                    - generic [ref=e215]: Pick-up
+                  - dialog [ref=e216]:
+                    - generic [ref=e220]: Drop-off
+            - iframe [ref=e221]:
+              
+            - link "Open this area in Google Maps (opens a new window)" [ref=e315] [cursor=pointer]:
+              - /url: https://maps.google.com/maps?ll=41.95347,-87.907246&z=13&hl=en-GB&gl=US&mapclient=apiv3
+              - img "Google" [ref=e316]
+            - generic [ref=e226]:
+              - button "Keyboard shortcuts" [ref=e317] [cursor=pointer]
+              - generic [ref=e237]: Map data ©2026 Google
+              - link "Terms (opens in new tab)" [ref=e318] [cursor=pointer]:
+                - /url: https://www.google.com/intl/en-GB_US/help/terms_maps.html
+                - text: Terms
+        - generic [ref=e243]:
+          - button [ref=e244] [cursor=pointer]:
+            - img [ref=e245]
+          - button [ref=e248] [cursor=pointer]:
+            - img [ref=e249]
+      - generic [ref=e251]:
+        - generic [ref=e322]:
+          - generic [ref=e323]:
+            - button "back" [ref=e324] [cursor=pointer]:
+              - img "back" [ref=e325]
+            - generic [ref=e326]: Enter Ride Details
+          - generic [ref=e327]:
+            - generic [ref=e328]:
+              - heading "Rider Details" [level=4] [ref=e329]
+              - textbox "Name *" [ref=e332]: PW_DetailCheck
+              - generic [ref=e334]:
+                - generic [ref=e336] [cursor=pointer]: "+91"
+                - textbox "Phone number *" [ref=e338]: "8676913831"
+            - generic [ref=e339]:
+              - heading "Other Details" [level=4] [ref=e340]
+              - generic [ref=e342]:
+                - img "Assistance" [ref=e343]
+                - text: Special Assitance
+              - textbox "Note to Driver" [ref=e348]
+              - textbox "Flight Number" [ref=e351]: UA789
+              - textbox "Room Number" [ref=e354]: R101
+          - generic [ref=e355]:
+            - button "Request Ride" [active] [ref=e356] [cursor=pointer]
+            - paragraph [ref=e357]:
+              - text: You agree to our
+              - link "Terms of Services" [ref=e358] [cursor=pointer]:
+                - /url: https://php-staging.trackmyshuttle.com/tos
+              - text: and
+              - link "Privacy policy" [ref=e359] [cursor=pointer]:
+                - /url: https://php-staging.trackmyshuttle.com/privacy
+        - generic [ref=e252]:
+          - generic [ref=e256]:
+            - generic [ref=e278]:
+              - text: No. of Riders
+              - subscript [ref=e279]: "*"
+            - generic [ref=e257]:
+              - combobox "No. of Riders * 1 Rider" [ref=e319] [cursor=pointer]: 1 Rider
+              - textbox: "1"
+              - img
+              - group:
+                - generic: No. of Riders *
+          - button "Confirm Location" [ref=e320] [cursor=pointer]
+  - alert [ref=e105]

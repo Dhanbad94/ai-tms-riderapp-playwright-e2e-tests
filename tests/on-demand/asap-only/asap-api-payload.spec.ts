@@ -45,17 +45,39 @@ test.describe(`ASAP Only — API Payload Verification ${RIDER_TAGS.ASAP} ${RIDER
     expect(getPayload()).not.toHaveProperty('booking');
   });
 
-  test('ASAP_028: No flight/room/riderType in payload', async ({ page }) => {
+  test('ASAP_028: No luggage/riderType in payload', async ({ page }) => {
     const { gf, getPayload } = await setupFormAndCapture(page);
     await gf.requestRideButton.scrollIntoViewIfNeeded();
     await gf.submitForm();
     await page.waitForLoadState("networkidle").catch(() => {});
     const payload = getPayload()!;
     const riders = payload.riders as Record<string, unknown>;
-    expect(riders).not.toHaveProperty('flight_no');
-    expect(riders).not.toHaveProperty('room_no');
+    // Flight/room are now part of ASAP (see ASAP_047); luggage & rider type are not.
     expect(riders).not.toHaveProperty('luggage');
     expect(riders).not.toHaveProperty('rider_type');
+  });
+
+  test('ASAP_047: Flight & room numbers included in payload when filled', async ({ page }) => {
+    const { gf, getPayload } = await setupFormAndCapture(page);
+    await gf.fillFlight('ua1234');
+    await gf.fillRoom('room707');
+    await gf.requestRideButton.scrollIntoViewIfNeeded();
+    await gf.submitForm();
+    await page.waitForLoadState("networkidle").catch(() => {});
+    const riders = getPayload()!.riders as Record<string, unknown>;
+    // Values are sent as entered — the uppercase styling is display-only (CSS).
+    expect(riders.flight_no).toBe('ua1234');
+    expect(riders.room_no).toBe('room707');
+  });
+
+  test('ASAP_048: Flight & room are null when not filled', async ({ page }) => {
+    const { gf, getPayload } = await setupFormAndCapture(page);
+    await gf.requestRideButton.scrollIntoViewIfNeeded();
+    await gf.submitForm();
+    await page.waitForLoadState("networkidle").catch(() => {});
+    const riders = getPayload()!.riders as Record<string, unknown>;
+    expect(riders.flight_no).toBeNull();
+    expect(riders.room_no).toBeNull();
   });
 
   test('ASAP_029: Stop IDs are real values (not 0)', async ({ page }) => {

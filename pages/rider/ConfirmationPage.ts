@@ -16,6 +16,7 @@ export class ConfirmationPage {
   readonly trackingCard: Locator;
   readonly viewAllBookingsBtn: Locator;
   readonly mapContainer: Locator;
+  readonly riderDetailsCard: Locator;
 
   // Footer actions
   readonly cancelRideLink: Locator;
@@ -40,6 +41,9 @@ export class ConfirmationPage {
     this.trackingCard = page.locator('[class*="trackingCard"]');
     this.viewAllBookingsBtn = page.getByRole('button', { name: /View All Bookings/i });
     this.mapContainer = page.locator('.gm-style').first();
+    // Rider-details card at the bottom of the tracking screen (name/guests, phone,
+    // room, flight). CSS-module class is hash-suffixed, so match the stable part.
+    this.riderDetailsCard = page.locator('[class*="riderItems"]').first();
 
     // Footer actions — these use text matching (CSS uppercased)
     this.cancelRideLink = page.getByText(/Cancel Ride/i);
@@ -70,6 +74,15 @@ export class ConfirmationPage {
     // Wait for any heading or status content to appear
     await this.page.getByRole('heading').first()
       .waitFor({ state: 'visible', timeout: RIDER_TIMEOUTS.CONFIRMATION });
+  }
+
+  /**
+   * Scroll the rider-details card into view. On mobile viewports the tracking
+   * screen is a bottom sheet, so the details sit below the fold — this mirrors
+   * the manual "scroll up from the bottom" step and is a no-op on desktop.
+   */
+  async scrollRiderDetailsIntoView() {
+    await this.riderDetailsCard.scrollIntoViewIfNeeded();
   }
 
   async verifyAsapRideType() {

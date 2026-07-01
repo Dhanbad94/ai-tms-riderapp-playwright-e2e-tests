@@ -1,0 +1,60 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - button "back" [ref=e7] [cursor=pointer]:
+        - img "back" [ref=e8]
+      - heading "Confirm Location" [level=2] [ref=e117]
+      - generic [ref=e11]:
+        - generic [ref=e12]:
+          - img "pickup" [ref=e14]
+          - generic [ref=e15]:
+            - textbox "Pick-up from?" [ref=e16]: Automated OD ASAP
+            - img "clear" [ref=e107] [cursor=pointer]
+        - generic [ref=e17]:
+          - img "dropoff" [ref=e19]
+          - generic [ref=e20]:
+            - textbox "Where to?" [ref=e21]: Terminal 5E
+            - img "clear" [ref=e119] [cursor=pointer]
+    - generic [ref=e120]:
+      - generic [ref=e121]:
+        - generic [ref=e122]:
+          - generic:
+            - button "Keyboard shortcuts"
+          - region "Map" [ref=e123]
+          - generic [ref=e124]:
+            - generic [ref=e207]:
+              - generic:
+                - generic:
+                  - dialog [ref=e211]:
+                    - generic [ref=e215]: Pick-up
+                  - dialog [ref=e216]:
+                    - generic [ref=e220]: Drop-off
+            - iframe [ref=e221]:
+              
+            - link "Open this area in Google Maps (opens a new window)" [ref=e223] [cursor=pointer]:
+              - /url: https://maps.google.com/maps?ll=41.95347,-87.907246&z=13&hl=en-GB&gl=US&mapclient=apiv3
+              - img "Google" [ref=e225]
+            - generic [ref=e226]:
+              - button "Keyboard shortcuts" [ref=e232] [cursor=pointer]
+              - generic [ref=e237]: Map data ©2026 Google
+              - link "Terms (opens in new tab)" [ref=e242] [cursor=pointer]:
+                - /url: https://www.google.com/intl/en-GB_US/help/terms_maps.html
+                - text: Terms
+        - generic [ref=e243]:
+          - button [ref=e244] [cursor=pointer]:
+            - img [ref=e245]
+          - button [ref=e248] [cursor=pointer]:
+            - img [ref=e249]
+      - generic [ref=e252]:
+        - generic [ref=e256]:
+          - generic:
+            - text: No. of Riders
+            - subscript: "*"
+          - generic [ref=e257]:
+            - combobox "No. of Riders *" [ref=e258] [cursor=pointer]
+            - textbox
+            - img
+            - group:
+              - generic: No. of Riders *
+        - button "Confirm Location" [disabled] [ref=e263]
+  - alert [ref=e105]

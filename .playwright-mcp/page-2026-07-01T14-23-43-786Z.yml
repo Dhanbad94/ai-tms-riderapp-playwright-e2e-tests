@@ -1,0 +1,81 @@
+- generic [ref=e1]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - button [ref=e264] [cursor=pointer]:
+        - img [ref=e265]
+      - heading [level=2] [ref=e266]: Confirm Location
+      - generic [ref=e11]:
+        - generic [ref=e12]:
+          - img [ref=e267]
+          - generic [ref=e15]:
+            - textbox [ref=e268]:
+              - /placeholder: Pick-up from?
+              - text: Automated OD ASAP
+            - img [ref=e269] [cursor=pointer]
+        - generic [ref=e17]:
+          - img [ref=e270]
+          - generic [ref=e20]:
+            - textbox [ref=e271]:
+              - /placeholder: Where to?
+              - text: Terminal 5E
+            - img [ref=e272] [cursor=pointer]
+    - generic [ref=e120]:
+      - generic [ref=e121]:
+        - generic [ref=e122]:
+          - region [ref=e273]
+          - generic [ref=e124]:
+            - generic [ref=e207]:
+              - dialog [ref=e211]:
+                - generic [ref=e215]: Pick-up
+              - dialog [ref=e216]:
+                - generic [ref=e220]: Drop-off
+            - iframe [ref=e221]:
+              
+            - link [ref=e274] [cursor=pointer]:
+              - /url: https://maps.google.com/maps?ll=41.95347,-87.907246&z=13&hl=en-GB&gl=US&mapclient=apiv3
+              - img [ref=e275]
+            - generic [ref=e226]:
+              - button [ref=e276] [cursor=pointer]: Keyboard shortcuts
+              - generic [ref=e237]: Map data ©2026 Google
+              - link [ref=e277] [cursor=pointer]:
+                - /url: https://www.google.com/intl/en-GB_US/help/terms_maps.html
+                - text: Terms
+        - generic [ref=e243]:
+          - button [ref=e244] [cursor=pointer]:
+            - img [ref=e245]
+          - button [ref=e248] [cursor=pointer]:
+            - img [ref=e249]
+      - generic [ref=e252]:
+        - generic [ref=e256]:
+          - generic [ref=e278]:
+            - text: No. of Riders
+            - subscript [ref=e279]: "*"
+          - generic [ref=e257]:
+            - combobox [expanded] [ref=e280] [cursor=pointer]
+            - textbox
+            - img
+            - group:
+              - generic: No. of Riders *
+        - button [disabled] [ref=e281]: Confirm Location
+  - alert [ref=e105]
+  - listbox "No. of Riders *" [ref=e284]:
+    - option "1 Rider" [active] [ref=e285] [cursor=pointer]: 1 Rider
+    - option "2 Riders" [ref=e286] [cursor=pointer]: 2 Riders
+    - option "3 Riders" [ref=e287] [cursor=pointer]: 3 Riders
+    - option "4 Riders" [ref=e288] [cursor=pointer]: 4 Riders
+    - option "5 Riders" [ref=e289] [cursor=pointer]: 5 Riders
+    - option "6 Riders" [ref=e290] [cursor=pointer]: 6 Riders
+    - option "7 Riders" [ref=e291] [cursor=pointer]: 7 Riders
+    - option "8 Riders" [ref=e292] [cursor=pointer]: 8 Riders
+    - option "9 Riders" [ref=e293] [cursor=pointer]: 9 Riders
+    - option "10 Riders" [ref=e294] [cursor=pointer]: 10 Riders
+    - option "11 Riders" [ref=e295] [cursor=pointer]: 11 Riders
+    - option "12 Riders" [ref=e296] [cursor=pointer]: 12 Riders
+    - option "13 Riders" [ref=e297] [cursor=pointer]: 13 Riders
+    - option "14 Riders" [ref=e298] [cursor=pointer]: 14 Riders
+    - option "15 Riders" [ref=e299] [cursor=pointer]: 15 Riders
+    - option "16 Riders" [ref=e300] [cursor=pointer]: 16 Riders
+    - option "17 Riders" [ref=e301] [cursor=pointer]: 17 Riders
+    - option "18 Riders" [ref=e302] [cursor=pointer]: 18 Riders
+    - option "19 Riders" [ref=e303] [cursor=pointer]: 19 Riders
+    - option "20 Riders" [ref=e304] [cursor=pointer]: 20 Riders
