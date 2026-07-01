@@ -57,7 +57,7 @@ export default defineConfig({
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
     video: "retain-on-failure",
-    headless: true,
+    headless: false,
     ignoreHTTPSErrors: true,
     actionTimeout: TIMEOUTS.ACTION,
     navigationTimeout: TIMEOUTS.NAVIGATION,

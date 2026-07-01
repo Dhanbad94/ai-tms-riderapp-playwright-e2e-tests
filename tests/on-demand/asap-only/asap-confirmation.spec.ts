@@ -113,4 +113,29 @@ test.describe(`ASAP Only — Confirmation Page ${RIDER_TAGS.ASAP} ${RIDER_TAGS.C
     const el = page.locator('[class*="progressAnimation"], [class*="ProgressAnimation"], h2, h3');
     expect(await el.count()).toBeGreaterThan(0);
   });
+
+  // ASAP_049: After submitting, the tracking screen shows a rider-details card
+  // (name + guest count, phone, room, flight). On mobile it sits below the fold,
+  // so we scroll it into view first — mirroring the manual verification step.
+  test('ASAP_049: Rider details visible on tracking screen after submit', async ({ page, confirmationPage }) => {
+    const lp = new SelectLocationPage(page);
+    const gf = new GuestFormSection(page);
+    await lp.goto(org.trackingId);
+    await lp.selectBothStops(stops.pickup, stops.dropoff);
+    await lp.clickConfirm();
+    await gf.waitForFormVisible();
+    const details = await gf.fillRequiredFields({ riders: 1 });
+    await gf.fillFlight('UA789');
+    await gf.fillRoom('R101');
+    await gf.submitAndAwaitTracking();
+
+    await confirmationPage.scrollRiderDetailsIntoView();
+    const card = confirmationPage.riderDetailsCard;
+    await expect(card).toBeVisible();
+    await expect(card.getByText(details.name)).toBeVisible();
+    await expect(card.getByText(/1 Guests/i)).toBeVisible();
+    await expect(card.getByText(details.phone)).toBeVisible();
+    await expect(card.getByText('UA789')).toBeVisible();
+    await expect(card.getByText('R101')).toBeVisible();
+  });
 });

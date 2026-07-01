@@ -38,9 +38,13 @@ export class GuestFormSection {
     // Target the assistance icon (alt is hardcoded in the app source) instead of
     // the label text, which is org-configurable via futureOthers.ada.name.
     this.specialAssistanceCheckbox = page.locator('img[alt="Assistance"]');
-    this.notesTextarea = page.getByRole('textbox').last();
-    this.flightInput = page.getByPlaceholder(/flight/i);
-    this.roomInput = page.getByPlaceholder(/room/i);
+    // Target the notes textarea by its placeholder rather than positionally:
+    // the Flight/Room inputs now render after it, so getByRole('textbox').last()
+    // would resolve to the Room field instead.
+    this.notesTextarea = page.getByPlaceholder('Note to Driver');
+    // ASAP "Other Details" fields — placeholders match the app exactly.
+    this.flightInput = page.getByPlaceholder('Flight Number');
+    this.roomInput = page.getByPlaceholder('Room Number');
     this.riderTypeSection = page.getByRole('radiogroup');
     this.requestRideButton = page.getByRole('button', { name: /Request Ride/i });
     this.termsLink = page.getByRole('link', { name: /Terms of Service/i });
@@ -92,6 +96,18 @@ export class GuestFormSection {
     await this.notesTextarea.fill(text);
   }
 
+  /** Fill the ASAP "Flight Number" field (maxlength 10). */
+  async fillFlight(value: string) {
+    await this.flightInput.scrollIntoViewIfNeeded();
+    await this.flightInput.fill(value);
+  }
+
+  /** Fill the ASAP "Room Number" field (maxlength 10). */
+  async fillRoom(value: string) {
+    await this.roomInput.scrollIntoViewIfNeeded();
+    await this.roomInput.fill(value);
+  }
+
   /**
    * Fill required fields using org config from environment.
    * Uses the phone number and country code from rider-config.ts.
@@ -110,6 +126,10 @@ export class GuestFormSection {
     await this.fillName(name);
     await this.fillPhone(phone);
     await this.selectRiders(riders);
+
+    // Return the values actually entered so callers can assert them downstream
+    // (e.g. the rider-details card on the tracking screen).
+    return { name, phone, countryCode, riders };
   }
 
   async submitForm() {
@@ -180,8 +200,10 @@ export class GuestFormSection {
     await expect(this.phoneInput).toBeVisible();
     await expect(this.specialAssistanceCheckbox).toBeVisible();
     await expect(this.notesTextarea).toBeVisible();
-    await expect(this.flightInput).not.toBeVisible();
-    await expect(this.roomInput).not.toBeVisible();
+    // Flight & Room number are now part of ASAP "Other Details".
+    await expect(this.flightInput).toBeVisible();
+    await expect(this.roomInput).toBeVisible();
+    // Rider-type radios remain hidden in ASAP mode.
     await expect(this.riderTypeSection).not.toBeVisible();
   }
 
