@@ -51,5 +51,11 @@ export interface RiderEnvironmentConfig {
   name: Environment;
   urls: RiderUrls;
   canCreateRides: boolean;
+  /**
+   * Explicit opt-in for the single create-and-cancel smoke test. Lets that one
+   * test create (then immediately cancel) a ride even where canCreateRides is
+   * false (production) — without unblocking the rest of the @creates-ride suite.
+   */
+  allowCancelSmoke?: boolean;
   orgs: Record<OnDemandMode, OrgModeConfig>;
 }

@@ -10,7 +10,7 @@ test.describe(`ASAP Only — Location Selection ${RIDER_TAGS.ASAP} ${RIDER_TAGS.
     await selectLocationPage.goto(org.trackingId);
   });
 
-  test('@smoke @sanity ASAP_001: Date/time picker is NOT rendered', async ({ selectLocationPage }) => {
+  test('@smoke @sanity @prod ASAP_001: Date/time picker is NOT rendered', async ({ selectLocationPage }) => {
     await selectLocationPage.verifyDateTimePickerAbsent();
   });
 

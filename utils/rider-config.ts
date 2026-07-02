@@ -38,6 +38,28 @@ const PLACEHOLDER_ORG: OrgModeConfig = {
 };
 
 // ============================================================================
+// Shared ASAP-only org (ODASAP) — identical across staging, preprod, and prod.
+// Keeping one source of truth so the three environments never drift apart.
+// ============================================================================
+
+const ODASAP_ORG: OrgModeConfig = {
+  trackingId: 'ODASAP',
+  enabled: true,
+  stops: {
+    pickup: 'Automated OD ASAP',
+    dropoff: 'Terminal 5E',
+    searchKeyword: 'Terminal',
+    altPickup: 'Mannheim Rd',
+    altDropoff: 'Terminal 3 10000',
+  },
+  phone: {
+    countryCode: 'India',
+    number: '8676913831',
+  },
+  maxRiders: 10,
+};
+
+// ============================================================================
 // Staging Configuration — FULLY CONFIGURED
 // ============================================================================
 
@@ -49,23 +71,9 @@ const STAGING: RiderEnvironmentConfig = {
     api: 'https://riderapi-staging.trackmyshuttle.com',
   },
   canCreateRides: true,
+  allowCancelSmoke: true,
   orgs: {
-    asapOnly: {
-      trackingId: 'ODASAP',
-      enabled: true,
-      stops: {
-        pickup: 'Automated OD ASAP',
-        dropoff: 'Terminal 5E',
-        searchKeyword: 'Terminal',
-        altPickup: 'Mannheim Rd',
-        altDropoff: 'Terminal 3 10000',
-      },
-      phone: {
-        countryCode: 'India',
-        number: '8676913831',
-      },
-      maxRiders: 10,
-    },
+    asapOnly: { ...ODASAP_ORG },
     futureBookingOnly: { ...PLACEHOLDER_ORG },
     asapAndFuture: { ...PLACEHOLDER_ORG },
     fixedRoute: { ...PLACEHOLDER_ORG },
@@ -81,11 +89,12 @@ const PREPRODUCTION: RiderEnvironmentConfig = {
   urls: {
     base: 'https://preproduction.trackmyshuttle.com',
     ride: 'https://ride-preprod.trackmyshuttle.com',
-    api: 'https://riderapp-stage.trackmyshuttle.com',
+    api: 'https://riderapp-preprod.trackmyshuttle.com',
   },
   canCreateRides: true,
+  allowCancelSmoke: true,
   orgs: {
-    asapOnly: { ...PLACEHOLDER_ORG },
+    asapOnly: { ...ODASAP_ORG },
     futureBookingOnly: { ...PLACEHOLDER_ORG },
     asapAndFuture: { ...PLACEHOLDER_ORG },
     fixedRoute: { ...PLACEHOLDER_ORG },
@@ -101,11 +110,15 @@ const PRODUCTION: RiderEnvironmentConfig = {
   urls: {
     base: 'https://trackmyshuttle.com',
     ride: 'https://ride.trackmyshuttle.com',
-    api: 'https://riderapp.trackmyshuttle.com',
+    api: 'https://api.trackmyshuttle.com',
   },
+  // Ride creation stays BLOCKED on production — @creates-ride tests skip via
+  // canCreateRides(). Only the single create-and-cancel smoke may run here,
+  // gated explicitly by allowCancelSmoke (it cancels the ride it creates).
   canCreateRides: false,
+  allowCancelSmoke: true,
   orgs: {
-    asapOnly: { ...PLACEHOLDER_ORG },
+    asapOnly: { ...ODASAP_ORG },
     futureBookingOnly: { ...PLACEHOLDER_ORG },
     asapAndFuture: { ...PLACEHOLDER_ORG },
     fixedRoute: { ...PLACEHOLDER_ORG },
@@ -161,6 +174,15 @@ export function getOrgConfig(mode: OnDemandMode): OrgModeConfig {
  */
 export function canCreateRides(): boolean {
   return getRiderConfig().canCreateRides;
+}
+
+/**
+ * Whether the single create-and-cancel smoke test may run in this environment.
+ * True on staging/preproduction (canCreateRides anyway) and explicitly on
+ * production, so exactly one transient ride is created and immediately cancelled.
+ */
+export function canRunCancelSmoke(): boolean {
+  return getRiderConfig().allowCancelSmoke === true;
 }
 
 export { STAGING, PREPRODUCTION, PRODUCTION, RIDER_CONFIGS };

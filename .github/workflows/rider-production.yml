@@ -1,0 +1,216 @@
+name: Rider Tests — Production
+
+on:
+  # Scheduled runs — Mon-Fri 7 AM UTC. Production runs the ride-free @ui-only UI
+  # suite (canCreateRides is false, so any @creates-ride test auto-skips anyway).
+  schedule:
+    - cron: '0 7 * * 1-5'
+
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Test type to run (production is ride-free — @creates-ride tests auto-skip)'
+        required: false
+        default: 'ui-only'
+        type: choice
+        options:
+          - ui-only
+          - prod
+          - smoke
+          - sanity
+          - safe
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+env:
+  CI: true
+  NODE_ENV: test
+  ENV: production
+
+jobs:
+  rider-tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # needed to push the dashboard to the gh-pages branch
+      checks: write
+    outputs:
+      total: ${{ steps.parse.outputs.total }}
+      passed: ${{ steps.parse.outputs.passed }}
+      failed: ${{ steps.parse.outputs.failed }}
+      flaky: ${{ steps.parse.outputs.flaky }}
+      duration: ${{ steps.parse.outputs.duration }}
+      report_url: ${{ steps.report-url.outputs.url }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Determine test type
+        id: test-type
+        run: |
+          # Scheduled prod runs execute the ride-free @ui-only UI suite.
+          if [ "${{ github.event_name }}" == "schedule" ]; then
+            TYPE="ui-only"
+          else
+            TYPE="${{ github.event.inputs.test_type || 'ui-only' }}"
+          fi
+          echo "type=$TYPE" >> $GITHUB_OUTPUT
+          echo "Running: $TYPE tests"
+
+      - name: Run rider tests
+        run: |
+          TYPE="${{ steps.test-type.outputs.type }}"
+          if [ "$TYPE" == "ui-only" ]; then
+            # Ride-free UI suite PLUS the single create-and-cancel @prod smoke
+            # (the only ride permitted on production — it cancels itself).
+            ./run-tests -e production --tag "@ui-only|@prod" --bc
+          else
+            ./run-tests -e production --tag @${TYPE} --bc
+          fi
+
+      - name: Generate dashboard report
+        if: always()
+        run: npx tsx helpers/generate-report.ts || true
+
+      # Stage the custom dashboard (+ full Playwright report for drill-down) into a
+      # per-run folder so each run gets its own URL and history is preserved.
+      - name: Stage report for Pages
+        id: stage
+        if: always()
+        run: |
+          if [ -f dashboard-report.html ]; then
+            mkdir -p public
+            cp dashboard-report.html public/index.html
+            cp dashboard-report.html public/dashboard-report.html
+            [ -d playwright-report ] && cp -r playwright-report public/playwright-report || true
+            echo "staged=true" >> $GITHUB_OUTPUT
+          else
+            echo "No dashboard-report.html to publish"
+            echo "staged=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Publish report to GitHub Pages
+        id: pages
+        if: always() && steps.stage.outputs.staged == 'true'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          destination_dir: ${{ github.run_id }}
+          keep_files: true
+
+      # Build the CTA target. Use the rendered Pages URL when publishing succeeded,
+      # otherwise fall back to the Actions run page so the button never dead-links.
+      - name: Resolve report URL
+        id: report-url
+        if: always()
+        run: |
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          if [ "${{ steps.pages.outcome }}" == "success" ]; then
+            OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+            REPO="${{ github.event.repository.name }}"
+            echo "url=https://${OWNER_LC}.github.io/${REPO}/${{ github.run_id }}/dashboard-report.html" >> $GITHUB_OUTPUT
+          else
+            echo "url=$RUN_URL" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Parse results
+        id: parse
+        if: always()
+        run: |
+          if [ -f test-results.json ]; then
+            # Total includes flaky (a flaky test is counted separately from `expected`).
+            TOTAL=$(python3 -c "import json; s=json.load(open('test-results.json'))['stats']; print(s['expected']+s['unexpected']+s['skipped']+s['flaky'])")
+            PASSED=$(python3 -c "import json; print(json.load(open('test-results.json'))['stats']['expected'])")
+            FAILED=$(python3 -c "import json; print(json.load(open('test-results.json'))['stats']['unexpected'])")
+            FLAKY=$(python3 -c "import json; print(json.load(open('test-results.json'))['stats']['flaky'])")
+            # Human-readable wall-clock duration, e.g. "17m 22s".
+            DURATION=$(python3 -c "import json; ms=json.load(open('test-results.json'))['stats']['duration']; t=int(ms//1000); print(f'{t//60}m {t%60}s')")
+            echo "total=$TOTAL" >> $GITHUB_OUTPUT
+            echo "passed=$PASSED" >> $GITHUB_OUTPUT
+            echo "failed=$FAILED" >> $GITHUB_OUTPUT
+            echo "flaky=$FLAKY" >> $GITHUB_OUTPUT
+            echo "duration=$DURATION" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: rider-report-${{ steps.test-type.outputs.type }}
+          path: |
+            playwright-report/
+            dashboard-report.html
+            results.xml
+          retention-days: 14
+
+  notify:
+    needs: rider-tests
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Send Slack notification
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "Slack webhook not configured, skipping"
+            exit 0
+          fi
+
+          RESULT="${{ needs.rider-tests.result }}"
+          TOTAL="${{ needs.rider-tests.outputs.total }}"
+          PASSED="${{ needs.rider-tests.outputs.passed }}"
+          FAILED="${{ needs.rider-tests.outputs.failed }}"
+          FLAKY="${{ needs.rider-tests.outputs.flaky }}"
+          DURATION="${{ needs.rider-tests.outputs.duration }}"
+          REPORT_URL="${{ needs.rider-tests.outputs.report_url }}"
+          # Fallback so the CTA is always present even if report_url didn't resolve.
+          [ -z "$REPORT_URL" ] && REPORT_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          if [ "$RESULT" == "success" ]; then
+            EMOJI="✅"; COLOR="#36a64f"; HEADER="Rider Tests Passed"
+          else
+            EMOJI="❌"; COLOR="#dc3545"; HEADER="Rider Tests Failed"
+          fi
+
+          curl -s -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-type: application/json' \
+            --data "{
+              \"attachments\": [{
+                \"color\": \"$COLOR\",
+                \"blocks\": [
+                  {\"type\":\"header\",\"text\":{\"type\":\"plain_text\",\"text\":\"$EMOJI $HEADER\",\"emoji\":true}},
+                  {\"type\":\"section\",\"fields\":[
+                    {\"type\":\"mrkdwn\",\"text\":\"*Environment:*\nProduction\"},
+                    {\"type\":\"mrkdwn\",\"text\":\"*Test Type:*\n${{ github.event.inputs.test_type || 'scheduled' }}\"},
+                    {\"type\":\"mrkdwn\",\"text\":\"*Total:* $TOTAL\"},
+                    {\"type\":\"mrkdwn\",\"text\":\"*Duration:* $DURATION\"},
+                    {\"type\":\"mrkdwn\",\"text\":\"*Passed:* $PASSED | *Failed:* $FAILED\"},
+                    {\"type\":\"mrkdwn\",\"text\":\"*Flaky:* $FLAKY\"}
+                  ]},
+                  {\"type\":\"actions\",\"elements\":[{
+                    \"type\":\"button\",
+                    \"text\":{\"type\":\"plain_text\",\"text\":\"View Report Results\",\"emoji\":true},
+                    \"url\":\"$REPORT_URL\"
+                  }]}
+                ]
+              }]
+            }"
+        continue-on-error: true
