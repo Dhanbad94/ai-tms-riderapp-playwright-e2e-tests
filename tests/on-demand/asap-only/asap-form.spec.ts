@@ -13,7 +13,7 @@ test.describe(`ASAP Only — Form Fields & Behavior ${RIDER_TAGS.ASAP} ${RIDER_T
     await guestFormSection.waitForFormVisible();
   });
 
-  test('@smoke @sanity ASAP_009: Full form opens with "Enter Ride Details" heading', async ({ guestFormSection }) => {
+  test('@smoke @sanity @prod ASAP_009: Full form opens with "Enter Ride Details" heading', async ({ guestFormSection }) => {
     await expect(guestFormSection.formTitle).toBeVisible();
     await expect(guestFormSection.formTitle).toHaveText('Enter Ride Details');
   });
@@ -145,7 +145,7 @@ test.describe(`ASAP Only — Form Fields & Behavior ${RIDER_TAGS.ASAP} ${RIDER_T
     await expect(guestFormSection.formTitle).not.toBeVisible({ timeout: 15_000 });
   });
 
-  test('@smoke "Request Ride" button visible', async ({ guestFormSection }) => {
+  test('@smoke @prod "Request Ride" button visible', async ({ guestFormSection }) => {
     await expect(guestFormSection.requestRideButton).toBeVisible();
     const text = await guestFormSection.requestRideButton.textContent();
     expect(text?.toLowerCase()).toContain('request ride');

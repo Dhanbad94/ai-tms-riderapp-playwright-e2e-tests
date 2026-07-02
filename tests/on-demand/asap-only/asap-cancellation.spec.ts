@@ -1,5 +1,5 @@
 import { test, expect } from '../../../fixtures/test-fixtures';
-import { getOrgConfig, canCreateRides, getRiderConfig } from '../../../utils/rider-config';
+import { getOrgConfig, canCreateRides, canRunCancelSmoke, getRiderConfig } from '../../../utils/rider-config';
 import { RIDER_TAGS, RIDER_TIMEOUTS } from '../../../constants';
 import { SelectLocationPage } from '../../../pages/rider/SelectLocationPage';
 import { GuestFormSection } from '../../../pages/rider/GuestFormSection';
@@ -252,5 +252,28 @@ test.describe(`ASAP Only — Cancel Ride ${RIDER_TAGS.ASAP} ${RIDER_TAGS.CREATES
     // Verify "Request Again" is visible alongside other post-cancel elements
     await expect(page.getByText(/Request Again/i).first()).toBeVisible();
     await expect(page.getByText('Provide Feedback', { exact: true })).toBeVisible();
+  });
+});
+
+// ============================================================================
+// Production cancel smoke — the ONE ride-creating test permitted on production.
+// It creates a ride and immediately cancels it (self-cleaning: no active ride
+// left behind). Gated by allowCancelSmoke (not canCreateRides), so it runs on
+// staging, preproduction, and production without unblocking the rest of the
+// @creates-ride suite. Tagged @prod so the production cron picks it up.
+// ============================================================================
+test.describe(`ASAP Only — Cancel Smoke ${RIDER_TAGS.ASAP} ${RIDER_TAGS.PROD}`, () => {
+  test.beforeEach(async () => {
+    test.skip(!canRunCancelSmoke(), 'Cancel smoke not enabled for this environment');
+  });
+
+  test.afterEach(async ({ page }) => {
+    await page.waitForTimeout(RIDER_TIMEOUTS.RIDE_COOLDOWN);
+  });
+
+  test('@prod PROD_CANCEL_001: Create then immediately cancel a ride', async ({ page, cancellationDialog }) => {
+    await submitAndOpenCancelDialog(page);
+    await cancellationDialog.cancelWithReason('Change in travel plans');
+    await expect(page.getByText('Ride Canceled Successfully!')).toBeVisible({ timeout: 15_000 });
   });
 });

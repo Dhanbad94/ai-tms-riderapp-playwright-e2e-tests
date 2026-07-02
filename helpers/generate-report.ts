@@ -79,14 +79,18 @@ function collectTests(suite: Suite, parentFile = ''): TestRow[] {
         else if (test.status === 'unexpected') status = 'failed';
         else if (test.status === 'flaky') status = 'flaky';
 
+        const errorMessage =
+          status === 'failed' ? lastResult?.error?.message?.substring(0, 150) : undefined;
+
         rows.push({
           file: file.replace(/.*\//, ''),
-          section: section.split('@')[0].trim(),
+          section: (section.split('@')[0] ?? section).trim(),
           name: spec.title,
           status,
           duration: totalDuration,
           retries,
-          error: status === 'failed' ? lastResult?.error?.message?.substring(0, 150) : undefined,
+          // Only set `error` when present — omitting it satisfies exactOptionalPropertyTypes.
+          ...(errorMessage ? { error: errorMessage } : {}),
         });
       }
     }
