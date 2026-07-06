@@ -1,12 +1,2 @@
-<testsuites id="" name="" tests="3" failures="0" skipped="0" errors="0" time="7.8453550000000005">
-<testsuite name="asap-only/asap-form.spec.ts" timestamp="2026-07-02T15:15:16.524Z" hostname="rider-chromium" tests="2" failures="0" skipped="0" time="13.126" errors="0">
-<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › @smoke @sanity @prod ASAP_009: Full form opens with &quot;Enter Ride Details&quot; heading" classname="asap-only/asap-form.spec.ts" time="6.598">
-</testcase>
-<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › @smoke @prod &quot;Request Ride&quot; button visible" classname="asap-only/asap-form.spec.ts" time="6.528">
-</testcase>
-</testsuite>
-<testsuite name="asap-only/asap-location.spec.ts" timestamp="2026-07-02T15:15:16.524Z" hostname="rider-chromium" tests="1" failures="0" skipped="0" time="4.552" errors="0">
-<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › @smoke @sanity @prod ASAP_001: Date/time picker is NOT rendered" classname="asap-only/asap-location.spec.ts" time="4.552">
-</testcase>
-</testsuite>
+<testsuites id="" name="" tests="0" failures="0" skipped="0" errors="0" time="0.04526399999999995">
 </testsuites>

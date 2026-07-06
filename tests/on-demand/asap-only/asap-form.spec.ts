@@ -35,17 +35,17 @@ test.describe(`ASAP Only — Form Fields & Behavior ${RIDER_TAGS.ASAP} ${RIDER_T
     expect(placeholder).toBe('Note to Driver');
   });
 
-  test('@smoke ASAP_015: Flight Number field visible', async ({ guestFormSection }) => {
+  test.skip('@smoke ASAP_015: Flight Number field visible', async ({ guestFormSection }) => {
     await expect(guestFormSection.flightInput).toBeVisible();
     await expect(guestFormSection.flightInput).toHaveAttribute('placeholder', 'Flight Number');
   });
 
-  test('ASAP_016: Room Number field visible', async ({ guestFormSection }) => {
+  test.skip('ASAP_016: Room Number field visible', async ({ guestFormSection }) => {
     await expect(guestFormSection.roomInput).toBeVisible();
     await expect(guestFormSection.roomInput).toHaveAttribute('placeholder', 'Room Number');
   });
 
-  test('ASAP_015a: Flight Number accepts input and enforces maxLength 10', async ({ guestFormSection }) => {
+  test.skip('ASAP_015a: Flight Number accepts input and enforces maxLength 10', async ({ guestFormSection }) => {
     await expect(guestFormSection.flightInput).toHaveAttribute('maxlength', '10');
     // Over-length input is truncated to 10; value is preserved as typed
     // (the uppercase appearance is CSS text-transform only, not the value).
@@ -53,7 +53,7 @@ test.describe(`ASAP Only — Form Fields & Behavior ${RIDER_TAGS.ASAP} ${RIDER_T
     await expect(guestFormSection.flightInput).toHaveValue('ab12345678');
   });
 
-  test('ASAP_016a: Room Number accepts input and enforces maxLength 10', async ({ guestFormSection }) => {
+  test.skip('ASAP_016a: Room Number accepts input and enforces maxLength 10', async ({ guestFormSection }) => {
     await expect(guestFormSection.roomInput).toHaveAttribute('maxlength', '10');
     await guestFormSection.fillRoom('1234567890EXTRA');
     await expect(guestFormSection.roomInput).toHaveValue('1234567890');

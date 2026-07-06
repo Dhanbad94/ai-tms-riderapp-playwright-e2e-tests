@@ -91,7 +91,10 @@ const PREPRODUCTION: RiderEnvironmentConfig = {
     ride: 'https://ride-preprod.trackmyshuttle.com',
     api: 'https://riderapp-preprod.trackmyshuttle.com',
   },
-  canCreateRides: true,
+  // Preproduction SHARES production's database — creating test rides here would
+  // pollute prod data. So ride creation is BLOCKED (same as production); only the
+  // single self-cancelling smoke (allowCancelSmoke) may create one transient ride.
+  canCreateRides: false,
   allowCancelSmoke: true,
   orgs: {
     asapOnly: { ...ODASAP_ORG },

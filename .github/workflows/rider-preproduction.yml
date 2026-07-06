@@ -1,25 +1,27 @@
 name: Rider Tests — Preproduction
 
 on:
-  # Scheduled runs (staggered from staging to avoid hammering the shared ODASAP org)
+  # Preproduction shares production's database, so it runs the SAME ride-safe set
+  # as production (@ui-only + the single self-cancelling @prod smoke). Mon-Fri 6:30
+  # AM UTC — staggered ahead of production's 7:00 AM run so the one transient ride
+  # never collides.
   schedule:
-    # Smoke tests: Mon-Fri 6:30 AM UTC
     - cron: '30 6 * * 1-5'
-    # Full regression: Wed & Fri 9 AM UTC
-    - cron: '0 9 * * 3,5'
 
-  # Manual trigger
+  # Manual trigger. NOTE: regression/all/creates-ride create REAL rides in the
+  # shared prod DB — use only deliberately. Ride-creating tests are blocked by
+  # canCreateRides:false anyway, so they will skip.
   workflow_dispatch:
     inputs:
       test_type:
-        description: 'Test type to run'
+        description: 'Test type to run (preproduction shares prod DB — ride tests auto-skip)'
         required: false
-        default: 'smoke'
+        default: 'ui-only'
         type: choice
         options:
+          - ui-only
           - smoke
           - regression
-          - ui-only
           - sanity
           - safe
           - prod
@@ -67,15 +69,11 @@ jobs:
       - name: Determine test type
         id: test-type
         run: |
+          # Scheduled runs mirror production: the ride-free UI suite + cancel smoke.
           if [ "${{ github.event_name }}" == "schedule" ]; then
-            HOUR=$(date -u +%H)
-            if [ "$HOUR" == "06" ]; then
-              TYPE="smoke"
-            else
-              TYPE="regression"
-            fi
+            TYPE="ui-only"
           else
-            TYPE="${{ github.event.inputs.test_type || 'smoke' }}"
+            TYPE="${{ github.event.inputs.test_type || 'ui-only' }}"
           fi
           echo "type=$TYPE" >> $GITHUB_OUTPUT
           echo "Running: $TYPE tests"
@@ -83,9 +81,13 @@ jobs:
       - name: Run rider tests
         run: |
           TYPE="${{ steps.test-type.outputs.type }}"
-          # Regression and "all" runs include @creates-ride tests which submit real rides.
-          # Run them serially (workers=1) so concurrent submissions don't trip the rate limiter.
-          if [ "$TYPE" == "all" ]; then
+          # Ride creation is blocked on preproduction (shared prod DB); @creates-ride
+          # tests skip via canCreateRides(). Serialize the rare manual regression/all
+          # run anyway so the one self-cancelling smoke doesn't overlap.
+          if [ "$TYPE" == "ui-only" ]; then
+            # Same as production: ride-free UI suite + the single @prod cancel smoke.
+            ./run-tests -e preproduction --tag "@ui-only|@prod" --bc
+          elif [ "$TYPE" == "all" ]; then
             ./run-tests -e preproduction -u all --bc --workers 1
           elif [ "$TYPE" == "regression" ]; then
             ./run-tests -e preproduction --tag @${TYPE} --bc --workers 1
