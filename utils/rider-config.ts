@@ -14,7 +14,43 @@ import type {
   RiderEnvironmentConfig,
   OrgModeConfig,
   OnDemandMode,
+  DriverApiConfig,
 } from '../types';
+
+// ============================================================================
+// Driver API (dispatch-lifecycle suite) — preprod & production share the same
+// gateway Basic credentials and the same two test drivers. driverId is the
+// numeric id the login JWT returns (result.driver_id).
+//
+// NOTE: the Basic gateway credential is environment-specific (staging uses a
+// different key than preprod/prod), so it is pinned per-env here rather than
+// read from a shared DRIVER_API_BASIC_* env var (which was staging-scoped and
+// must not leak into preprod/prod). CI can override these two via the
+// PREPROD_DRIVER_BASIC_USER/PASS secrets if they rotate.
+// ============================================================================
+
+const PREPROD_PROD_BASIC_AUTH = {
+  username: process.env.PREPROD_DRIVER_BASIC_USER || 'admin',
+  password: process.env.PREPROD_DRIVER_BASIC_PASS || '12345678',
+};
+
+/** The two shared test drivers, present on both preproduction and production. */
+const DISPATCH_TEST_DRIVERS = [
+  { label: 'assigner', phone: '8676913836', isdCode: '91', passcode: '1234', driverId: 5086 },
+  { label: 'assignee', phone: '8676913837', isdCode: '91', passcode: '1234', driverId: 5087 },
+];
+
+const PREPROD_DRIVER_API: DriverApiConfig = {
+  baseUrl: 'https://driverapp-preprod.trackmyshuttle.com/driver/api/v1',
+  basicAuth: PREPROD_PROD_BASIC_AUTH,
+  drivers: DISPATCH_TEST_DRIVERS,
+};
+
+const PROD_DRIVER_API: DriverApiConfig = {
+  baseUrl: 'https://driverapp.trackmyshuttle.com/driver/api/v1',
+  basicAuth: PREPROD_PROD_BASIC_AUTH,
+  drivers: DISPATCH_TEST_DRIVERS,
+};
 
 // ============================================================================
 // Default org mode placeholder — used for modes not yet configured
@@ -96,6 +132,10 @@ const PREPRODUCTION: RiderEnvironmentConfig = {
   // single self-cancelling smoke (allowCancelSmoke) may create one transient ride.
   canCreateRides: false,
   allowCancelSmoke: true,
+  // Dispatch-lifecycle suite runs here: UI-create → assign driver → complete/
+  // cancel via the driver API. Each scenario self-cleans to a terminal state.
+  allowDispatchLifecycle: true,
+  driverApi: PREPROD_DRIVER_API,
   orgs: {
     asapOnly: { ...ODASAP_ORG },
     futureBookingOnly: { ...PLACEHOLDER_ORG },
@@ -120,6 +160,12 @@ const PRODUCTION: RiderEnvironmentConfig = {
   // gated explicitly by allowCancelSmoke (it cancels the ride it creates).
   canCreateRides: false,
   allowCancelSmoke: true,
+  // Dispatch-lifecycle suite runs on production too (few other tests execute
+  // here, and the shared DB is the same one preproduction exercises). Each
+  // scenario self-cleans to a terminal state — nothing is left active. Uses the
+  // same two dedicated test drivers, so no real customer/driver is affected.
+  allowDispatchLifecycle: true,
+  driverApi: PROD_DRIVER_API,
   orgs: {
     asapOnly: { ...ODASAP_ORG },
     futureBookingOnly: { ...PLACEHOLDER_ORG },
@@ -186,6 +232,27 @@ export function canCreateRides(): boolean {
  */
 export function canRunCancelSmoke(): boolean {
   return getRiderConfig().allowCancelSmoke === true;
+}
+
+/**
+ * Whether the driver dispatch-lifecycle suite may run in this environment.
+ * Requires both the explicit opt-in flag and a configured driver API.
+ */
+export function canRunDispatchLifecycle(): boolean {
+  const config = getRiderConfig();
+  return config.allowDispatchLifecycle === true && config.driverApi !== undefined;
+}
+
+/**
+ * Get the driver API config for the active environment.
+ * Throws if the environment has no driver API configured.
+ */
+export function getDriverApiConfig(): DriverApiConfig {
+  const config = getRiderConfig();
+  if (!config.driverApi) {
+    throw new Error(`No driver API configured for environment '${config.name}'`);
+  }
+  return config.driverApi;
 }
 
 export { STAGING, PREPRODUCTION, PRODUCTION, RIDER_CONFIGS };

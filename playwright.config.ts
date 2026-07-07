@@ -1,6 +1,3 @@
-import * as dotenv from "dotenv";
-dotenv.config({ path: ".env.local" });
-
 import { defineConfig, devices } from "@playwright/test";
 import { TIMEOUTS, RIDER_TIMEOUTS } from "./constants";
 import { getRiderConfig } from "./utils/rider-config";
@@ -29,7 +26,7 @@ const riderConfig = getRiderConfig();
  * dedicated project pinned to workers:1 and are excluded from the parallel
  * Desktop Chrome project to avoid tripping staging's rate limiter.
  */
-const CREATES_RIDE_FILES = /asap-(confirmation|feedback|cancellation|e2e)\.spec\.ts$/;
+const CREATES_RIDE_FILES = /asap-(confirmation|feedback|cancellation|e2e|dispatch-lifecycle)\.spec\.ts$/;
 
 export default defineConfig({
   testDir: "./tests/on-demand",

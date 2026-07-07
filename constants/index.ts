@@ -90,10 +90,39 @@ export const RIDER_TAGS = {
   CREATES_RIDE: '@creates-ride',
   UI_ONLY: '@ui-only',
   PAYLOAD: '@payload',
+  DISPATCH_LIFECYCLE: '@dispatch-lifecycle',   // Driver-API dispatch lifecycle (assign→complete/cancel)
   // Environment/execution tags
   SMOKE: '@smoke',
   REGRESSION: '@regression',
   SANITY: '@sanity',
   SAFE: '@safe',             // Safe for production (no ride creation)
   PROD: '@prod',             // Curated ride-free set run against production on a cron
+} as const;
+
+// ============================================================================
+// Driver API — Dispatch Lifecycle
+// ============================================================================
+
+/**
+ * Action codes for POST /dispatch-action (driver API).
+ * From the swagger: "1 for complete and 2 for cancellation".
+ */
+export const DISPATCH_ACTION = {
+  COMPLETE: 1,
+  CANCEL: 2,
+} as const;
+
+/**
+ * Status codes as they appear in GET /requests → allRequests[].status (the
+ * self-serve queue). status:1 = "waiting on driver" (queued, unassigned) — the
+ * only value we assert on, since it's what the queue listing reports.
+ *
+ * NOTE: the /dispatch-status endpoint's `dispatch.status` field uses a DIFFERENT,
+ * unreliable vocabulary (observed to stay 1 after a successful assign and read 3
+ * after a successful cancel), so lifecycle transitions are verified via the
+ * action responses (assign successCount / dispatch-action message) + the
+ * dispatch leaving the queue, NOT via /dispatch-status.
+ */
+export const DISPATCH_STATUS = {
+  WAITING_ON_DRIVER: 1,   // queued, unassigned (as reported by /requests)
 } as const;
