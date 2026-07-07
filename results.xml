@@ -1,2 +1,828 @@
-<testsuites id="" name="" tests="0" failures="0" skipped="0" errors="0" time="0.04526399999999995">
+<testsuites id="" name="" tests="169" failures="0" skipped="78" errors="0" time="424.28165900000005">
+<testsuite name="asap-only/asap-api-payload.spec.ts" timestamp="2026-07-07T12:11:09.685Z" hostname="rider-chromium" tests="12" failures="0" skipped="3" time="158.213" errors="0">
+<testcase name="ASAP Only — API Payload Verification @asap @payload @regression @safe › @smoke @sanity ASAP_027: No booking object in payload" classname="asap-only/asap-api-payload.spec.ts" time="8.518">
+</testcase>
+<testcase name="ASAP Only — API Payload Verification @asap @payload @regression @safe › ASAP_028: No luggage/riderType in payload" classname="asap-only/asap-api-payload.spec.ts" time="7.773">
+</testcase>
+<testcase name="ASAP Only — API Payload Verification @asap @payload @regression @safe › ASAP_047: Flight &amp; room numbers included in payload when filled" classname="asap-only/asap-api-payload.spec.ts" time="9.553">
+</testcase>
+<testcase name="ASAP Only — API Payload Verification @asap @payload @regression @safe › ASAP_048: Flight &amp; room are null when not filled" classname="asap-only/asap-api-payload.spec.ts" time="37.314">
+</testcase>
+<testcase name="ASAP Only — API Payload Verification @asap @payload @regression @safe › ASAP_029: Stop IDs are real values (not 0)" classname="asap-only/asap-api-payload.spec.ts" time="37.176">
+</testcase>
+<testcase name="ASAP Only — API Payload Verification @asap @payload @regression @safe › @smoke ASAP_030: API uses /rider/api/v1 endpoint" classname="asap-only/asap-api-payload.spec.ts" time="7.05">
+</testcase>
+<testcase name="ASAP Only — API Payload Verification @asap @payload @regression @safe › ASAP_031: Submit uses /request (no type suffix)" classname="asap-only/asap-api-payload.spec.ts" time="7.313">
+</testcase>
+<testcase name="ASAP Only — API Payload Verification @asap @payload @regression @safe › ASAP_044: Payload has correct rider details" classname="asap-only/asap-api-payload.spec.ts" time="36.397">
+</testcase>
+<testcase name="ASAP Only — API Payload Verification @asap @payload @regression @safe › Payload has pickup/dropoff coordinates" classname="asap-only/asap-api-payload.spec.ts" time="7.119">
+</testcase>
+<testcase name="ASAP Only — API Payload Verification @asap @payload @regression @safe › ASAP_045: Loader appears during submission" classname="asap-only/asap-api-payload.spec.ts">
+<properties>
+<property name="fixme" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — API Payload Verification @asap @payload @regression @safe › ASAP_046: Toast error on API failure" classname="asap-only/asap-api-payload.spec.ts">
+<properties>
+<property name="fixme" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — API Payload Verification @asap @payload @regression @safe › API timeout shows error state" classname="asap-only/asap-api-payload.spec.ts">
+<properties>
+<property name="fixme" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="asap-only/asap-form.spec.ts" timestamp="2026-07-07T12:11:09.685Z" hostname="rider-chromium" tests="26" failures="0" skipped="5" time="109.956" errors="0">
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › @smoke @sanity @prod ASAP_009: Full form opens with &quot;Enter Ride Details&quot; heading" classname="asap-only/asap-form.spec.ts" time="4.94">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › ASAP_011: Special Assistance checkbox visible" classname="asap-only/asap-form.spec.ts" time="4.606">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › ASAP_012: ADA label shows &quot;Special Assistance&quot;" classname="asap-only/asap-form.spec.ts" time="4.627">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › ASAP_013: Notes textarea visible" classname="asap-only/asap-form.spec.ts" time="4.67">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › ASAP_014: Notes placeholder shows &quot;Note&quot;" classname="asap-only/asap-form.spec.ts" time="4.847">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › @smoke ASAP_015: Flight Number field visible" classname="asap-only/asap-form.spec.ts">
+<properties>
+<property name="skip" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › ASAP_016: Room Number field visible" classname="asap-only/asap-form.spec.ts">
+<properties>
+<property name="skip" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › ASAP_015a: Flight Number accepts input and enforces maxLength 10" classname="asap-only/asap-form.spec.ts">
+<properties>
+<property name="skip" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › ASAP_016a: Room Number accepts input and enforces maxLength 10" classname="asap-only/asap-form.spec.ts">
+<properties>
+<property name="skip" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › ASAP_017: Rider type radios hidden" classname="asap-only/asap-form.spec.ts" time="4.728">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › ASAP_010: Rider count dropdown exists in flow" classname="asap-only/asap-form.spec.ts" time="4.658">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › ASAP_018: Notes textarea enforces maxLength" classname="asap-only/asap-form.spec.ts" time="4.82">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › Name input accepts text" classname="asap-only/asap-form.spec.ts" time="5.094">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › Phone input accepts numeric input" classname="asap-only/asap-form.spec.ts" time="5.568">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › Special Assistance checkbox toggles" classname="asap-only/asap-form.spec.ts" time="5.892">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › Notes textarea accepts text up to maxLength" classname="asap-only/asap-form.spec.ts" time="5.083">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › Country code selector opens" classname="asap-only/asap-form.spec.ts" time="5.58">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › Country code dropdown filters by search" classname="asap-only/asap-form.spec.ts" time="5.269">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › Back button shows Go Back confirmation dialog" classname="asap-only/asap-form.spec.ts" time="5.437">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › Back dialog Cancel keeps user on form" classname="asap-only/asap-form.spec.ts" time="4.707">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › Back dialog Go Back returns to location page" classname="asap-only/asap-form.spec.ts" time="8.495">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › @smoke @prod &quot;Request Ride&quot; button visible" classname="asap-only/asap-form.spec.ts" time="5.205">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › Terms of Service link visible" classname="asap-only/asap-form.spec.ts" time="5.126">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › Privacy Policy link visible" classname="asap-only/asap-form.spec.ts" time="5.357">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › Riders dropdown was pre-selected" classname="asap-only/asap-form.spec.ts" time="5.247">
+</testcase>
+<testcase name="ASAP Only — Form Fields &amp; Behavior @asap @ui-only @regression @safe › ASAP_042: Guest data saved to cookies" classname="asap-only/asap-form.spec.ts">
+<properties>
+<property name="skip" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="asap-only/asap-location-advanced.spec.ts" timestamp="2026-07-07T12:11:09.685Z" hostname="rider-chromium" tests="23" failures="0" skipped="1" time="76.399" errors="0">
+<testcase name="ASAP Only — Stop Search @asap @ui-only @regression @safe › @smoke SEARCH_001: Search pickup stops by partial name" classname="asap-only/asap-location-advanced.spec.ts" time="2.767">
+</testcase>
+<testcase name="ASAP Only — Stop Search @asap @ui-only @regression @safe › SEARCH_002: Search dropoff stops by partial name" classname="asap-only/asap-location-advanced.spec.ts" time="2.795">
+</testcase>
+<testcase name="ASAP Only — Stop Search @asap @ui-only @regression @safe › SEARCH_003: Search with no results shows empty state" classname="asap-only/asap-location-advanced.spec.ts" time="6.655">
+</testcase>
+<testcase name="ASAP Only — Stop Search @asap @ui-only @regression @safe › SEARCH_004: Clearing search restores full stop list" classname="asap-only/asap-location-advanced.spec.ts" time="4.159">
+</testcase>
+<testcase name="ASAP Only — Stop Search @asap @ui-only @regression @safe › SEARCH_005: Search is case-insensitive" classname="asap-only/asap-location-advanced.spec.ts" time="4.136">
+</testcase>
+<testcase name="ASAP Only — Stop Search @asap @ui-only @regression @safe › SEARCH_006: Select a stop from search results" classname="asap-only/asap-location-advanced.spec.ts" time="4.331">
+</testcase>
+<testcase name="ASAP Only — Stop Search @asap @ui-only @regression @safe › SEARCH_007: Search by single character returns results" classname="asap-only/asap-location-advanced.spec.ts" time="3.313">
+</testcase>
+<testcase name="ASAP Only — Random Stops &amp; Dynamic Riders @asap @regression @safe › @smoke RANDOM_001: Select random pickup and dropoff stops" classname="asap-only/asap-location-advanced.spec.ts" time="3.682">
+</testcase>
+<testcase name="ASAP Only — Random Stops &amp; Dynamic Riders @asap @regression @safe › RANDOM_002: All available stops are listed for pickup" classname="asap-only/asap-location-advanced.spec.ts" time="2.668">
+</testcase>
+<testcase name="ASAP Only — Random Stops &amp; Dynamic Riders @asap @regression @safe › RANDOM_003: Selected pickup is removed from dropoff list" classname="asap-only/asap-location-advanced.spec.ts" time="3.463">
+</testcase>
+<testcase name="ASAP Only — Random Stops &amp; Dynamic Riders @asap @regression @safe › RANDOM_004: Multiple riders can be selected from dropdown" classname="asap-only/asap-location-advanced.spec.ts" time="4.135">
+</testcase>
+<testcase name="ASAP Only — Random Stops &amp; Dynamic Riders @asap @regression @safe › RANDOM_005: Complete ride request with random stops" classname="asap-only/asap-location-advanced.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Map View @asap @ui-only @regression @safe › @smoke MAP_001: &quot;View on map&quot; is visible and clickable" classname="asap-only/asap-location-advanced.spec.ts" time="2.527">
+</testcase>
+<testcase name="ASAP Only — Map View @asap @ui-only @regression @safe › MAP_002: Clicking &quot;View on map&quot; changes page view" classname="asap-only/asap-location-advanced.spec.ts" time="2.672">
+</testcase>
+<testcase name="ASAP Only — Map View @asap @ui-only @regression @safe › MAP_003: Map area loads after selecting both stops" classname="asap-only/asap-location-advanced.spec.ts" time="2.703">
+</testcase>
+<testcase name="ASAP Only — Map View @asap @ui-only @regression @safe › MAP_004: Map container has Google Maps elements" classname="asap-only/asap-location-advanced.spec.ts" time="3.269">
+</testcase>
+<testcase name="ASAP Only — Use Current Location @asap @ui-only @regression @safe › @smoke LOC_001: &quot;Use Current Location&quot; button is visible" classname="asap-only/asap-location-advanced.spec.ts" time="2.421">
+</testcase>
+<testcase name="ASAP Only — Use Current Location @asap @ui-only @regression @safe › LOC_002: Clicking &quot;Use Current Location&quot; triggers location dialog or action" classname="asap-only/asap-location-advanced.spec.ts" time="3.465">
+</testcase>
+<testcase name="ASAP Only — Use Current Location @asap @ui-only @regression @safe › LOC_003: Location permission dialog shows Allow and Not Now buttons" classname="asap-only/asap-location-advanced.spec.ts" time="2.703">
+</testcase>
+<testcase name="ASAP Only — Use Current Location @asap @ui-only @regression @safe › LOC_004: Clicking &quot;Not Now&quot; dismisses the location dialog" classname="asap-only/asap-location-advanced.spec.ts" time="2.926">
+</testcase>
+<testcase name="ASAP Only — Use Current Location @asap @ui-only @regression @safe › LOC_005: Geolocation granted selects nearest stop" classname="asap-only/asap-location-advanced.spec.ts" time="3.127">
+</testcase>
+<testcase name="ASAP Only — Use Current Location @asap @ui-only @regression @safe › LOC_006: Geolocation denied shows denied modal" classname="asap-only/asap-location-advanced.spec.ts" time="2.865">
+</testcase>
+<testcase name="ASAP Only — Use Current Location @asap @ui-only @regression @safe › LOC_007: &quot;Use Current Location&quot; hidden when dropoff input is focused" classname="asap-only/asap-location-advanced.spec.ts" time="2.776">
+</testcase>
+</testsuite>
+<testsuite name="asap-only/asap-location.spec.ts" timestamp="2026-07-07T12:11:09.685Z" hostname="rider-chromium" tests="19" failures="0" skipped="0" time="64.404" errors="0">
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › @smoke @sanity @prod ASAP_001: Date/time picker is NOT rendered" classname="asap-only/asap-location.spec.ts" time="2.486">
+</testcase>
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › ASAP_005: Header shows &quot;Select Location&quot; before stops chosen" classname="asap-only/asap-location.spec.ts" time="2.613">
+</testcase>
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › ASAP_006: Header shows &quot;Confirm Location&quot; after both stops selected" classname="asap-only/asap-location.spec.ts" time="2.998">
+</testcase>
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › @smoke ASAP_002: Button text shows &quot;Confirm Location&quot; (not &quot;Next&quot;)" classname="asap-only/asap-location.spec.ts" time="3.262">
+</testcase>
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › ASAP_003: Button enabled without time selection" classname="asap-only/asap-location.spec.ts" time="4.292">
+</testcase>
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › @smoke ASAP_004: &quot;Use Current Location&quot; button visible" classname="asap-only/asap-location.spec.ts" time="2.752">
+</testcase>
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › ASAP_007: No getAvailableDates API call" classname="asap-only/asap-location.spec.ts" time="4.493">
+</testcase>
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › ASAP_008: No getAvailableSlots API call" classname="asap-only/asap-location.spec.ts" time="4.184">
+</testcase>
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › Riders dropdown exists in booking flow" classname="asap-only/asap-location.spec.ts" time="4.044">
+</testcase>
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › @smoke Stop list loads with available stops" classname="asap-only/asap-location.spec.ts" time="2.928">
+</testcase>
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › @smoke @sanity Pickup stop selection populates input" classname="asap-only/asap-location.spec.ts" time="2.895">
+</testcase>
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › Dropoff stop selection populates input" classname="asap-only/asap-location.spec.ts" time="2.961">
+</testcase>
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › Cannot select same stop for both" classname="asap-only/asap-location.spec.ts" time="2.661">
+</testcase>
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › Stop search filters the list" classname="asap-only/asap-location.spec.ts" time="2.683">
+</testcase>
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › Search with no results shows not-found message" classname="asap-only/asap-location.spec.ts" time="6.512">
+</testcase>
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › Clear pickup input resets selection" classname="asap-only/asap-location.spec.ts" time="2.857">
+</testcase>
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › &quot;View on map&quot; button is visible" classname="asap-only/asap-location.spec.ts" time="2.865">
+</testcase>
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › Back button triggers confirmation dialog" classname="asap-only/asap-location.spec.ts" time="3.356">
+</testcase>
+<testcase name="ASAP Only — Location Selection @asap @ui-only @regression @safe › Cancel in back dialog keeps user on page" classname="asap-only/asap-location.spec.ts" time="3.562">
+</testcase>
+</testsuite>
+<testsuite name="asap-only/asap-validation.spec.ts" timestamp="2026-07-07T12:11:09.685Z" hostname="rider-chromium" tests="14" failures="0" skipped="0" time="91.739" errors="0">
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › @smoke @sanity ASAP_019: Empty form submission blocked — validation errors on name and phone" classname="asap-only/asap-validation.spec.ts" time="4.735">
+</testcase>
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › ASAP_020: Name field shows validation error when empty" classname="asap-only/asap-validation.spec.ts" time="6.656">
+</testcase>
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › ASAP_021: Phone field shows error for too-short phone" classname="asap-only/asap-validation.spec.ts" time="6.905">
+</testcase>
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › Phone field accepts valid phone (10-16 digits)" classname="asap-only/asap-validation.spec.ts" time="7.852">
+</testcase>
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › Phone too-long is truncated" classname="asap-only/asap-validation.spec.ts" time="7.546">
+</testcase>
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › ASAP_022: Riders were required and selected" classname="asap-only/asap-validation.spec.ts" time="6.508">
+</testcase>
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › ASAP_023: No time-related validation error" classname="asap-only/asap-validation.spec.ts" time="5.492">
+</testcase>
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › @smoke ASAP_024: XSS sanitized in name" classname="asap-only/asap-validation.spec.ts" time="5.673">
+</testcase>
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › ASAP_025: XSS sanitized in notes" classname="asap-only/asap-validation.spec.ts" time="7.045">
+</testcase>
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › ASAP_026: Scroll to first error on submit" classname="asap-only/asap-validation.spec.ts" time="7.158">
+</testcase>
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › Form recovery — fixing name clears error" classname="asap-only/asap-validation.spec.ts" time="7.12">
+</testcase>
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › Form recovery — fixing phone clears error" classname="asap-only/asap-validation.spec.ts" time="7.832">
+</testcase>
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › Riders already selected — form functional" classname="asap-only/asap-validation.spec.ts" time="5.905">
+</testcase>
+<testcase name="ASAP Only — Validation @asap @ui-only @regression @safe › Notes textarea respects maxLength" classname="asap-only/asap-validation.spec.ts" time="5.312">
+</testcase>
+</testsuite>
+<testsuite name="asap-only/asap-cancellation.spec.ts" timestamp="2026-07-07T12:11:09.685Z" hostname="rider-creates-ride" tests="28" failures="0" skipped="27" time="98.699" errors="0">
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_001: Cancel Ride link visible when ride active" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_002: Call Operator link visible alongside Cancel" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_003: Cancel Ride hidden after cancellation" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_004: Cancel dialog opens with heading" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_005: Dialog shows all 5 cancellation reasons" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_006: Dialog shows Back and Cancel Ride buttons" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_007: Cancel Ride button disabled when no reason selected" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_008: Back button closes dialog without canceling" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_009: &quot;Ride request was not accepted&quot; — enables submit" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_010: Cancel with &quot;Ride request was not accepted&quot; succeeds" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_011: &quot;Wait time was too long&quot; — enables submit" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_012: Cancel with &quot;Wait time was too long&quot; succeeds" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_013: &quot;Change in travel plans&quot; — enables submit" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › @sanity CANCEL_014: Cancel with &quot;Change in travel plans&quot; succeeds" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_015: &quot;Found alternative ride&quot; — enables submit" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_016: Cancel with &quot;Found alternative ride&quot; succeeds" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_017: &quot;App or technical issue&quot; shows textarea" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_018: &quot;App or technical issue&quot; + details enables submit" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_019: Cancel with &quot;App or technical issue&quot; + details succeeds" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_020: Switching reasons keeps submit enabled" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_021: Payload contains ride code and reason" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_022: Endpoint is /cancel-ride (no type suffix for ASAP)" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_023: &quot;Ride Canceled Successfully!&quot; banner shown" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_024: &quot;Request Again&quot; button visible after cancel" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_025: &quot;Provide Feedback&quot; link visible after cancel" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_026: &quot;Call Operator&quot; link visible after cancel" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Ride @asap @creates-ride @regression › CANCEL_027: &quot;Request Again&quot; button is visible on post-cancel screen" classname="asap-only/asap-cancellation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Cancel Smoke @asap @prod › @prod PROD_CANCEL_001: Create then immediately cancel a ride" classname="asap-only/asap-cancellation.spec.ts" time="12.692">
+</testcase>
+</testsuite>
+<testsuite name="asap-only/asap-confirmation.spec.ts" timestamp="2026-07-07T12:11:09.685Z" hostname="rider-creates-ride" tests="12" failures="0" skipped="12" time="38.006" errors="0">
+<testcase name="ASAP Only — Confirmation Page @asap @creates-ride @regression › @sanity ASAP_032: Shows status text, not TrackingCard" classname="asap-only/asap-confirmation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Confirmation Page @asap @creates-ride @regression › ASAP_033: Pickup and dropoff names are NOT shown in ASAP mode" classname="asap-only/asap-confirmation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Confirmation Page @asap @creates-ride @regression › ASAP_034: Shows ride status message" classname="asap-only/asap-confirmation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Confirmation Page @asap @creates-ride @regression › ASAP_035: Page has status heading elements" classname="asap-only/asap-confirmation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Confirmation Page @asap @creates-ride @regression › TrackingCard &quot;View All Bookings&quot; NOT visible" classname="asap-only/asap-confirmation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Confirmation Page @asap @creates-ride @regression › Map area present" classname="asap-only/asap-confirmation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Confirmation Page @asap @creates-ride @regression › Call Operator or Cancel Ride visible" classname="asap-only/asap-confirmation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Confirmation Page @asap @creates-ride @regression › ASAP_040: Client-side fetch includes ride code" classname="asap-only/asap-confirmation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Confirmation Page @asap @creates-ride @regression › No critical JavaScript errors" classname="asap-only/asap-confirmation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Confirmation Page @asap @creates-ride @regression › Confirmation page renders content" classname="asap-only/asap-confirmation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Confirmation Page @asap @creates-ride @regression › Progress animation or status card visible" classname="asap-only/asap-confirmation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Confirmation Page @asap @creates-ride @regression › ASAP_049: Rider details visible on tracking screen after submit" classname="asap-only/asap-confirmation.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="asap-only/asap-dispatch-lifecycle.spec.ts" timestamp="2026-07-07T12:11:09.685Z" hostname="rider-creates-ride" tests="5" failures="0" skipped="0" time="103.395" errors="0">
+<testcase name="ASAP Only — Dispatch Lifecycle @asap @dispatch-lifecycle › @dispatch-lifecycle DISPATCH_001: Create → assign driver → complete" classname="asap-only/asap-dispatch-lifecycle.spec.ts" time="14.324">
+</testcase>
+<testcase name="ASAP Only — Dispatch Lifecycle @asap @dispatch-lifecycle › @dispatch-lifecycle DISPATCH_002: Create → assign driver → cancel" classname="asap-only/asap-dispatch-lifecycle.spec.ts" time="13.059">
+</testcase>
+<testcase name="ASAP Only — Dispatch Lifecycle @asap @dispatch-lifecycle › @dispatch-lifecycle DISPATCH_003: Driver assignment updates rider tracking UI in real time" classname="asap-only/asap-dispatch-lifecycle.spec.ts" time="17.548">
+</testcase>
+<testcase name="ASAP Only — Dispatch Lifecycle @asap @dispatch-lifecycle › @dispatch-lifecycle DISPATCH_004: Full journey — submitted → assigned → start → complete (UI at each screen)" classname="asap-only/asap-dispatch-lifecycle.spec.ts" time="29.008">
+</testcase>
+<testcase name="ASAP Only — Dispatch Lifecycle @asap @dispatch-lifecycle › @dispatch-lifecycle DISPATCH_005: Full journey — pick up (granular) → drop off → complete" classname="asap-only/asap-dispatch-lifecycle.spec.ts" time="29.456">
+</testcase>
+</testsuite>
+<testsuite name="asap-only/asap-e2e.spec.ts" timestamp="2026-07-07T12:11:09.685Z" hostname="rider-creates-ride" tests="10" failures="0" skipped="10" time="19.12" errors="0">
+<testcase name="ASAP Only — End-to-End Flows @asap @creates-ride @regression › @sanity ASAP_047: Full happy path — Location → Form → Submit → Confirmation" classname="asap-only/asap-e2e.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — End-to-End Flows @asap @creates-ride @regression › Full flow with minimum fields" classname="asap-only/asap-e2e.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — End-to-End Flows @asap @creates-ride @regression › Full flow with all optional fields" classname="asap-only/asap-e2e.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — End-to-End Flows @asap @creates-ride @regression › Full flow verifies no future booking data in payload" classname="asap-only/asap-e2e.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — End-to-End Flows @asap @creates-ride @regression › Full flow with different stops" classname="asap-only/asap-e2e.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — End-to-End Flows @asap @creates-ride @regression › ASAP mode — no Future Booking elements anywhere" classname="asap-only/asap-e2e.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — End-to-End Flows @asap @creates-ride @regression › Error flow — API failure stays on form" classname="asap-only/asap-e2e.spec.ts">
+<properties>
+<property name="fixme" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — End-to-End Flows @asap @creates-ride @regression › Error flow — API timeout stays on form" classname="asap-only/asap-e2e.spec.ts">
+<properties>
+<property name="fixme" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — End-to-End Flows @asap @creates-ride @regression › ASAP_043: Guest data restored from cookies" classname="asap-only/asap-e2e.spec.ts">
+<properties>
+<property name="fixme" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — End-to-End Flows @asap @creates-ride @regression › ASAP_044: Auth removed when phone changes" classname="asap-only/asap-e2e.spec.ts">
+<properties>
+<property name="fixme" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="asap-only/asap-feedback.spec.ts" timestamp="2026-07-07T12:11:09.685Z" hostname="rider-creates-ride" tests="20" failures="0" skipped="20" time="63.242" errors="0">
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_001: Feedback modal opens with heading" classname="asap-only/asap-feedback.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_002: Subheading visible" classname="asap-only/asap-feedback.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_003: 3 emoji rating buttons visible" classname="asap-only/asap-feedback.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_004: Textarea visible with &quot;Type your feedback&quot; placeholder" classname="asap-only/asap-feedback.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_005: &quot;Share Feedback&quot; button visible but disabled" classname="asap-only/asap-feedback.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_006: Selecting Sad enables &quot;Share Feedback&quot;" classname="asap-only/asap-feedback.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_007: Submit with Sad rating + text succeeds" classname="asap-only/asap-feedback.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_008: Selecting Neutral enables &quot;Share Feedback&quot;" classname="asap-only/asap-feedback.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_009: Submit with Neutral rating + text succeeds" classname="asap-only/asap-feedback.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_010: Selecting Happy enables &quot;Share Feedback&quot;" classname="asap-only/asap-feedback.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_011: Submit with Happy rating (no text) succeeds" classname="asap-only/asap-feedback.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › @sanity FB_012: Submit with Happy rating + text succeeds" classname="asap-only/asap-feedback.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_013: Selecting any rating enables submit" classname="asap-only/asap-feedback.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_014: Textarea sanitizes XSS input" classname="asap-only/asap-feedback.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_015: Feedback text retained when switching ratings" classname="asap-only/asap-feedback.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_016: Feedback API called on submit" classname="asap-only/asap-feedback.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_017: Thank You screen shown after feedback" classname="asap-only/asap-feedback.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_018: &quot;Request Again&quot; button visible on Thank You" classname="asap-only/asap-feedback.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_019: &quot;Request Again&quot; navigates to org page" classname="asap-only/asap-feedback.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="ASAP Only — Feedback After Cancel @asap @creates-ride @regression › FB_020: Browser back blocked on Thank You" classname="asap-only/asap-feedback.spec.ts">
+<properties>
+<property name="skip" value="Ride creation disabled on this environment">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
 </testsuites>
