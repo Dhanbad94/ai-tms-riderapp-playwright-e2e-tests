@@ -111,7 +111,11 @@ function formatDuration(ms: number): string {
 function generateHTML(report: PlaywrightReport, rows: TestRow[]): string {
   const { stats } = report;
   const total = stats.expected + stats.unexpected + stats.skipped + stats.flaky;
-  const passRate = total > 0 ? Math.round((stats.expected / total) * 100) : 0;
+  // Pass rate over EXECUTED tests only: skipped tests didn't run, so they don't
+  // count for or against, and flaky tests are counted as passes (they ultimately
+  // passed on retry). passRate = (passed + flaky) / (passed + failed + flaky).
+  const executed = stats.expected + stats.unexpected + stats.flaky;
+  const passRate = executed > 0 ? Math.round(((stats.expected + stats.flaky) / executed) * 100) : 0;
   const retriedCount = rows.filter(r => r.retries > 0).length;
   const runDate = new Date(stats.startTime).toLocaleString('en-US', {
     dateStyle: 'medium', timeStyle: 'short',
