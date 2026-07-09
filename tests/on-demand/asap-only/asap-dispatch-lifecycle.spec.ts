@@ -14,6 +14,7 @@ import { SelectLocationPage } from '../../../pages/rider/SelectLocationPage';
 import { GuestFormSection } from '../../../pages/rider/GuestFormSection';
 import { DriverApiClient } from '../../../utils/api/driver-client';
 import type { APIRequestContext, Page } from '@playwright/test';
+import type { DriverApiConfig } from '../../../types';
 
 /**
  * ASAP Only — Driver Dispatch Lifecycle (preproduction; production opt-in)
@@ -375,5 +376,142 @@ test.describe(`ASAP Only — Dispatch Lifecycle ${RIDER_TAGS.ASAP} ${RIDER_TAGS.
 
     // Trip completed and ended — nothing left active.
     cleanup = null;
+  });
+});
+
+// ============================================================================
+// Driver API — Negative / Error Paths (ride-FREE)
+//
+// Bad auth, missing/invalid parameters, and invalid targets. Every error
+// response carries a semantic `body.code` (the HTTP status is inconsistent —
+// auth failures return HTTP 200 with a body-level 401), so assertions check
+// `body.code`. No rides are created — safe for the shared preprod/prod DB.
+// ============================================================================
+
+const NEG_DEVICE = {
+  device_id: 'pw-neg', device_type: '1', platform: '1', model: 'm', version: '1',
+  device_token: 't', device_mac: 'x', device_ip_address: '1',
+};
+
+function negBasicHeader(cfg: DriverApiConfig, user = cfg.basicAuth.username, pass = cfg.basicAuth.password): string {
+  return `Basic ${Buffer.from(`${user}:${pass}`).toString('base64')}`;
+}
+
+async function negPost(request: APIRequestContext, url: string, headers: Record<string, string>, data: Record<string, unknown>) {
+  const res = await request.post(url, { headers: { 'Content-Type': 'application/json', ...headers }, data });
+  return { httpStatus: res.status(), body: await res.json().catch(() => ({})) };
+}
+
+async function negGet(request: APIRequestContext, url: string, headers: Record<string, string>) {
+  const res = await request.get(url, { headers });
+  return { httpStatus: res.status(), body: await res.json().catch(() => ({})) };
+}
+
+/** Log in a real driver and return a valid Bearer token (for authed negatives). */
+async function negValidToken(request: APIRequestContext, cfg: DriverApiConfig): Promise<string> {
+  const d = cfg.drivers[0]!;
+  const { body } = await negPost(request, `${cfg.baseUrl}/login`, { Authorization: negBasicHeader(cfg) },
+    { phone_no: d.phone, isd_code: d.isdCode, passcode: d.passcode, ...NEG_DEVICE });
+  return body.token as string;
+}
+
+test.describe(`ASAP Only — Driver API Negatives ${RIDER_TAGS.ASAP} ${RIDER_TAGS.DISPATCH_LIFECYCLE} ${RIDER_TAGS.NEGATIVE}`, () => {
+  test.beforeEach(() => {
+    test.skip(!canRunDispatchLifecycle(), 'Driver API not configured for this environment');
+  });
+
+  // ── Authentication ──────────────────────────────────────────────────────
+
+  test('@negative NEG_DRV_001: login with wrong passcode → 400 Invalid passcode', async ({ request }) => {
+    const cfg = getDriverApiConfig();
+    const d = cfg.drivers[0]!;
+    const { body } = await negPost(request, `${cfg.baseUrl}/login`, { Authorization: negBasicHeader(cfg) },
+      { phone_no: d.phone, isd_code: d.isdCode, passcode: '0000', ...NEG_DEVICE });
+    expect(body.code).toBe(400);
+    expect(String(body.message).toLowerCase()).toContain('passcode');
+  });
+
+  test('@negative NEG_DRV_002: login with wrong Basic gateway creds → 401', async ({ request }) => {
+    const cfg = getDriverApiConfig();
+    const d = cfg.drivers[0]!;
+    const { body } = await negPost(request, `${cfg.baseUrl}/login`, { Authorization: negBasicHeader(cfg, 'wrong', 'wrong') },
+      { phone_no: d.phone, isd_code: d.isdCode, passcode: d.passcode, ...NEG_DEVICE });
+    expect(body.code).toBe(401);
+    expect(String(body.message).toLowerCase()).toContain('authentication');
+  });
+
+  test('@negative NEG_DRV_003: login without Authorization header → 401 Missing Authorization', async ({ request }) => {
+    const cfg = getDriverApiConfig();
+    const d = cfg.drivers[0]!;
+    const { body } = await negPost(request, `${cfg.baseUrl}/login`, {},
+      { phone_no: d.phone, isd_code: d.isdCode, passcode: d.passcode, ...NEG_DEVICE });
+    expect(body.code).toBe(401);
+    expect(String(body.message).toLowerCase()).toContain('authorization');
+  });
+
+  test('@negative NEG_DRV_004: login missing passcode → 422 validation error', async ({ request }) => {
+    const cfg = getDriverApiConfig();
+    const d = cfg.drivers[0]!;
+    const { body } = await negPost(request, `${cfg.baseUrl}/login`, { Authorization: negBasicHeader(cfg) },
+      { phone_no: d.phone, isd_code: d.isdCode, ...NEG_DEVICE });
+    expect(body.code).toBe(422);
+    expect(JSON.stringify(body.response ?? body)).toMatch(/passcode/i);
+  });
+
+  test('@negative NEG_DRV_005: authed endpoint with garbage Bearer → 401', async ({ request }) => {
+    const cfg = getDriverApiConfig();
+    const { body } = await negGet(request, `${cfg.baseUrl}/dashboard`, { Authorization: 'Bearer garbage.token.xyz' });
+    expect(body.code).toBe(401);
+  });
+
+  test('@negative NEG_DRV_006: authed endpoint with no Bearer → 401 Unauthorised', async ({ request }) => {
+    const cfg = getDriverApiConfig();
+    const { body } = await negGet(request, `${cfg.baseUrl}/dashboard`, {});
+    expect(body.code).toBe(401);
+    expect(String(body.message).toLowerCase()).toContain('unauth');
+  });
+
+  // ── Parameter validation ────────────────────────────────────────────────
+
+  test('@negative NEG_DRV_007: dispatch-action missing dispatch → 422', async ({ request }) => {
+    const cfg = getDriverApiConfig();
+    const token = await negValidToken(request, cfg);
+    const { body } = await negPost(request, `${cfg.baseUrl}/dispatch-action`, { Authorization: `Bearer ${token}` },
+      { action: 2, message: 'x' });
+    expect(body.code).toBe(422);
+    expect(JSON.stringify(body.response ?? body)).toMatch(/dispatch/i);
+  });
+
+  test('@negative NEG_DRV_008: drivers-for-dispatch missing dispatch → 422', async ({ request }) => {
+    const cfg = getDriverApiConfig();
+    const token = await negValidToken(request, cfg);
+    const { body } = await negPost(request, `${cfg.baseUrl}/drivers-for-dispatch`, { Authorization: `Bearer ${token}` }, {});
+    expect(body.code).toBe(422);
+  });
+
+  // ── Invalid targets (nonexistent ids — no ride created) ─────────────────
+
+  test('@negative NEG_DRV_009: dispatch-action on nonexistent dispatch → 400 Invalid request', async ({ request }) => {
+    const cfg = getDriverApiConfig();
+    const token = await negValidToken(request, cfg);
+    const { body } = await negPost(request, `${cfg.baseUrl}/dispatch-action`, { Authorization: `Bearer ${token}` },
+      { dispatch: 999999999, action: 2, message: 'neg-test' });
+    expect(body.code).toBe(400);
+  });
+
+  test('@negative NEG_DRV_010: dispatch-status on nonexistent dispatch → 206 No Data Found', async ({ request }) => {
+    const cfg = getDriverApiConfig();
+    const token = await negValidToken(request, cfg);
+    const { body } = await negPost(request, `${cfg.baseUrl}/dispatch-status`, { Authorization: `Bearer ${token}` },
+      { dispatch: 999999999 });
+    expect(body.code).toBe(206);
+  });
+
+  test('@negative NEG_DRV_011: assign-request to nonexistent dispatch/driver → 400 Invalid request', async ({ request }) => {
+    const cfg = getDriverApiConfig();
+    const token = await negValidToken(request, cfg);
+    const { body } = await negPost(request, `${cfg.baseUrl}/assign-request`, { Authorization: `Bearer ${token}` },
+      { requests: [{ dispatch: 999999999, driver: 999999 }] });
+    expect(body.code).toBe(400);
   });
 });

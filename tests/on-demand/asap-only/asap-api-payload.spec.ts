@@ -142,11 +142,59 @@ test.describe(`ASAP Only — API Payload Verification ${RIDER_TAGS.ASAP} ${RIDER
     // Cross-origin route delay unreliable on staging
   });
 
-  test.fixme('ASAP_046: Toast error on API failure', async () => {
-    // App uses global snackbar for API errors, not per-form toast
-  });
+  // ASAP_046 (toast error on API failure) is now implemented as NEG_API_001 below.
 
   test.fixme('API timeout shows error state', async () => {
     // Cross-origin route abort unreliable on staging
+  });
+});
+
+// ── API failure negatives ───────────────────────────────────────────────────
+// The submit `/request` call is intercepted and forced to fail, so NO real ride
+// is created — the app must surface an error and keep the rider on the form.
+test.describe(`ASAP Only — API Failure Negatives ${RIDER_TAGS.ASAP} ${RIDER_TAGS.PAYLOAD} ${RIDER_TAGS.SAFE} ${RIDER_TAGS.REGRESSION} ${RIDER_TAGS.NEGATIVE}`, () => {
+  test.beforeEach(async ({ selectLocationPage, guestFormSection }) => {
+    // Stop-list-dependent → staging only (preprod/prod render it slowly/unreliably).
+    test.skip(config.name !== 'staging', 'UI negatives run on staging only');
+    await selectLocationPage.goto(org.trackingId);
+    await selectLocationPage.selectBothStops(stops.pickup, stops.dropoff);
+    await selectLocationPage.clickConfirm();
+    await guestFormSection.waitForFormVisible();
+  });
+
+  test('@negative NEG_API_001: 500 on submit → error shown, stays on form', async ({ page, guestFormSection }) => {
+    await page.route(`${config.urls.api}/**/request`, async (route) => {
+      if (route.request().method() === 'POST') {
+        await route.fulfill({
+          status: 500, contentType: 'application/json',
+          body: JSON.stringify({ response: { status: 500 }, message: 'Internal Server Error' }),
+        });
+      } else {
+        await route.continue();
+      }
+    });
+    await guestFormSection.fillRequiredFields();
+    await guestFormSection.requestRideButton.scrollIntoViewIfNeeded();
+    await guestFormSection.submitForm();
+    await expect(page.locator('.Toastify__toast--error')).toBeVisible({ timeout: 15_000 });
+    expect(page.url()).not.toMatch(/\/j\/.*\/s/);
+  });
+
+  test('@negative NEG_API_002: success:false response → error shown, no ride', async ({ page, guestFormSection }) => {
+    await page.route(`${config.urls.api}/**/request`, async (route) => {
+      if (route.request().method() === 'POST') {
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ code: 400, status: false, message: 'Ride could not be created' }),
+        });
+      } else {
+        await route.continue();
+      }
+    });
+    await guestFormSection.fillRequiredFields();
+    await guestFormSection.requestRideButton.scrollIntoViewIfNeeded();
+    await guestFormSection.submitForm();
+    await page.waitForTimeout(4_000);
+    expect(page.url()).not.toMatch(/\/j\/.*\/s/);
   });
 });

@@ -4,6 +4,7 @@ import { RIDER_TAGS, RIDER_TIMEOUTS } from '../../../constants';
 
 const org = getOrgConfig('asapOnly');
 const { stops } = org;
+const rc = getRiderConfig();
 
 test.describe(`ASAP Only — Location Selection ${RIDER_TAGS.ASAP} ${RIDER_TAGS.UI_ONLY} ${RIDER_TAGS.REGRESSION} ${RIDER_TAGS.SAFE}`, () => {
   test.beforeEach(async ({ selectLocationPage }) => {
@@ -149,5 +150,63 @@ test.describe(`ASAP Only — Location Selection ${RIDER_TAGS.ASAP} ${RIDER_TAGS.
     await selectLocationPage.clickBack();
     await selectLocationPage.cancelGoBack();
     await expect(selectLocationPage.pickupInput).toBeVisible();
+  });
+
+});
+
+// ── Location negatives — STAGING-ONLY ───────────────────────────────────────
+// Depend on stop-list rendering, which is slow/unreliable on preprod/prod, so
+// they're scoped to staging and not tagged @ui-only (prod cron won't collect).
+test.describe(`ASAP Only — Location Negatives ${RIDER_TAGS.ASAP} ${RIDER_TAGS.SAFE} ${RIDER_TAGS.REGRESSION} ${RIDER_TAGS.NEGATIVE}`, () => {
+  test.beforeEach(async ({ selectLocationPage }) => {
+    test.skip(getRiderConfig().name !== 'staging', 'UI negatives run on staging only (preprod/prod stop-list is slow/unreliable)');
+    await selectLocationPage.goto(org.trackingId);
+  });
+
+  test('@negative NEG_LOC_001: selected pickup is excluded from the dropoff list', async ({ selectLocationPage }) => {
+    await selectLocationPage.pickupInput.click();
+    const pickupStops = await selectLocationPage.getVisibleStopNames();
+    expect(pickupStops.length).toBeGreaterThan(1);
+    const chosen = pickupStops[0]!;
+    await selectLocationPage.selectPickupStop(chosen);
+
+    await selectLocationPage.dropoffInput.click();
+    const dropoffStops = await selectLocationPage.getVisibleStopNames();
+    expect(dropoffStops).not.toContain(chosen); // can't drop off at the same stop
+  });
+
+  test('@negative NEG_LOC_002: cannot proceed to the form without both stops', async ({ selectLocationPage, guestFormSection }) => {
+    // With only the pickup selected, the Confirm CTA is not offered …
+    await selectLocationPage.selectPickupStop(stops.pickup);
+    await expect(selectLocationPage.confirmButton).not.toBeVisible({ timeout: 5_000 });
+    // … and the guest form never opens.
+    await expect(guestFormSection.formTitle).not.toBeVisible();
+  });
+
+  test('@negative NEG_LOC_003: junk search surfaces the not-found state', async ({ selectLocationPage }) => {
+    await selectLocationPage.searchPickupStops('!@#$%^&*()_zzzq');
+    await expect(selectLocationPage.notFoundMessage).toBeVisible({ timeout: RIDER_TIMEOUTS.STOP_LIST });
+  });
+});
+
+// ── Bad-route / navigation negatives (no stop-selection setup) ──────────────
+test.describe(`ASAP Only — Navigation Negatives ${RIDER_TAGS.ASAP} ${RIDER_TAGS.UI_ONLY} ${RIDER_TAGS.SAFE} ${RIDER_TAGS.REGRESSION} ${RIDER_TAGS.NEGATIVE}`, () => {
+
+  test('@negative NEG_NAV_001: unknown app route returns a 404 page', async ({ page }) => {
+    await page.goto(`${rc.urls.ride}/this-route-does-not-exist-xyz`, { waitUntil: 'domcontentloaded' });
+    await expect(page.getByText(/This page could not be found|404/i).first()).toBeVisible({ timeout: 15_000 });
+  });
+
+  test('@negative NEG_NAV_002: nonexistent booking id returns a 404 page', async ({ page }) => {
+    await page.goto(`${rc.urls.ride}/b/ZZZZZZ`, { waitUntil: 'domcontentloaded' });
+    await expect(page.getByText(/This page could not be found|404/i).first()).toBeVisible({ timeout: 15_000 });
+  });
+
+  test('@negative NEG_NAV_003: invalid ride code does not render a functional ride', async ({ page }) => {
+    await page.goto(`${rc.urls.ride}/j/ZZZZZZ/s`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(6_000);
+    await expect(page.getByText('Request Submitted')).toHaveCount(0);
+    await expect(page.getByText(/Cancel Ride/i)).toHaveCount(0);
+    await expect(page.getByText('Driver Assigned')).toHaveCount(0);
   });
 });

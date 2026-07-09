@@ -1,5 +1,5 @@
 import { test, expect } from '../../../fixtures/test-fixtures';
-import { getOrgConfig } from '../../../utils/rider-config';
+import { getOrgConfig, getRiderConfig } from '../../../utils/rider-config';
 import { RIDER_TAGS } from '../../../constants';
 
 const org = getOrgConfig('asapOnly');
@@ -114,5 +114,54 @@ test.describe(`ASAP Only — Validation ${RIDER_TAGS.ASAP} ${RIDER_TAGS.UI_ONLY}
     await guestFormSection.fillNotes(over);
     const val = await guestFormSection.notesTextarea.inputValue();
     expect(val.length).toBeLessThanOrEqual(maxLen);
+  });
+
+});
+
+// ── Form negatives — STAGING-ONLY ───────────────────────────────────────────
+// These exercise client/UI logic that is identical across environments. Preprod
+// and production render the stop list slowly/unreliably, so they're scoped to
+// staging (verified reliable there) and NOT tagged @ui-only, so the preprod/prod
+// cron never collects them.
+test.describe(`ASAP Only — Form Negatives ${RIDER_TAGS.ASAP} ${RIDER_TAGS.SAFE} ${RIDER_TAGS.REGRESSION} ${RIDER_TAGS.NEGATIVE}`, () => {
+  test.beforeEach(async ({ selectLocationPage, guestFormSection }) => {
+    test.skip(getRiderConfig().name !== 'staging', 'UI negatives run on staging only (preprod/prod stop-list is slow/unreliable)');
+    await selectLocationPage.goto(org.trackingId);
+    await selectLocationPage.selectBothStops(stops.pickup, stops.dropoff);
+    await selectLocationPage.clickConfirm();
+    await guestFormSection.waitForFormVisible();
+  });
+
+  // Phone is a plain type=tel, maxlength 16; it does NOT strip non-numeric
+  // characters, so the boundary here is length-based.
+  test('@negative NEG_FORM_001: phone input enforces maxLength (16)', async ({ guestFormSection }) => {
+    await guestFormSection.fillPhone('1'.repeat(30));
+    const val = await guestFormSection.phoneInput.inputValue();
+    expect(val.length).toBeLessThanOrEqual(16);
+  });
+
+  test('@negative NEG_FORM_002: name input sanitizes HTML/script characters', async ({ guestFormSection }) => {
+    await guestFormSection.fillName('<img src=x onerror=alert(1)>');
+    const val = await guestFormSection.nameInput.inputValue();
+    expect(val).not.toContain('<');
+    expect(val).not.toContain('onerror');
+  });
+
+  test('@negative NEG_FORM_003: partial submit (name only) → phone validation error', async ({ guestFormSection }) => {
+    await guestFormSection.fillName('Only Name');
+    await guestFormSection.requestRideButton.scrollIntoViewIfNeeded();
+    await guestFormSection.submitForm();
+    expect(await guestFormSection.hasPhoneError()).toBe(true);
+  });
+
+  test('@negative NEG_FORM_004: whitespace-only name does not produce a ride', async ({ guestFormSection, page }) => {
+    await guestFormSection.fillName('     ');
+    await guestFormSection.selectCountryCode(org.phone.countryCode);
+    await guestFormSection.fillPhone(org.phone.number);
+    await guestFormSection.requestRideButton.scrollIntoViewIfNeeded();
+    await guestFormSection.submitForm();
+    // Client validation must block a whitespace-only name — no redirect to /j/{code}/s.
+    await page.waitForTimeout(3_000);
+    expect(page.url()).not.toMatch(/\/j\/.*\/s/);
   });
 });
