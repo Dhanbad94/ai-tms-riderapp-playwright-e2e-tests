@@ -97,6 +97,7 @@ export const RIDER_TAGS = {
   SANITY: '@sanity',
   SAFE: '@safe',             // Safe for production (no ride creation)
   PROD: '@prod',             // Curated ride-free set run against production on a cron
+  NEGATIVE: '@negative',     // Negative / error-path test cases
 } as const;
 
 // ============================================================================
