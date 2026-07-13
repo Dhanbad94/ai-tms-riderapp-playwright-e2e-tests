@@ -17,6 +17,7 @@ test.describe(`ASAP Only — End-to-End Flows ${RIDER_TAGS.ASAP} ${RIDER_TAGS.CR
   });
 
   test('@sanity ASAP_047: Full happy path — Location → Form → Submit → Confirmation', async ({ page, selectLocationPage, guestFormSection }) => {
+    test.skip(getRiderConfig().name === 'staging', 'Skipped on staging for now — runs on preproduction/production');
     await selectLocationPage.goto(org.trackingId);
     await selectLocationPage.verifyDateTimePickerAbsent();
     await selectLocationPage.selectBothStops(stops.pickup, stops.dropoff);
