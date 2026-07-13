@@ -58,6 +58,7 @@ test.describe(`ASAP Only — API Payload Verification ${RIDER_TAGS.ASAP} ${RIDER
   });
 
   test('ASAP_047: Flight & room numbers included in payload when filled', async ({ page }) => {
+    test.skip(config.name === 'staging', 'Skipped on staging for now — runs on preproduction/production');
     const { gf, getPayload } = await setupFormAndCapture(page);
     await gf.fillFlight('ua1234');
     await gf.fillRoom('room707');

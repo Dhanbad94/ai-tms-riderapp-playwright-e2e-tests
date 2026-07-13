@@ -1,5 +1,5 @@
 import { test, expect } from '../../../fixtures/test-fixtures';
-import { getOrgConfig, canCreateRides } from '../../../utils/rider-config';
+import { getOrgConfig, canCreateRides, getRiderConfig } from '../../../utils/rider-config';
 import { RIDER_TAGS, RIDER_TIMEOUTS } from '../../../constants';
 import { SelectLocationPage } from '../../../pages/rider/SelectLocationPage';
 import { GuestFormSection } from '../../../pages/rider/GuestFormSection';
@@ -46,6 +46,7 @@ test.describe(`ASAP Only — Confirmation Page ${RIDER_TAGS.ASAP} ${RIDER_TAGS.C
   // ASAP_033: In ASAP-only mode, pickup/dropoff names are intentionally NOT displayed
   // on the confirmation page. This is correct app behavior — not a bug.
   test('ASAP_033: Pickup and dropoff names are NOT shown in ASAP mode', async ({ page }) => {
+    test.skip(getRiderConfig().name === 'staging', 'Skipped on staging for now — runs on preproduction/production');
     await submitRideAndGetCode(page);
     // In ASAP mode, the PickupDropoff header is hidden — verify absence
     const pickupVisible = await page.getByText(stops.pickup).first().isVisible().catch(() => false);
@@ -118,6 +119,7 @@ test.describe(`ASAP Only — Confirmation Page ${RIDER_TAGS.ASAP} ${RIDER_TAGS.C
   // (name + guest count, phone, room, flight). On mobile it sits below the fold,
   // so we scroll it into view first — mirroring the manual verification step.
   test('ASAP_049: Rider details visible on tracking screen after submit', async ({ page, confirmationPage }) => {
+    test.skip(getRiderConfig().name === 'staging', 'Skipped on staging for now — runs on preproduction/production');
     const lp = new SelectLocationPage(page);
     const gf = new GuestFormSection(page);
     await lp.goto(org.trackingId);
