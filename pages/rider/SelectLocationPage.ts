@@ -44,9 +44,21 @@ export class SelectLocationPage {
   async goto(orgId?: string) {
     const config = getRiderConfig();
     const id = orgId || config.orgs.asapOnly.trackingId;
-    await this.page.goto(`${config.urls.ride}/a/${id.toLowerCase()}/location`, {
-      waitUntil: 'domcontentloaded',
-    });
+    const url = `${config.urls.ride}/a/${id.toLowerCase()}/location`;
+
+    // Navigation to the shared staging org occasionally exceeds the default
+    // timeout under parallel load (the server is slow to respond, not down).
+    // Retry once on failure — loading a URL is idempotent, so this only costs
+    // time on a genuinely slow first attempt.
+    const MAX_NAV_ATTEMPTS = 2;
+    for (let attempt = 0; attempt < MAX_NAV_ATTEMPTS; attempt++) {
+      try {
+        await this.page.goto(url, { waitUntil: 'domcontentloaded' });
+        break;
+      } catch (err) {
+        if (attempt === MAX_NAV_ATTEMPTS - 1) throw err;
+      }
+    }
     await this.pickupInput.waitFor({ state: 'visible', timeout: RIDER_TIMEOUTS.FORM_LOAD });
   }
 
@@ -59,33 +71,52 @@ export class SelectLocationPage {
   }
 
   /**
-   * Open a stop-list panel and select a stop by name.
-   *
-   * Resilient against the stop-list render race: clicking the input occasionally
-   * lands before the list is wired up (or the list re-renders and detaches the
-   * heading node). We retry opening the panel a few times, and re-query the
-   * specific heading immediately before clicking to avoid stale-node detach.
+   * Click the input and poll for the stop list to render. Returns true if the
+   * list appeared, false if it stalled after MAX_OPEN_ATTEMPTS clicks.
    */
-  private async openStopListAndSelect(input: Locator, stopName: string) {
+  private async tryOpenStopList(input: Locator): Promise<boolean> {
     const visibleHeadings = this.page.locator('h4:visible');
-
-    // Retry opening the panel: click input, then poll for ANY stop heading.
     const MAX_OPEN_ATTEMPTS = 3;
-    let opened = false;
     for (let attempt = 0; attempt < MAX_OPEN_ATTEMPTS; attempt++) {
       await input.click();
       try {
         await expect
           .poll(async () => visibleHeadings.count(), { timeout: RIDER_TIMEOUTS.STOP_LIST })
           .toBeGreaterThan(0);
-        opened = true;
-        break;
+        return true;
       } catch {
         // Panel didn't open this attempt — loop and re-click.
       }
     }
+    return false;
+  }
+
+  /**
+   * Open a stop-list panel and select a stop by name.
+   *
+   * Resilient against the stop-list render race: clicking the input occasionally
+   * lands before the list is wired up (or the list re-renders and detaches the
+   * heading node). We retry opening the panel a few times, and re-query the
+   * specific heading immediately before clicking to avoid stale-node detach.
+   *
+   * The stop list is API-driven, so a failed/slow initial fetch under parallel
+   * load leaves the panel permanently empty — re-clicking never recovers it
+   * because clicking does not re-trigger the fetch. When `canReload` is set we
+   * reload the page (re-firing the stops request) and retry. Reload is only
+   * safe before any stop is chosen; a reload would clear an already-selected
+   * pickup, so it's enabled for pickup selection only.
+   */
+  private async openStopListAndSelect(input: Locator, stopName: string, opts: { canReload?: boolean } = {}) {
+    let opened = await this.tryOpenStopList(input);
+
+    if (!opened && opts.canReload) {
+      await this.page.reload({ waitUntil: 'domcontentloaded' });
+      await this.pickupInput.waitFor({ state: 'visible', timeout: RIDER_TIMEOUTS.FORM_LOAD });
+      opened = await this.tryOpenStopList(input);
+    }
+
     if (!opened) {
-      throw new Error(`Stop list never rendered after ${MAX_OPEN_ATTEMPTS} attempts for "${stopName}"`);
+      throw new Error(`Stop list never rendered for "${stopName}" (canReload=${!!opts.canReload})`);
     }
 
     // Re-query the heading right before clicking to avoid acting on a stale node
@@ -99,11 +130,15 @@ export class SelectLocationPage {
 
   /** Select a pickup stop — clicks the stop container, waits for input value */
   async selectPickupStop(stopName: string) {
-    await this.openStopListAndSelect(this.pickupInput, stopName);
+    // Reload-recover here: pickup is the first selection, so a page reload to
+    // re-fetch a stalled stop list is safe (nothing to lose yet).
+    await this.openStopListAndSelect(this.pickupInput, stopName, { canReload: true });
   }
 
   /** Select a dropoff stop — clicks the stop container, waits for input value */
   async selectDropoffStop(stopName: string) {
+    // No reload here — the stops are already loaded from the pickup interaction,
+    // and a reload would discard the selected pickup.
     await this.openStopListAndSelect(this.dropoffInput, stopName);
   }
 

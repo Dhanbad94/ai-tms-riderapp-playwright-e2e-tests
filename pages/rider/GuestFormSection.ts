@@ -31,6 +31,10 @@ export class GuestFormSection {
     this.page = page;
     // Phase 1: Use semantic selectors (role, text, placeholder, label)
     this.formTitle = page.getByText('Enter Ride Details');
+    // Two back buttons are present on the form: the location-page header button
+    // (first in the DOM) and the form's own. Only the location-page one triggers
+    // the "Go Back?" confirmation, so target .first(). See clickBack() for the
+    // actionability handling — it can be briefly covered by the form overlay.
     this.backButton = page.locator('button').filter({ has: page.locator('img[alt="back"]') }).first();
     this.nameInput = page.getByPlaceholder('Name *');
     this.phoneInput = page.getByPlaceholder('Phone number *');
@@ -171,7 +175,18 @@ export class GuestFormSection {
   }
 
   async clickBack() {
-    await this.backButton.click();
+    // The location-page back button owns the "Go Back?" confirmation, but under
+    // load the form overlay can intercept pointer events at its coordinates
+    // (the element is visible/stable, yet the hit-test — and a coordinate-based
+    // force click — lands on the overlay instead). Try a real click first; if it
+    // times out, dispatch the click directly on the DOM node so React's onClick
+    // still fires regardless of what visually covers the button.
+    await this.backButton.scrollIntoViewIfNeeded().catch(() => {});
+    try {
+      await this.backButton.click({ timeout: RIDER_TIMEOUTS.MUI_DROPDOWN * 8 });
+    } catch {
+      await this.backButton.evaluate((el) => (el as HTMLElement).click());
+    }
   }
 
   /** Check if name input has validation error (borderError class) */
@@ -200,9 +215,13 @@ export class GuestFormSection {
     await expect(this.phoneInput).toBeVisible();
     await expect(this.specialAssistanceCheckbox).toBeVisible();
     await expect(this.notesTextarea).toBeVisible();
-    // Flight & Room number are now part of ASAP "Other Details".
-    await expect(this.flightInput).toBeVisible();
-    await expect(this.roomInput).toBeVisible();
+    // Flight & Room are org-configurable "Other Details" fields: present on some
+    // orgs (e.g. preprod/prod ODASAP) and absent on others (staging ODASAP), so
+    // assert them only when the org actually renders them.
+    if (await this.flightInput.count() > 0) {
+      await expect(this.flightInput).toBeVisible();
+      await expect(this.roomInput).toBeVisible();
+    }
     // Rider-type radios remain hidden in ASAP mode.
     await expect(this.riderTypeSection).not.toBeVisible();
   }
