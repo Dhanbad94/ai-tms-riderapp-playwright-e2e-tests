@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TMS Rider — Test Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+    .header { background: linear-gradient(135deg, #1a73e8, #0d47a1); color: white; padding: 30px 40px; }
+    .header h1 { font-size: 24px; margin-bottom: 5px; }
+    .header .subtitle { opacity: 0.85; font-size: 14px; }
+    .summary { display: flex; gap: 20px; padding: 25px 40px; flex-wrap: wrap; }
+    .card { background: white; border-radius: 12px; padding: 20px 25px; min-width: 150px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); text-align: center; }
+    .card .number { font-size: 36px; font-weight: 700; }
+    .card .label { font-size: 12px; text-transform: uppercase; color: #666; margin-top: 4px; }
+    .card.total .number { color: #1a73e8; }
+    .card.passed .number { color: #0d9e0d; }
+    .card.failed .number { color: #d93025; }
+    .card.skipped .number { color: #f9a825; }
+    .card.retried .number { color: #ff6d00; }
+    .card.duration .number { color: #5f6368; font-size: 24px; }
+    .card.rate .number { color: #0d9e0d; }
+    .progress-bar { height: 6px; background: #e0e0e0; border-radius: 3px; margin: 20px 40px; overflow: hidden; }
+    .progress-bar .fill { height: 100%; background: #0d9e0d; border-radius: 3px; transition: width 0.3s; }
+    table { width: calc(100% - 80px); margin: 10px 40px 40px; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    th { background: #f8f9fa; padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: #666; border-bottom: 2px solid #e0e0e0; }
+    td { padding: 10px 16px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+    tr:hover { background: #fafbfc; }
+    tr.file-header { background: #f0f4ff; }
+    tr.file-header td { padding: 8px 16px; font-size: 13px; }
+    .file-stats { float: right; font-size: 12px; color: #666; font-weight: normal; }
+    .status-cell { font-weight: 600; font-size: 11px; border-radius: 4px; padding: 3px 8px; display: inline-block; }
+    .status-cell.passed { background: #e6f4ea; color: #137333; }
+    .status-cell.failed { background: #fce8e6; color: #c5221f; }
+    .status-cell.skipped { background: #fef7e0; color: #b06000; }
+    .status-cell.flaky { background: #fff3e0; color: #e65100; }
+    .error-row td { padding: 4px 16px 10px; }
+    .error-msg { font-family: monospace; font-size: 11px; color: #c5221f; background: #fce8e6; padding: 6px 10px; border-radius: 4px; word-break: break-all; }
+    .footer { text-align: center; padding: 20px; color: #999; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🚐 TMS Rider — Test Dashboard</h1>
+    <div class="subtitle">Run: Aug 12, 2026, 8:10 AM | Environment: production | Duration: 2m 1s</div>
+  </div>
+
+  <div class="summary">
+    <div class="card total"><div class="number">81</div><div class="label">Total Tests</div></div>
+    <div class="card passed"><div class="number">76</div><div class="label">Passed</div></div>
+    <div class="card failed"><div class="number">0</div><div class="label">Failed</div></div>
+    <div class="card skipped"><div class="number">5</div><div class="label">Skipped</div></div>
+    <div class="card retried"><div class="number">0</div><div class="label">Retried</div></div>
+    <div class="card rate"><div class="number">100%</div><div class="label">Pass Rate</div></div>
+    <div class="card duration"><div class="number">2m 1s</div><div class="label">Duration</div></div>
+  </div>
+
+  <div class="progress-bar"><div class="fill" style="width: 100%"></div></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th width="30"></th>
+        <th>Test Name</th>
+        <th width="80">Status</th>
+        <th width="80">Duration</th>
+        <th width="60">Retry</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+      <tr class="file-header">
+        <td colspan="5">
+          <strong>📄 asap-form.spec.ts</strong>
+          <span class="file-stats">
+            21P / 0F / 5S — 2m 2s
+          </span>
+        </td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke @sanity @prod ASAP_009: Full form opens with "Enter Ride Details" heading</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>6.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>ASAP_011: Special Assistance checkbox visible</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>7.1s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>ASAP_012: ADA label shows "Special Assistance"</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>7.4s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>ASAP_013: Notes textarea visible</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.2s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>ASAP_014: Notes placeholder shows "Note"</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.6s</td>
+        <td>—</td>
+      </tr>
+      <tr class="skipped">
+        <td>⏭️</td>
+        <td>@smoke ASAP_015: Flight Number field visible</td>
+        <td class="status-cell skipped">SKIPPED</td>
+        <td>0ms</td>
+        <td>—</td>
+      </tr>
+      <tr class="skipped">
+        <td>⏭️</td>
+        <td>ASAP_016: Room Number field visible</td>
+        <td class="status-cell skipped">SKIPPED</td>
+        <td>0ms</td>
+        <td>—</td>
+      </tr>
+      <tr class="skipped">
+        <td>⏭️</td>
+        <td>ASAP_015a: Flight Number accepts input and enforces maxLength 10</td>
+        <td class="status-cell skipped">SKIPPED</td>
+        <td>0ms</td>
+        <td>—</td>
+      </tr>
+      <tr class="skipped">
+        <td>⏭️</td>
+        <td>ASAP_016a: Room Number accepts input and enforces maxLength 10</td>
+        <td class="status-cell skipped">SKIPPED</td>
+        <td>0ms</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>ASAP_017: Rider type radios hidden</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.7s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>ASAP_010: Rider count dropdown exists in flow</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>4.9s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>ASAP_018: Notes textarea enforces maxLength</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.7s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>Name input accepts text</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>6.7s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>Phone input accepts numeric input</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.2s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>Special Assistance checkbox toggles</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.7s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>Notes textarea accepts text up to maxLength</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.8s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>Country code selector opens</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.8s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>Country code dropdown filters by search</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.8s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>Back button shows Go Back confirmation dialog</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.2s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>Back dialog Cancel keeps user on form</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.6s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>Back dialog Go Back returns to location page</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>10.3s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke @prod "Request Ride" button visible</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.3s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>Terms of Service link visible</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>4.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>Privacy Policy link visible</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>4.3s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>Riders dropdown was pre-selected</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>4.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="skipped">
+        <td>⏭️</td>
+        <td>ASAP_042: Guest data saved to cookies</td>
+        <td class="status-cell skipped">SKIPPED</td>
+        <td>0ms</td>
+        <td>—</td>
+      </tr>
+      <tr class="file-header">
+        <td colspan="5">
+          <strong>📄 asap-location-advanced.spec.ts</strong>
+          <span class="file-stats">
+            18P / 0F / 0S — 59.1s
+          </span>
+        </td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke SEARCH_001: Search pickup stops by partial name</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>3.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>SEARCH_002: Search dropoff stops by partial name</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>3.3s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>SEARCH_003: Search with no results shows empty state</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>6.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>SEARCH_004: Clearing search restores full stop list</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>3.2s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>SEARCH_005: Search is case-insensitive</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>2.9s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>SEARCH_006: Select a stop from search results</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>2.6s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>SEARCH_007: Search by single character returns results</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>2.7s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke MAP_001: "View on map" is visible and clickable</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>2.3s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>MAP_002: Clicking "View on map" changes page view</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>3.1s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>MAP_003: Map area loads after selecting both stops</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>3.8s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>MAP_004: Map container has Google Maps elements</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>4.6s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke LOC_001: "Use Current Location" button is visible</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>2.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>LOC_002: Clicking "Use Current Location" triggers location dialog or action</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>3.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>LOC_003: Location permission dialog shows Allow and Not Now buttons</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>2.9s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>LOC_004: Clicking "Not Now" dismisses the location dialog</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>3.2s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>LOC_005: Geolocation granted selects nearest stop</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>3.3s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>LOC_006: Geolocation denied shows denied modal</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>3.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>LOC_007: "Use Current Location" hidden when dropoff input is focused</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>2.9s</td>
+        <td>—</td>
+      </tr>
+      <tr class="file-header">
+        <td colspan="5">
+          <strong>📄 asap-location.spec.ts</strong>
+          <span class="file-stats">
+            22P / 0F / 0S — 1m 12s
+          </span>
+        </td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke @sanity @prod ASAP_001: Date/time picker is NOT rendered</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>2.4s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>ASAP_005: Header shows "Select Location" before stops chosen</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>2.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>ASAP_006: Header shows "Confirm Location" after both stops selected</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>3.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke ASAP_002: Button text shows "Confirm Location" (not "Next")</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>3.8s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>ASAP_003: Button enabled without time selection</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>4.2s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke ASAP_004: "Use Current Location" button visible</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>2.7s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>ASAP_007: No getAvailableDates API call</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>3.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>ASAP_008: No getAvailableSlots API call</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>3.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>Riders dropdown exists in booking flow</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>4.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke Stop list loads with available stops</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>3.1s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke @sanity Pickup stop selection populates input</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>2.3s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>Dropoff stop selection populates input</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>3.8s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>Cannot select same stop for both</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>3.3s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>Stop search filters the list</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>2.7s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>Search with no results shows not-found message</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>6.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>Clear pickup input resets selection</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>3.1s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>"View on map" button is visible</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>2.6s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>Back button triggers confirmation dialog</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>3.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>Cancel in back dialog keeps user on page</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>3.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@negative NEG_NAV_001: unknown app route returns a 404 page</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>795ms</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@negative NEG_NAV_002: nonexistent booking id returns a 404 page</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>630ms</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@negative NEG_NAV_003: invalid ride code does not render a functional ride</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>8.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="file-header">
+        <td colspan="5">
+          <strong>📄 asap-validation.spec.ts</strong>
+          <span class="file-stats">
+            14P / 0F / 0S — 1m 15s
+          </span>
+        </td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke @sanity ASAP_019: Empty form submission blocked — validation errors on name and phone</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>4.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>ASAP_020: Name field shows validation error when empty</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.7s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>ASAP_021: Phone field shows error for too-short phone</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>Phone field accepts valid phone (10-16 digits)</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>6.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>Phone too-long is truncated</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>ASAP_022: Riders were required and selected</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>4.9s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>ASAP_023: No time-related validation error</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.1s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke ASAP_024: XSS sanitized in name</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.9s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>ASAP_025: XSS sanitized in notes</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>ASAP_026: Scroll to first error on submit</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>Form recovery — fixing name clears error</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.3s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>Form recovery — fixing phone clears error</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>6.6s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>Riders already selected — form functional</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>4.7s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>Notes textarea respects maxLength</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>4.8s</td>
+        <td>—</td>
+      </tr>
+      <tr class="file-header">
+        <td colspan="5">
+          <strong>📄 asap-cancellation.spec.ts</strong>
+          <span class="file-stats">
+            1P / 0F / 0S — 8.7s
+          </span>
+        </td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@prod PROD_CANCEL_001: Create then immediately cancel a ride</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>8.7s</td>
+        <td>—</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="footer">Generated by TMS Rider E2E Test Framework</div>
+</body>
+</html>
