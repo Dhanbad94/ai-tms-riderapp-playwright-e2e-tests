@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TMS Rider — Test Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+    .header { background: linear-gradient(135deg, #1a73e8, #0d47a1); color: white; padding: 30px 40px; }
+    .header h1 { font-size: 24px; margin-bottom: 5px; }
+    .header .subtitle { opacity: 0.85; font-size: 14px; }
+    .summary { display: flex; gap: 20px; padding: 25px 40px; flex-wrap: wrap; }
+    .card { background: white; border-radius: 12px; padding: 20px 25px; min-width: 150px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); text-align: center; }
+    .card .number { font-size: 36px; font-weight: 700; }
+    .card .label { font-size: 12px; text-transform: uppercase; color: #666; margin-top: 4px; }
+    .card.total .number { color: #1a73e8; }
+    .card.passed .number { color: #0d9e0d; }
+    .card.failed .number { color: #d93025; }
+    .card.skipped .number { color: #f9a825; }
+    .card.retried .number { color: #ff6d00; }
+    .card.duration .number { color: #5f6368; font-size: 24px; }
+    .card.rate .number { color: #0d9e0d; }
+    .progress-bar { height: 6px; background: #e0e0e0; border-radius: 3px; margin: 20px 40px; overflow: hidden; }
+    .progress-bar .fill { height: 100%; background: #0d9e0d; border-radius: 3px; transition: width 0.3s; }
+    table { width: calc(100% - 80px); margin: 10px 40px 40px; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    th { background: #f8f9fa; padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: #666; border-bottom: 2px solid #e0e0e0; }
+    td { padding: 10px 16px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+    tr:hover { background: #fafbfc; }
+    tr.file-header { background: #f0f4ff; }
+    tr.file-header td { padding: 8px 16px; font-size: 13px; }
+    .file-stats { float: right; font-size: 12px; color: #666; font-weight: normal; }
+    .status-cell { font-weight: 600; font-size: 11px; border-radius: 4px; padding: 3px 8px; display: inline-block; }
+    .status-cell.passed { background: #e6f4ea; color: #137333; }
+    .status-cell.failed { background: #fce8e6; color: #c5221f; }
+    .status-cell.skipped { background: #fef7e0; color: #b06000; }
+    .status-cell.flaky { background: #fff3e0; color: #e65100; }
+    .error-row td { padding: 4px 16px 10px; }
+    .error-msg { font-family: monospace; font-size: 11px; color: #c5221f; background: #fce8e6; padding: 6px 10px; border-radius: 4px; word-break: break-all; }
+    .footer { text-align: center; padding: 20px; color: #999; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🚐 TMS Rider — Test Dashboard</h1>
+    <div class="subtitle">Run: Aug 20, 2026, 6:53 AM | Environment: staging | Duration: 1m 6s</div>
+  </div>
+
+  <div class="summary">
+    <div class="card total"><div class="number">16</div><div class="label">Total Tests</div></div>
+    <div class="card passed"><div class="number">15</div><div class="label">Passed</div></div>
+    <div class="card failed"><div class="number">0</div><div class="label">Failed</div></div>
+    <div class="card skipped"><div class="number">1</div><div class="label">Skipped</div></div>
+    <div class="card retried"><div class="number">0</div><div class="label">Retried</div></div>
+    <div class="card rate"><div class="number">100%</div><div class="label">Pass Rate</div></div>
+    <div class="card duration"><div class="number">1m 6s</div><div class="label">Duration</div></div>
+  </div>
+
+  <div class="progress-bar"><div class="fill" style="width: 100%"></div></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th width="30"></th>
+        <th>Test Name</th>
+        <th width="80">Status</th>
+        <th width="80">Duration</th>
+        <th width="60">Retry</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+      <tr class="file-header">
+        <td colspan="5">
+          <strong>📄 asap-api-payload.spec.ts</strong>
+          <span class="file-stats">
+            2P / 0F / 0S — 1m 37s
+          </span>
+        </td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke @sanity ASAP_027: No booking object in payload</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>1m 3s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke ASAP_030: API uses /rider/api/v1 endpoint</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>34.1s</td>
+        <td>—</td>
+      </tr>
+      <tr class="file-header">
+        <td colspan="5">
+          <strong>📄 asap-form.spec.ts</strong>
+          <span class="file-stats">
+            2P / 0F / 1S — 27.6s
+          </span>
+        </td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke @sanity @prod ASAP_009: Full form opens with "Enter Ride Details" heading</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>15.1s</td>
+        <td>—</td>
+      </tr>
+      <tr class="skipped">
+        <td>⏭️</td>
+        <td>@smoke ASAP_015: Flight Number field visible</td>
+        <td class="status-cell skipped">SKIPPED</td>
+        <td>0ms</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke @prod "Request Ride" button visible</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>12.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="file-header">
+        <td colspan="5">
+          <strong>📄 asap-location-advanced.spec.ts</strong>
+          <span class="file-stats">
+            4P / 0F / 0S — 14.4s
+          </span>
+        </td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke SEARCH_001: Search pickup stops by partial name</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>4.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke RANDOM_001: Select random pickup and dropoff stops</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>4.3s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke MAP_001: "View on map" is visible and clickable</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>3.4s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke LOC_001: "Use Current Location" button is visible</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>2.2s</td>
+        <td>—</td>
+      </tr>
+      <tr class="file-header">
+        <td colspan="5">
+          <strong>📄 asap-location.spec.ts</strong>
+          <span class="file-stats">
+            5P / 0F / 0S — 12.7s
+          </span>
+        </td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke @sanity @prod ASAP_001: Date/time picker is NOT rendered</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>1.9s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke ASAP_002: Button text shows "Confirm Location" (not "Next")</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>3.2s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke ASAP_004: "Use Current Location" button visible</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>2.6s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke Stop list loads with available stops</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>2.4s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke @sanity Pickup stop selection populates input</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>2.6s</td>
+        <td>—</td>
+      </tr>
+      <tr class="file-header">
+        <td colspan="5">
+          <strong>📄 asap-validation.spec.ts</strong>
+          <span class="file-stats">
+            2P / 0F / 0S — 27.1s
+          </span>
+        </td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke @sanity ASAP_019: Empty form submission blocked — validation errors on name and phone</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>13.1s</td>
+        <td>—</td>
+      </tr>
+      <tr class="passed">
+        <td>✅</td>
+        <td>@smoke ASAP_024: XSS sanitized in name</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>13.9s</td>
+        <td>—</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="footer">Generated by TMS Rider E2E Test Framework</div>
+</body>
+</html>
