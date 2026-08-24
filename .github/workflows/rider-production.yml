@@ -43,6 +43,12 @@ jobs:
       failed: ${{ steps.parse.outputs.failed }}
       flaky: ${{ steps.parse.outputs.flaky }}
       duration: ${{ steps.parse.outputs.duration }}
+      asap_passed: ${{ steps.parse.outputs.asap_passed }}
+      asap_failed: ${{ steps.parse.outputs.asap_failed }}
+      asap_flaky: ${{ steps.parse.outputs.asap_flaky }}
+      future_passed: ${{ steps.parse.outputs.future_passed }}
+      future_failed: ${{ steps.parse.outputs.future_failed }}
+      future_flaky: ${{ steps.parse.outputs.future_flaky }}
       report_url: ${{ steps.report-url.outputs.url }}
 
     steps:
@@ -134,18 +140,9 @@ jobs:
         if: always()
         run: |
           if [ -f test-results.json ]; then
-            # Total includes flaky (a flaky test is counted separately from `expected`).
-            TOTAL=$(python3 -c "import json; s=json.load(open('test-results.json'))['stats']; print(s['expected']+s['unexpected']+s['skipped']+s['flaky'])")
-            PASSED=$(python3 -c "import json; print(json.load(open('test-results.json'))['stats']['expected'])")
-            FAILED=$(python3 -c "import json; print(json.load(open('test-results.json'))['stats']['unexpected'])")
-            FLAKY=$(python3 -c "import json; print(json.load(open('test-results.json'))['stats']['flaky'])")
-            # Human-readable wall-clock duration, e.g. "17m 22s".
-            DURATION=$(python3 -c "import json; ms=json.load(open('test-results.json'))['stats']['duration']; t=int(ms//1000); print(f'{t//60}m {t%60}s')")
-            echo "total=$TOTAL" >> $GITHUB_OUTPUT
-            echo "passed=$PASSED" >> $GITHUB_OUTPUT
-            echo "failed=$FAILED" >> $GITHUB_OUTPUT
-            echo "flaky=$FLAKY" >> $GITHUB_OUTPUT
-            echo "duration=$DURATION" >> $GITHUB_OUTPUT
+            # Emits the aggregate counts (total/passed/failed/flaky/duration) plus
+            # the ASAP-vs-Future-Booking split, one `key=value` per line.
+            python3 helpers/parse-stats.py >> "$GITHUB_OUTPUT"
           fi
 
       - name: Upload HTML report
@@ -180,6 +177,12 @@ jobs:
           FAILED="${{ needs.rider-tests.outputs.failed }}"
           FLAKY="${{ needs.rider-tests.outputs.flaky }}"
           DURATION="${{ needs.rider-tests.outputs.duration }}"
+          ASAP_PASSED="${{ needs.rider-tests.outputs.asap_passed }}"
+          ASAP_FAILED="${{ needs.rider-tests.outputs.asap_failed }}"
+          ASAP_FLAKY="${{ needs.rider-tests.outputs.asap_flaky }}"
+          FUTURE_PASSED="${{ needs.rider-tests.outputs.future_passed }}"
+          FUTURE_FAILED="${{ needs.rider-tests.outputs.future_failed }}"
+          FUTURE_FLAKY="${{ needs.rider-tests.outputs.future_flaky }}"
           REPORT_URL="${{ needs.rider-tests.outputs.report_url }}"
           # Fallback so the CTA is always present even if report_url didn't resolve.
           [ -z "$REPORT_URL" ] && REPORT_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
@@ -203,7 +206,9 @@ jobs:
                     {\"type\":\"mrkdwn\",\"text\":\"*Total:* $TOTAL\"},
                     {\"type\":\"mrkdwn\",\"text\":\"*Duration:* $DURATION\"},
                     {\"type\":\"mrkdwn\",\"text\":\"*Passed:* $PASSED | *Failed:* $FAILED\"},
-                    {\"type\":\"mrkdwn\",\"text\":\"*Flaky:* $FLAKY\"}
+                    {\"type\":\"mrkdwn\",\"text\":\"*Flaky:* $FLAKY\"},
+                    {\"type\":\"mrkdwn\",\"text\":\"*ASAP:* $ASAP_PASSED ✅  $ASAP_FAILED ❌  $ASAP_FLAKY ⚠️\"},
+                    {\"type\":\"mrkdwn\",\"text\":\"*Future Booking:* $FUTURE_PASSED ✅  $FUTURE_FAILED ❌  $FUTURE_FLAKY ⚠️\"}
                   ]},
                   {\"type\":\"actions\",\"elements\":[{
                     \"type\":\"button\",
