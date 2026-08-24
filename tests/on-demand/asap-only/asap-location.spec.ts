@@ -84,6 +84,8 @@ test.describe(`ASAP Only — Location Selection ${RIDER_TAGS.ASAP} ${RIDER_TAGS.
   });
 
   test('@smoke Stop list loads with available stops', async ({ selectLocationPage }) => {
+    // The screen defaults to the map view now — open the stop list first.
+    await selectLocationPage.showStopList();
     const names = await selectLocationPage.getVisibleStopNames();
     expect(names.length).toBeGreaterThan(0);
   });
@@ -135,8 +137,10 @@ test.describe(`ASAP Only — Location Selection ${RIDER_TAGS.ASAP} ${RIDER_TAGS.
     await expect(selectLocationPage.pickupInput).toHaveValue('');
   });
 
-  test('"View on map" button is visible', async ({ selectLocationPage }) => {
-    await expect(selectLocationPage.viewOnMapBtn).toBeVisible();
+  test('Map/list toggle is visible', async ({ selectLocationPage }) => {
+    // Screen defaults to map view ("View Stop List" toggle); either label
+    // satisfies the toggle's presence.
+    await expect(selectLocationPage.mapListToggle).toBeVisible();
   });
 
   test('Back button triggers confirmation dialog', async ({ selectLocationPage }) => {

@@ -17,6 +17,9 @@ export class ConfirmationPage {
   readonly viewAllBookingsBtn: Locator;
   readonly mapContainer: Locator;
   readonly riderDetailsCard: Locator;
+  readonly dragHandle: Locator;
+  readonly createNewRequestLink: Locator;
+  readonly backToHomeButton: Locator;
 
   // Footer actions
   readonly cancelRideLink: Locator;
@@ -44,6 +47,17 @@ export class ConfirmationPage {
     // Rider-details card at the bottom of the tracking screen (name/guests, phone,
     // room, flight). CSS-module class is hash-suffixed, so match the stable part.
     this.riderDetailsCard = page.locator('[class*="riderItems"]').first();
+    // The draggable bottom-sheet handle at the top of the tracking card
+    // (trackingCard.js: onMouseDown/onTouchStart={handleDragStart}, a real
+    // resizable-height gesture, not a decoration).
+    this.dragHandle = page.locator('[class*="dragHandle"]').first();
+    // Both CTAs sit near the top of the card content, right after the status
+    // heading — live-verified they render on load, not gated behind a drag.
+    // "Create New Request" is a plain <a href="{WEB_URL}/a/{orgCode}">, i.e.
+    // restart a request for the SAME org; "Back to Home" is a <button> with
+    // no href (JS navigation) that goes to the bare landing page instead.
+    this.createNewRequestLink = page.getByRole('link', { name: 'Create New Request' });
+    this.backToHomeButton = page.getByRole('button', { name: 'Back to Home' });
 
     // Footer actions — these use text matching (CSS uppercased)
     this.cancelRideLink = page.getByText(/Cancel Ride/i);
@@ -83,6 +97,56 @@ export class ConfirmationPage {
    */
   async scrollRiderDetailsIntoView() {
     await this.riderDetailsCard.scrollIntoViewIfNeeded();
+  }
+
+  /**
+   * Full text content of the rider-details card — name+guest count, phone,
+   * Special Assistance, note, and the dynamic "meta" rows (room number,
+   * flight number + time, rider type), whichever the org/ride actually set.
+   * Trackers each field with a single locator rather than one per meta row
+   * since the row set/order is data-driven (trackingCard.js `meta.map(...)`).
+   */
+  async getRiderDetailsFullText(): Promise<string> {
+    return ((await this.riderDetailsCard.textContent()) ?? '').trim();
+  }
+
+  /** Current height (px) of the draggable tracking card, read from its inline `height` style. */
+  async getTrackingCardHeight(): Promise<number> {
+    const style = await this.trackingCard.first().getAttribute('style');
+    const match = style?.match(/height:\s*([\d.]+)px/);
+    return match?.[1] ? parseFloat(match[1]) : NaN;
+  }
+
+  /**
+   * Drag the bottom-sheet handle by `deltaY` pixels (negative = drag up,
+   * expanding the card; positive = drag down, collapsing it) — a real mouse
+   * gesture (mousedown/mousemove/mouseup), matching trackingCard.js's own
+   * onMouseDown={handleDragStart} handler on the card, not a synthetic
+   * one-shot click. Requires the handle's bounding box, so the card must
+   * already be visible.
+   */
+  async dragBottomSheet(deltaY: number) {
+    const box = await this.dragHandle.boundingBox();
+    if (!box) throw new Error('Drag handle has no bounding box — is the tracking card visible?');
+    const startX = box.x + box.width / 2;
+    const startY = box.y + box.height / 2;
+    await this.page.mouse.move(startX, startY);
+    await this.page.mouse.down();
+    await this.page.mouse.move(startX, startY + deltaY, { steps: 15 });
+    await this.page.mouse.up();
+    // Card height animates via CSS transition when not actively dragging
+    // (trackingCard.js: `transition: isDragging ? 'none' : 'height 0.3s ...'`).
+    await this.page.waitForTimeout(RIDER_TIMEOUTS.MUI_DROPDOWN);
+  }
+
+  /** Click "Create New Request" — restarts a request for the same org. */
+  async clickCreateNewRequest() {
+    await this.createNewRequestLink.click();
+  }
+
+  /** Click "Back to Home" — navigates to the bare landing page. */
+  async clickBackToHome() {
+    await this.backToHomeButton.click();
   }
 
   async verifyAsapRideType() {
