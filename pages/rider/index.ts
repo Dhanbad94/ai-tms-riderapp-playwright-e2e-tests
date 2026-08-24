@@ -4,3 +4,6 @@ export { ConfirmationPage } from './ConfirmationPage';
 export { BookingFormPage } from './BookingFormPage';
 export { CancellationDialog } from './CancellationDialog';
 export { FeedbackModal } from './FeedbackModal';
+export { DateTimePicker } from './DateTimePicker';
+export { FutureGuestFormSection } from './FutureGuestFormSection';
+export { SignInPage } from './SignInPage';

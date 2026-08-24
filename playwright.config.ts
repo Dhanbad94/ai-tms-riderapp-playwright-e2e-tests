@@ -5,16 +5,30 @@ import { getRiderConfig } from "./utils/rider-config";
 /**
  * Playwright Configuration — TMS Rider Web App E2E Tests
  *
+ * The app is mobile-responsive, and rider-mobile-chrome/rider-mobile-safari
+ * cover that layout — but a real MUI-level incompatibility rules out running
+ * the PRIMARY projects (rider-chromium/rider-creates-ride) under mobile
+ * device emulation: MUI's DatePicker renders as a full-screen Dialog under
+ * touch/mobile viewports instead of the desktop Popper (confirmed live:
+ * .MuiDialog-root count 1 / .MuiPickersPopper-root count 0 under Pixel 7
+ * emulation, vs. the reverse under Desktop Chrome), and DateTimePicker.ts's
+ * calendar-open/day-select logic is written for the Popper variant. Trying
+ * mobile-only here caused 37 previously-passing tests across the suite to
+ * fail (every spec that touches the date/time picker). Reverted back to
+ * Desktop Chrome for these two projects per explicit direction — mobile
+ * coverage for the date picker specifically would need DateTimePicker.ts
+ * rewritten for the Dialog variant, which hasn't been done.
+ *
  * Projects:
  *   rider-chromium       — Desktop Chrome (default)
  *   rider-mobile-chrome  — Mobile Chrome (Pixel 7)
  *   rider-mobile-safari  — Mobile Safari (iPhone 14)
  *
  * Run:
- *   ./run-tests -e staging -u all --bc         # Desktop Chrome
+ *   npx playwright test --project=rider-chromium
  *   npx playwright test --project=rider-mobile-chrome
  *   npx playwright test --project=rider-mobile-safari
- *   npx playwright test  # All 3 projects
+ *   npx playwright test  # All 4 projects
  */
 
 const isCI = !!process.env.CI;
@@ -25,8 +39,12 @@ const riderConfig = getRiderConfig();
  * single rate-limited resource, so they must NOT run concurrently — they get a
  * dedicated project pinned to workers:1 and are excluded from the parallel
  * Desktop Chrome project to avoid tripping staging's rate limiter.
+ *
+ * Covers both the `asap-*` suite and the `future-*` suite (tests/on-demand/
+ * future-booking-only/) so ride-creating Future Booking specs are serialized
+ * the same way ASAP's are.
  */
-const CREATES_RIDE_FILES = /asap-(confirmation|feedback|cancellation|e2e|dispatch-lifecycle)\.spec\.ts$/;
+const CREATES_RIDE_FILES = /(asap|future)-(confirmation|feedback|cancellation|e2e|dispatch-lifecycle|have-a-booking-flight|rider-details-verification|tracking-actions)\.spec\.ts$/;
 
 export default defineConfig({
   testDir: "./tests/on-demand",

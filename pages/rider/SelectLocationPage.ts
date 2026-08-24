@@ -22,23 +22,47 @@ export class SelectLocationPage {
   readonly notFoundMessage: Locator;
   readonly ridersDropdown: Locator;
   readonly ridersLabel: Locator;
+  readonly mapThemeButton: Locator;
+  readonly mapThemeDialogHeading: Locator;
+  readonly mapThemeCloseButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.pickupInput = page.getByPlaceholder('Pick-up from?');
     this.dropoffInput = page.getByPlaceholder('Where to?');
-    this.confirmButton = page.getByRole('button', { name: /Confirm Location|Next/i });
+    // Anchored — an unanchored 'Next' also matches the MUI date-picker
+    // calendar's own "Next month" arrow whenever it's open (confirmed live
+    // on Future Booking: caused a 2-element strict-mode violation).
+    this.confirmButton = page.getByRole('button', { name: /^(Confirm Location|Next)$/i });
     this.useCurrentLocationBtn = page.getByText(/Use Current Location|Use Closest Stop/i);
     this.viewOnMapBtn = page.getByText('View on map');
     this.backButton = page.locator('button').filter({ has: page.locator('img[alt="back"]') }).first();
     this.pageHeader = page.getByRole('heading', { level: 2 });
-    this.dateTimeHeading = page.getByText('Pick-up Date & Time');
+    // NOTE: the literal "Pick-up Date & Time" heading text does not exist
+    // anywhere in the deployed app (confirmed live via direct DOM query on
+    // Future Booking — 0 matches) despite appearing in the guestForm.js
+    // source reviewed for this suite; likely a stale/mismatched source
+    // version. Using the Pick-up Date input's presence instead, which is
+    // live-verified and — unlike the phantom heading — actually renders only
+    // when Future Booking is on, keeping verifyDateTimePickerAbsent()
+    // meaningful for ASAP too (it previously always trivially passed).
+    this.dateTimeHeading = page.getByPlaceholder('Pick-up Date');
     this.goBackDialogHeading = page.getByRole('heading', { name: /Go Back/i });
     this.goBackConfirmBtn = page.getByRole('button', { name: /Go Back/i });
     this.goBackCancelBtn = page.getByRole('button', { name: /Cancel/i });
     this.notFoundMessage = page.getByText(/not found in the defined service area/i);
     this.ridersDropdown = page.locator('#demo-simple-select');
     this.ridersLabel = page.getByText(/No\. of Riders/i);
+    // Two icon buttons share this CSS-module class next to the map — no
+    // aria-label/testid on either (stopsCard.js:248-269), so position is the
+    // only way to distinguish them: index 0 opens Map Theme, index 1 is the
+    // "use my location" crosshair (live-verified on staging/ODFB 2026-08-21;
+    // clicking index 1 triggered a location-permission spinner, not a theme
+    // dialog). If the app ever reorders these, this locator breaks loudly
+    // (mapThemeDialogHeading won't appear) rather than silently.
+    this.mapThemeButton = page.locator('button[class*="stopsCard_btn"]').first();
+    this.mapThemeDialogHeading = page.getByRole('heading', { name: 'Map Theme' }).first();
+    this.mapThemeCloseButton = page.getByRole('button', { name: 'close' }).first();
   }
 
   async goto(orgId?: string) {
@@ -209,6 +233,73 @@ export class SelectLocationPage {
     return { pickup: pickupName, dropoff: dropoffName };
   }
 
+  /**
+   * Try selectStopViaMapMarker() against a shuffled list of candidate stop
+   * names, moving on to the next candidate if one fails outright rather than
+   * throwing immediately. Needed because a subset of stops sit tightly
+   * clustered on the map (live-confirmed: the "Door 2/3/4 - Bus/Shuttle Ctr"
+   * stops all resolve to the same O'Hare-area coordinates, and one of them
+   * shows an "08" cluster badge on its marker) — clicking one of THOSE
+   * markers doesn't reliably land the carousel on that exact stop's card
+   * within a normal wait, even though the card genuinely exists in the DOM
+   * once the carousel is dumped by hand. Same "retry with a different
+   * candidate" shape as DateTimePicker.ensureBookableSlot()/
+   * pickRandomSlotViaGridView() use for their own real, live-observed races.
+   */
+  private async selectStopViaMapMarkerFromCandidates(candidates: string[], maxAttempts = 5): Promise<string> {
+    const shuffled = [...candidates].sort(() => Math.random() - 0.5).slice(0, maxAttempts);
+    let lastError: unknown;
+    for (let i = 0; i < shuffled.length; i++) {
+      const name = shuffled[i]!;
+      // Fail fast on retry attempts (4s) rather than the full 10s — with up
+      // to 5 candidates, waiting the full timeout on each would risk the
+      // overall test timeout. Only the LAST candidate gets the full wait, on
+      // the theory that if every other candidate has already failed fast,
+      // it's worth genuinely waiting once rather than giving up early too.
+      const isLast = i === shuffled.length - 1;
+      try {
+        await this.selectStopViaMapMarker(name, isLast ? RIDER_TIMEOUTS.STOP_LIST : 4_000);
+        return name;
+      } catch (err) {
+        lastError = err;
+      }
+    }
+    throw lastError ?? new Error(`Could not select any of ${shuffled.length} candidate stops via map marker.`);
+  }
+
+  /**
+   * Same as selectRandomStops(), but commits both picks via their map-marker
+   * "set as pickup"/"set as drop-off" cards instead of the text stop list —
+   * exercises the marker-click path with genuinely randomized stops rather
+   * than a fixed pair.
+   *
+   * Live-diagnosed race: the drop-off list can still momentarily include the
+   * just-selected pickup stop if read immediately after selectStopViaMapMarker()
+   * returns — the exclusion re-render lags a beat behind the click resolving.
+   * getVisibleStopNames() is polled until the pickup name actually drops out
+   * before a dropoff candidate pool is built.
+   */
+  async selectRandomStopsViaMapMarkers(): Promise<{ pickup: string; dropoff: string }> {
+    await this.pickupInput.click();
+    const pickupStops = await this.getVisibleStopNames();
+    if (pickupStops.length < 2) throw new Error(`Need at least 2 stops, found ${pickupStops.length}`);
+    const pickupName = await this.selectStopViaMapMarkerFromCandidates(pickupStops);
+
+    await this.dropoffInput.click();
+    let dropoffStops = await this.getVisibleStopNames();
+    const deadline = Date.now() + RIDER_TIMEOUTS.STOP_LIST;
+    while (dropoffStops.includes(pickupName) && Date.now() < deadline) {
+      await this.page.waitForTimeout(200);
+      await this.dropoffInput.click();
+      dropoffStops = await this.getVisibleStopNames();
+    }
+    const validDropoffs = dropoffStops.filter(s => s !== pickupName);
+    if (validDropoffs.length === 0) throw new Error(`No valid dropoff stops after selecting ${pickupName}`);
+    const dropoffName = await this.selectStopViaMapMarkerFromCandidates(validDropoffs);
+
+    return { pickup: pickupName, dropoff: dropoffName };
+  }
+
   async getVisibleStopNames(): Promise<string[]> {
     const names: string[] = [];
     const visibleH4 = this.page.locator('h4:visible');
@@ -272,8 +363,124 @@ export class SelectLocationPage {
     return await denied.isVisible({ timeout: 3_000 }).catch(() => false);
   }
 
-  /** Check if map container is visible (after "View on map" or stop selection) */
+  /**
+   * Check if the map container is visible (after "View on map" or stop
+   * selection). The map is MapTiler/OpenStreetMap on this app (confirmed
+   * live — MapTiler attribution links render on the location page), not
+   * Google Maps, so it exposes an accessible `role="region" name="Map"`
+   * rather than Google's `.gm-style` class (that locator is ASAP-specific
+   * and does not apply here).
+   */
   async isMapVisible(): Promise<boolean> {
-    return await this.page.locator('.gm-style').isVisible({ timeout: 5_000 }).catch(() => false);
+    return await this.page.getByRole('region', { name: 'Map' }).isVisible({ timeout: 5_000 }).catch(() => false);
+  }
+
+  /**
+   * Select a stop by clicking its marker pin directly on the map, rather
+   * than from the text stop list. This is a two-step flow, live-verified on
+   * staging/ODFB 2026-08-21: clicking a marker opens a swipeable carousel of
+   * cards (one per stop, NOT just the one clicked) each with a "set as
+   * pickup"/"set as drop-off" button — the button's label follows which
+   * input (pickup/dropoff) was last focused, not which is empty, so the
+   * correct input must already be focused before calling this. Clicking the
+   * marker itself does not commit a selection.
+   *
+   * Map view is only shown by default before any stop is picked. After a
+   * pickup is committed (by any method — list, search, or marker), the view
+   * switches to the drop-off stop LIST, hiding the markers — "View on map"
+   * must be clicked to bring them back before a second marker-based
+   * selection (live-verified). This is a no-op when the map is already
+   * showing, so it's always safe to call before a marker click.
+   *
+   * The carousel renders twice in the DOM (same dual-render quirk seen
+   * elsewhere in this app's modals) — scoping to the first matching card
+   * avoids acting on the duplicate.
+   *
+   * Markers that sit close together geographically can visually overlap
+   * (MapLibre GL markers, `maplibregl-marker` divs) — a random stop's marker
+   * can have a neighboring marker's div intercepting its click area, and the
+   * map can also re-center/re-render mid-click (element detaches). Live
+   * -confirmed with the real stop layout. `force: true` plus a short retry
+   * loop mirrors DateTimePicker.selectDateByDay()'s handling of the same
+   * class of overlay-intercept/detach issue.
+   */
+  async selectStopViaMapMarker(stopName: string, buttonTimeout: number = RIDER_TIMEOUTS.STOP_LIST) {
+    const marker = this.page.locator(`img[alt="${stopName}"]`).first();
+    if (!(await marker.isVisible({ timeout: 2_000 }).catch(() => false))) {
+      await this.viewOnMapBtn.click();
+      await marker.waitFor({ state: 'visible', timeout: RIDER_TIMEOUTS.STOP_LIST });
+    }
+    const MAX_ATTEMPTS = 3;
+    let lastError: unknown;
+    let clicked = false;
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+      try {
+        await marker.click({ force: true, timeout: RIDER_TIMEOUTS.STOP_LIST });
+        clicked = true;
+        break;
+      } catch (err) {
+        lastError = err;
+      }
+    }
+    if (!clicked) throw lastError;
+    // Find the button by walking UP from the specific heading to its nearest
+    // ancestor div that also contains a button, rather than filtering `div`
+    // elements broadly by "has this heading somewhere AND has a button
+    // somewhere" — that broader filter can match a big outer carousel-track
+    // wrapper (which "has" both, via two DIFFERENT descendant cards) instead
+    // of the one specific card, especially for stops whose card lands early
+    // in DOM order (live-confirmed: intermittent 10s timeouts for specific
+    // stops — "Door 4", "Door 2" — consistent with matching the wrong,
+    // button-less-for-this-stop ancestor).
+    const heading = this.page.getByRole('heading', { name: stopName, exact: true, level: 3 }).first();
+    const card = heading.locator('xpath=ancestor::div[.//button][1]');
+    await card.getByRole('button', { name: /^set as (pickup|drop-off)$/ }).click({ force: true, timeout: buttonTimeout });
+  }
+
+  /** Open the "Map Theme" dialog via the (unlabeled, position-based) theme icon button. */
+  async openMapTheme() {
+    await this.mapThemeButton.click();
+    await expect(this.mapThemeDialogHeading).toBeVisible({ timeout: RIDER_TIMEOUTS.STOP_LIST });
+    // The dialog's swatch images are lazy-loaded (mapTheme.js) and the dual
+    // -render settles a beat after the heading itself becomes visible —
+    // clicking a swatch immediately intermittently misses (live-confirmed:
+    // identical click logic that reliably works with human-paced tool calls
+    // failed when run back-to-back at automation speed). One MUI_DROPDOWN
+    // -length wait absorbs that settle time before any swatch is clicked.
+    await this.page.waitForTimeout(RIDER_TIMEOUTS.MUI_DROPDOWN);
+  }
+
+  /**
+   * Select a map theme by its exact label ("Classic" | "Silver" | "Satellite").
+   * The dialog dual-renders (same quirk as the carousel above), and which of
+   * the two DOM instances is actually wired to React state isn't fixed by
+   * position — a plain Playwright click and a `force: true` synthetic click
+   * on the first match were each observed to sometimes land on the inert
+   * duplicate (cookie stayed unset). A real DOM `.click()` dispatched via
+   * evaluate() on EVERY matching swatch (both instances) reliably works
+   * under Desktop Chrome (this project's device) — the inert one is a
+   * harmless no-op, the real one commits the change regardless of position.
+   * Tile-provider rendering itself can't be asserted from the DOM, so
+   * callers should verify via getMapThemeCookieValue() instead (the app
+   * persists the choice to a `mapTheme` cookie).
+   */
+  async selectMapTheme(themeName: 'Classic' | 'Silver' | 'Satellite') {
+    await this.page.evaluate((label) => {
+      const boxes = [...document.querySelectorAll('[class*="mapBox"]')];
+      boxes.filter(b => b.textContent?.trim() === label).forEach(b => (b as HTMLElement).click());
+    }, themeName);
+  }
+
+  /** Close the Map Theme dialog — same dual-render click quirk as selectMapTheme(), same evaluate()-based fix. */
+  async closeMapTheme() {
+    await this.page.evaluate(() => {
+      document.querySelectorAll('button[aria-label="close"]').forEach(b => (b as HTMLElement).click());
+    });
+  }
+
+  /** Current `mapTheme` cookie value ("1" = Classic, "2" = Silver, "3" = Satellite), or null if unset. */
+  async getMapThemeCookieValue(): Promise<string | null> {
+    const cookies = await this.page.context().cookies();
+    return cookies.find(c => c.name === 'mapTheme')?.value ?? null;
   }
 }

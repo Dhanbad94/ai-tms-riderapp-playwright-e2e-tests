@@ -11,7 +11,7 @@ EXTRA_ARGS=""
 
 show_help() {
   echo ""
-  echo "Usage: $0 -e <env> -f <feature> [--bc] [--bf] [--bs] [options]"
+  echo "Usage: $0 -e <env> -f <feature> [--bc] [--bm] [--bs] [--ba] [options]"
   echo ""
   echo "Environment:"
   echo "  -e, --env           Environment: staging, preproduction, production"

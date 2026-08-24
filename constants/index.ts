@@ -70,6 +70,13 @@ export const RIDER_TIMEOUTS = {
   MUI_DROPDOWN: 500,
   /** Stop selection settle time */
   STOP_SELECT: 1_000,
+  /** Wait for the MUI date-picker calendar popper to open (Future Booking).
+   *  12s rather than a tighter value — the ensureBookableSlot()/random-date
+   *  retry loop reopens this calendar repeatedly per attempt, which is
+   *  measurably slower under parallel headed execution (observed live). */
+  DATE_PICKER: 12_000,
+  /** Wait for the available-dates/slots fetch to populate the picker (Future Booking) */
+  SLOTS_LOAD: 10_000,
 } as const;
 
 export const RIDER_PATHS = {

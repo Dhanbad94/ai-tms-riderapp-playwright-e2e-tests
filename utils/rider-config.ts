@@ -96,6 +96,34 @@ const ODASAP_ORG: OrgModeConfig = {
 };
 
 // ============================================================================
+// Shared Future Booking org (ODFB) — identical across staging, preprod, and
+// prod (same convention as ODASAP_ORG above). Stop names verified live against
+// staging (rider-staging.trackmyshuttle.com/a/odfb/location) on 2026-08-20:
+// pickup="Automated OD Future Booking", dropoff="Terminal 5E" (also shared
+// with ODASAP), plus "10000 W O'Hare Ave", "Airport (ORD)", "Door 2/3/4 -
+// Bus/Shuttle Ctr", "Duplicate Stop" available as alternates. Preprod/prod are
+// NOT independently verified this session — confirm the org exists there
+// before relying on @creates-ride runs against those two.
+// ============================================================================
+
+const ODFB_ORG: OrgModeConfig = {
+  trackingId: 'ODFB',
+  enabled: true,
+  stops: {
+    pickup: 'Automated OD Future Booking',
+    dropoff: 'Terminal 5E',
+    searchKeyword: 'Terminal',
+    altPickup: 'Door 2 - Bus/Shuttle Ctr',
+    altDropoff: 'Airport (ORD)',
+  },
+  phone: {
+    countryCode: 'India',
+    number: '8676913831',
+  },
+  maxRiders: 10,
+};
+
+// ============================================================================
 // Staging Configuration — FULLY CONFIGURED
 // ============================================================================
 
@@ -110,7 +138,7 @@ const STAGING: RiderEnvironmentConfig = {
   allowCancelSmoke: true,
   orgs: {
     asapOnly: { ...ODASAP_ORG },
-    futureBookingOnly: { ...PLACEHOLDER_ORG },
+    futureBookingOnly: { ...ODFB_ORG },
     asapAndFuture: { ...PLACEHOLDER_ORG },
     fixedRoute: { ...PLACEHOLDER_ORG },
   },
@@ -138,7 +166,7 @@ const PREPRODUCTION: RiderEnvironmentConfig = {
   driverApi: PREPROD_DRIVER_API,
   orgs: {
     asapOnly: { ...ODASAP_ORG },
-    futureBookingOnly: { ...PLACEHOLDER_ORG },
+    futureBookingOnly: { ...ODFB_ORG },
     asapAndFuture: { ...PLACEHOLDER_ORG },
     fixedRoute: { ...PLACEHOLDER_ORG },
   },
@@ -168,7 +196,7 @@ const PRODUCTION: RiderEnvironmentConfig = {
   driverApi: PROD_DRIVER_API,
   orgs: {
     asapOnly: { ...ODASAP_ORG },
-    futureBookingOnly: { ...PLACEHOLDER_ORG },
+    futureBookingOnly: { ...ODFB_ORG },
     asapAndFuture: { ...PLACEHOLDER_ORG },
     fixedRoute: { ...PLACEHOLDER_ORG },
   },
@@ -241,6 +269,17 @@ export function canRunCancelSmoke(): boolean {
 export function canRunDispatchLifecycle(): boolean {
   const config = getRiderConfig();
   return config.allowDispatchLifecycle === true && config.driverApi !== undefined;
+}
+
+/**
+ * Whether an org/mode is configured and enabled for the active environment.
+ * Non-throwing counterpart to getOrgConfig() — use in test.skip() guards so a
+ * not-yet-configured mode (e.g. futureBookingOnly is a PLACEHOLDER until its
+ * trackingId/stops are filled in) skips gracefully instead of throwing at
+ * module-load/collection time and failing the whole spec file.
+ */
+export function isOrgEnabled(mode: OnDemandMode): boolean {
+  return getRiderConfig().orgs[mode].enabled === true;
 }
 
 /**
