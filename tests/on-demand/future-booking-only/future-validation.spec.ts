@@ -36,7 +36,9 @@ test.describe(`Future Booking — Validation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.U
   test('@smoke @sanity FB_018: Empty form submission blocked — validation error on name', async ({ futureGuestFormSection }) => {
     await futureGuestFormSection.requestRideButton.scrollIntoViewIfNeeded();
     await futureGuestFormSection.submitForm();
-    expect(await futureGuestFormSection.hasNameError()).toBe(true);
+    // Web-first assertion auto-retries until the error class applies (validation
+    // renders a React tick after the click) — no one-shot class read.
+    await expect(futureGuestFormSection.nameInput).toHaveClass(/borderError/);
   });
 
   /** Verify that entering a phone number shorter than the valid length displays a phone validation error. */
@@ -44,7 +46,7 @@ test.describe(`Future Booking — Validation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.U
     await futureGuestFormSection.fillName('Test User');
     await futureGuestFormSection.fillPhone('12345');
     await futureGuestFormSection.nameInput.click();
-    expect(await futureGuestFormSection.hasPhoneError()).toBe(true);
+    await expect(futureGuestFormSection.phoneInput).toHaveClass(/borderError/);
   });
 
   /** Verify that entering a valid phone number (10-16 digits) does not trigger a validation error. */
@@ -53,7 +55,7 @@ test.describe(`Future Booking — Validation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.U
     await futureGuestFormSection.fillName('Test User');
     await futureGuestFormSection.fillPhone(org.phone.number);
     await futureGuestFormSection.nameInput.click();
-    expect(await futureGuestFormSection.hasPhoneError()).toBe(false);
+    await expect(futureGuestFormSection.phoneInput).not.toHaveClass(/borderError/);
   });
 
   /** Verify that script/HTML entered in the Name field is sanitized and not rendered as executable script (XSS protection). */
@@ -117,6 +119,6 @@ test.describe(`Future Booking — Validation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.U
     await futureGuestFormSection.submitForm();
     await expect(futureGuestFormSection.nameInput).toHaveAttribute('class', /borderError/, { timeout: 5_000 });
     await futureGuestFormSection.fillName('Fixed User');
-    expect(await futureGuestFormSection.hasNameError()).toBe(false);
+    await expect(futureGuestFormSection.nameInput).not.toHaveClass(/borderError/);
   });
 });

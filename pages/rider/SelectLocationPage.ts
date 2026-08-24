@@ -13,6 +13,8 @@ export class SelectLocationPage {
   readonly confirmButton: Locator;
   readonly useCurrentLocationBtn: Locator;
   readonly viewOnMapBtn: Locator;
+  readonly viewStopListBtn: Locator;
+  readonly mapListToggle: Locator;
   readonly backButton: Locator;
   readonly pageHeader: Locator;
   readonly dateTimeHeading: Locator;
@@ -35,7 +37,14 @@ export class SelectLocationPage {
     // on Future Booking: caused a 2-element strict-mode violation).
     this.confirmButton = page.getByRole('button', { name: /^(Confirm Location|Next)$/i });
     this.useCurrentLocationBtn = page.getByText(/Use Current Location|Use Closest Stop/i);
+    // The location screen now DEFAULTS to the map view (MapTiler) with a single
+    // toggle that flips label by state: "View Stop List" while the map shows,
+    // "View on map" once the stop list shows. viewOnMapBtn is the list→map
+    // control; viewStopListBtn is the map→list control; mapListToggle matches
+    // whichever is currently rendered (state-agnostic presence check).
     this.viewOnMapBtn = page.getByText('View on map');
+    this.viewStopListBtn = page.getByText('View Stop List');
+    this.mapListToggle = page.getByText(/View Stop List|View on map/);
     this.backButton = page.locator('button').filter({ has: page.locator('img[alt="back"]') }).first();
     this.pageHeader = page.getByRole('heading', { level: 2 });
     // NOTE: the literal "Pick-up Date & Time" heading text does not exist
@@ -180,8 +189,20 @@ export class SelectLocationPage {
       await this.page.getByRole('option').first().waitFor({ timeout: RIDER_TIMEOUTS.STOP_LIST });
       await this.page.getByRole('option').first().click();
       await this.page.getByRole('option').first().waitFor({ state: 'hidden', timeout: 5_000 }).catch(() => {});
+      // The riders MUI menu leaves an (invisible) modal backdrop mounted for a
+      // beat after the option is chosen; it intercepts pointer events over the
+      // whole page, so a Next/Confirm click lands on the backdrop instead of the
+      // button. Wait for it to unmount before clicking.
+      await this.page.locator('.MuiBackdrop-root').first()
+        .waitFor({ state: 'detached', timeout: 5_000 }).catch(() => {});
     }
-    await this.confirmButton.click();
+    try {
+      await this.confirmButton.click();
+    } catch {
+      // Fallback if a lingering overlay still intercepts the hit-test: dispatch
+      // the click directly on the DOM node so React's onClick fires regardless.
+      await this.confirmButton.evaluate((el) => (el as HTMLElement).click());
+    }
   }
 
   async verifyDateTimePickerAbsent() {
@@ -336,6 +357,19 @@ export class SelectLocationPage {
     await this.viewOnMapBtn.click();
   }
 
+  /**
+   * Ensure the text stop list is showing. The screen defaults to the map view,
+   * so the list (h4 stop headings) isn't rendered until "View Stop List" is
+   * clicked. No-op when the list is already showing (toggle absent).
+   */
+  async showStopList() {
+    if (await this.viewStopListBtn.isVisible({ timeout: 3_000 }).catch(() => false)) {
+      await this.viewStopListBtn.click();
+      await this.page.locator('h4:visible').first()
+        .waitFor({ state: 'visible', timeout: RIDER_TIMEOUTS.STOP_LIST }).catch(() => {});
+    }
+  }
+
   /** Click "Use Current Location" / "Use Closest Stop" */
   async clickUseCurrentLocation() {
     await this.useCurrentLocationBtn.click();
@@ -407,7 +441,14 @@ export class SelectLocationPage {
   async selectStopViaMapMarker(stopName: string, buttonTimeout: number = RIDER_TIMEOUTS.STOP_LIST) {
     const marker = this.page.locator(`img[alt="${stopName}"]`).first();
     if (!(await marker.isVisible({ timeout: 2_000 }).catch(() => false))) {
-      await this.viewOnMapBtn.click();
+      // Switch to the map only when we're actually in the stop-list view — the
+      // "View on map" control is then visible. On the default map view (e.g. the
+      // first selection) that control exists but is hidden (the app keeps both
+      // toggle labels mounted) and the markers are merely still loading, so
+      // clicking it would land on a hidden element; just wait for the marker.
+      if (await this.viewOnMapBtn.isVisible().catch(() => false)) {
+        await this.viewOnMapBtn.click();
+      }
       await marker.waitFor({ state: 'visible', timeout: RIDER_TIMEOUTS.STOP_LIST });
     }
     const MAX_ATTEMPTS = 3;

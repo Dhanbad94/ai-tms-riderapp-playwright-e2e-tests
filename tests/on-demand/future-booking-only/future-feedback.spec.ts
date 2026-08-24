@@ -31,7 +31,12 @@ async function submitCancelAndOpenFeedback(page: import('@playwright/test').Page
   await gf.fillRequiredFields();
   await gf.submitAndAwaitTracking();
 
-  await page.getByText(/Cancel Ride/i).click();
+  // The tracking page renders "Cancel Ride" a beat after navigation (once the
+  // ride-details load); wait for it explicitly instead of relying on the 10s
+  // action timeout, which occasionally lapses under serialized ride creation.
+  const cancelRide = page.getByText(/Cancel Ride/i);
+  await cancelRide.waitFor({ state: 'visible', timeout: RIDER_TIMEOUTS.CONFIRMATION });
+  await cancelRide.click();
   await cd.waitForDialog();
   await cd.selectReasonByIndex(0);
   if (await cd.isTextareaVisible()) {

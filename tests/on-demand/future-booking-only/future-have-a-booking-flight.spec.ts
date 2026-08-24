@@ -107,18 +107,18 @@ test.describe(`Have a Booking — Org-Scoped Tabs (Phone/Flight) ${RIDER_TAGS.FU
     /** Verify that "Next" on the Flight tab stays disabled until a flight number of at least 3 characters is entered. */
     test('HB_012: "Next" on the Flight tab is disabled until a valid flight number is entered', async ({ signInPage }) => {
       await signInPage.switchToFlightTab();
-      expect(await signInPage.isNextDisabled()).toBe(true);
+      await expect(signInPage.nextButton).toBeDisabled();
       await signInPage.fillFlightNumber('A1');
-      expect(await signInPage.isNextDisabled()).toBe(true);
+      await expect(signInPage.nextButton).toBeDisabled();
       await signInPage.fillFlightNumber('AA1');
-      expect(await signInPage.isNextDisabled()).toBe(false);
+      await expect(signInPage.nextButton).toBeEnabled();
     });
 
     /** Verify that looking up a flight number with no matching booking shows "No reservation records match the provided flight number." */
     test('@negative HB_013: A non-existent flight number shows "No reservation records match" error', async ({ signInPage }) => {
       await signInPage.switchToFlightTab();
       await signInPage.fillFlightNumber('ZZ0000000');
-      expect(await signInPage.isNextDisabled()).toBe(false);
+      await expect(signInPage.nextButton).toBeEnabled();
       await signInPage.clickNext();
       await expect.poll(() => signInPage.getFlightErrorText(), { timeout: 15_000 })
         .toBe('No reservation records match the provided flight number.');
@@ -144,6 +144,13 @@ test.describe(`Have a Booking — Org-Scoped Tabs (Phone/Flight) ${RIDER_TAGS.FU
       await page.waitForTimeout(RIDER_TIMEOUTS.RIDE_COOLDOWN);
     });
 
+    // KNOWN FLAKE (backend, not app/test): the flight-search endpoint
+    // (POST /ride-bookings) lags the booking write by a variable delay that
+    // can exceed 90s, so a just-created booking is intermittently not yet
+    // findable — the same booking is viewable immediately at its /j/{code}/s
+    // URL, so only the search index is behind. submitFlightLookupWithRetry()
+    // widens the client poll window (~90s) and CI retries cover the rest, but
+    // this can only be truly fixed backend-side. Tracked in the PR description.
     /** Verify that a Flight Number lookup for a real, just-created booking succeeds and lands on the bookings page with matching details. */
     test('@sanity HB_015: A real flight number finds the booking and navigates to /bookings', async ({ page }) => {
       const flightNo = `FL${Math.floor(1000 + Math.random() * 9000)}`;
@@ -160,7 +167,7 @@ test.describe(`Have a Booking — Org-Scoped Tabs (Phone/Flight) ${RIDER_TAGS.FU
         if (day) await signInPage.selectFlightDateByDay(day);
       }
       await signInPage.fillFlightNumber(flightNo);
-      expect(await signInPage.isNextDisabled()).toBe(false);
+      await expect(signInPage.nextButton).toBeEnabled();
       // Retries internally — findBookingByFlight can briefly not find a
       // booking created moments earlier (backend search-index lag on this
       // endpoint specifically, live-diagnosed 2026-08-21; see SignInPage.ts).

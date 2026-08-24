@@ -160,18 +160,19 @@ test.describe(`ASAP Only — Map View ${RIDER_TAGS.ASAP} ${RIDER_TAGS.UI_ONLY} $
     await selectLocationPage.goto(org.trackingId);
   });
 
-  test('@smoke MAP_001: "View on map" is visible and clickable', async ({ selectLocationPage }) => {
-    await expect(selectLocationPage.viewOnMapBtn).toBeVisible();
+  test('@smoke MAP_001: map/list toggle is visible and clickable', async ({ selectLocationPage }) => {
+    // Screen defaults to the map view, so the toggle reads "View Stop List";
+    // mapListToggle matches whichever label is currently rendered.
+    await expect(selectLocationPage.mapListToggle).toBeVisible();
   });
 
-  test('MAP_002: Clicking "View on map" changes page view', async ({ selectLocationPage, page }) => {
-    await selectLocationPage.clickViewOnMap();
-    // After clicking "View on map", the stop list should hide and map area or empty map should appear
-    // Google Maps may not fully render in headless mode without API key
-    const mapOrIframe = page.locator('.gm-style, [class*="map"], iframe');
-    const hasMapArea = await mapOrIframe.count() > 0;
-    const stopListGone = !(await selectLocationPage.notFoundMessage.isVisible().catch(() => false));
-    expect(hasMapArea || stopListGone).toBe(true);
+  test('MAP_002: Toggling the map/list view changes the page', async ({ selectLocationPage }) => {
+    // Default is the map view — clicking "View Stop List" must surface the list.
+    await selectLocationPage.showStopList();
+    const names = await selectLocationPage.getVisibleStopNames();
+    expect(names.length).toBeGreaterThan(0);
+    // …and the toggle flips to "View on map".
+    await expect(selectLocationPage.viewOnMapBtn).toBeVisible();
   });
 
   test('MAP_003: Map area loads after selecting both stops', async ({ selectLocationPage, page }) => {
@@ -182,11 +183,11 @@ test.describe(`ASAP Only — Map View ${RIDER_TAGS.ASAP} ${RIDER_TAGS.UI_ONLY} $
     await expect(selectLocationPage.dropoffInput).not.toHaveValue('');
   });
 
-  test('MAP_004: Map container has Google Maps elements', async ({ selectLocationPage, page }) => {
-    await selectLocationPage.selectBothStops(stops.pickup, stops.dropoff);
-    // Google Maps renders .gm-style container with controls
-    const gmStyle = page.locator('.gm-style');
-    await expect(gmStyle).toBeVisible({ timeout: 10_000 });
+  test('MAP_004: Map container renders (MapTiler)', async ({ page }) => {
+    // The screen defaults to the map view. The app uses MapTiler/MapLibre GL
+    // (not Google Maps), which renders a `.maplibregl-canvas` inside a
+    // `.maplibregl-map` container.
+    await expect(page.locator('.maplibregl-map').first()).toBeVisible({ timeout: 10_000 });
   });
 });
 

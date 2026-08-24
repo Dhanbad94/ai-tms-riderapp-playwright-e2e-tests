@@ -184,7 +184,7 @@ export class SignInPage {
    * Retries the click after a short backoff rather than padding a single
    * fixed wait, which measurably did not eliminate the race on its own.
    */
-  async submitFlightLookupWithRetry(maxAttempts = 4): Promise<void> {
+  async submitFlightLookupWithRetry(maxAttempts = 8): Promise<void> {
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       await this.clickNext();
       const navigated = await this.page
@@ -194,7 +194,12 @@ export class SignInPage {
       if (navigated) return;
 
       if (attempt < maxAttempts - 1) {
-        await this.page.waitForTimeout(2_000 * (attempt + 1));
+        // Linear backoff, capped so late attempts still re-probe promptly once
+        // the index catches up rather than sleeping ever longer. Total poll
+        // window ≈ 90s across the attempts — the observed lag can exceed 60s,
+        // so this clears it on the first test attempt instead of leaning on the
+        // whole-test retry (which wastes a fresh ride creation).
+        await this.page.waitForTimeout(Math.min(2_000 * (attempt + 1), 8_000));
         // A failed lookup returns to the Flight tab with the same values
         // still filled in — clicking Next again re-submits the same query.
       }

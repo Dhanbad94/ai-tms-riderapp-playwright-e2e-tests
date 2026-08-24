@@ -53,7 +53,7 @@ test.describe(`Have a Booking — Landing Page (Phone) ${RIDER_TAGS.UI_ONLY} ${R
 
     /** Verify that "Next" stays disabled while the phone field is empty. */
     test('@smoke HB_003: "Next" is disabled with an empty phone number', async ({ signInPage }) => {
-      expect(await signInPage.isNextDisabled()).toBe(true);
+      await expect(signInPage.nextButton).toBeDisabled();
     });
 
     /** Verify that entering invalid/script-like characters shows "Please enter a valid phone number." */
@@ -67,13 +67,13 @@ test.describe(`Have a Booking — Landing Page (Phone) ${RIDER_TAGS.UI_ONLY} ${R
     test('@negative HB_005: A too-long phone number shows the digit-count validation error', async ({ signInPage }) => {
       await signInPage.fillPhone('86769138311');
       await expect.poll(() => signInPage.getPhoneErrorText()).toBe('Phone must be 10 digits');
-      expect(await signInPage.isNextDisabled()).toBe(true);
+      await expect(signInPage.nextButton).toBeDisabled();
     });
 
     /** Verify that submitting a valid but unregistered phone number shows "No active booking found." with a "Create a booking" link. */
     test('@negative HB_006: An unregistered phone number shows "No active booking found."', async ({ signInPage }) => {
       await signInPage.fillPhone('7418529630');
-      expect(await signInPage.isNextDisabled()).toBe(false);
+      await expect(signInPage.nextButton).toBeEnabled();
       await signInPage.clickNext();
       await expect.poll(() => signInPage.getPhoneErrorText(), { timeout: 15_000 })
         .toContain('No active booking found.');
@@ -104,7 +104,7 @@ test.describe(`Have a Booking — Landing Page (Phone) ${RIDER_TAGS.UI_ONLY} ${R
     test('@sanity HB_007: A registered phone number triggers a real OTP and navigates to /otp', async ({ signInPage, page }) => {
       const org = rc.orgs.futureBookingOnly;
       await signInPage.fillPhone(org.phone.number);
-      expect(await signInPage.isNextDisabled()).toBe(false);
+      await expect(signInPage.nextButton).toBeEnabled();
       await signInPage.clickNext();
       // Stop here — do not attempt to read/enter the OTP, there is no way to
       // receive the real SMS in this environment.

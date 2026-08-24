@@ -64,7 +64,7 @@ test.describe(`Future Booking — Cancellation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS
     await submitFutureRideAndGetCode(page);
     await confirmationPage.clickCancelRide();
     await cancellationDialog.waitForDialog();
-    expect(await cancellationDialog.isCancelButtonDisabled()).toBe(true);
+    await expect(cancellationDialog.cancelRideButton).toBeDisabled();
   });
 
   /** Verify that selecting a cancellation reason and confirming successfully cancels the ride. */
@@ -80,7 +80,7 @@ test.describe(`Future Booking — Cancellation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS
     if (await cancellationDialog.isTextareaVisible()) {
       await cancellationDialog.fillDetails('Automated Future Booking test cancellation');
     }
-    expect(await cancellationDialog.isCancelButtonDisabled()).toBe(false);
+    await expect(cancellationDialog.cancelRideButton).toBeEnabled();
     await cancellationDialog.submitCancel();
 
     await confirmationPage.verifyRideCanceledScreen();
@@ -128,7 +128,7 @@ test.describe(`Future Booking — Cancellation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS
     await confirmationPage.clickCancelRide();
     await cancellationDialog.waitForDialog();
     await cancellationDialog.selectReasonByIndex(1);
-    expect(await cancellationDialog.isCancelButtonDisabled()).toBe(false);
+    await expect(cancellationDialog.cancelRideButton).toBeEnabled();
     await cancellationDialog.submitCancel();
     await confirmationPage.verifyRideCanceledScreen();
   });
@@ -139,7 +139,7 @@ test.describe(`Future Booking — Cancellation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS
     await confirmationPage.clickCancelRide();
     await cancellationDialog.waitForDialog();
     await cancellationDialog.selectReasonByIndex(2);
-    expect(await cancellationDialog.isCancelButtonDisabled()).toBe(false);
+    await expect(cancellationDialog.cancelRideButton).toBeEnabled();
     await cancellationDialog.submitCancel();
     await confirmationPage.verifyRideCanceledScreen();
   });
@@ -150,7 +150,7 @@ test.describe(`Future Booking — Cancellation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS
     await confirmationPage.clickCancelRide();
     await cancellationDialog.waitForDialog();
     await cancellationDialog.selectReasonByIndex(3);
-    expect(await cancellationDialog.isCancelButtonDisabled()).toBe(false);
+    await expect(cancellationDialog.cancelRideButton).toBeEnabled();
     await cancellationDialog.submitCancel();
     await confirmationPage.verifyRideCanceledScreen();
   });
@@ -162,9 +162,9 @@ test.describe(`Future Booking — Cancellation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS
     await cancellationDialog.waitForDialog();
     await cancellationDialog.selectReasonByIndex(4);
     expect(await cancellationDialog.isTextareaVisible()).toBe(true);
-    expect(await cancellationDialog.isCancelButtonDisabled()).toBe(true);
+    await expect(cancellationDialog.cancelRideButton).toBeDisabled();
     await cancellationDialog.fillDetails('Automated Future Booking test cancellation — app issue');
-    expect(await cancellationDialog.isCancelButtonDisabled()).toBe(false);
+    await expect(cancellationDialog.cancelRideButton).toBeEnabled();
   });
 
   /** Verify that cancelling with "App or technical issue" plus required details succeeds. */

@@ -45,7 +45,6 @@ test.describe(`Future Booking — Rider Details Verification ${RIDER_TAGS.FUTURE
     const room = `R${Math.floor(100 + Math.random() * 900)}`;
     const flight = `FL${Math.floor(1000 + Math.random() * 9000)}`;
     const note = `Verification note ${Date.now().toString(36).slice(-4)}`;
-    const riders = 2;
 
     await selectLocationPage.goto(cfg.trackingId);
     await selectLocationPage.selectBothStops(cfg.stops.pickup, cfg.stops.dropoff);
@@ -56,6 +55,12 @@ test.describe(`Future Booking — Rider Details Verification ${RIDER_TAGS.FUTURE
     await futureGuestFormSection.selectCountryCode(cfg.phone.countryCode);
     await futureGuestFormSection.fillName(name);
     await futureGuestFormSection.fillPhone(phone);
+    // Prefer 2 guests to exercise the multi-guest display, but fall back to what
+    // the auto-selected slot actually offers: a near-full slot may have only 1
+    // seat left (each ride this suite books consumes one), and requesting more
+    // riders than seats_available hangs on a dropdown option that never renders.
+    const maxRiders = await futureGuestFormSection.getRiderOptionCount().catch(() => 1);
+    const riders = Math.min(2, Math.max(1, maxRiders));
     await futureGuestFormSection.selectRiders(riders);
     await futureGuestFormSection.toggleSpecialAssistance();
     await futureGuestFormSection.fillNotes(note);

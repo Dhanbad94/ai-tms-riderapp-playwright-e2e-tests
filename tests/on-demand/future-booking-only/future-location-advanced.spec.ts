@@ -47,7 +47,10 @@ test.describe(`Future Booking — Stop Search ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.
   /** Verify that a search with no matches shows "Location not found in the defined service area." */
   test('@negative SEARCH_003: Search with no results shows the not-found message', async ({ selectLocationPage }) => {
     await selectLocationPage.searchPickupStops('zzz_nonexistent_xyz');
-    await expect(selectLocationPage.notFoundMessage).toBeVisible({ timeout: 5_000 });
+    // 10s (not 5s): the screen defaults to the map view, so the search first
+    // switches to the list and then debounces before the empty-state renders —
+    // the tighter window flaked under parallel load.
+    await expect(selectLocationPage.notFoundMessage).toBeVisible({ timeout: 10_000 });
   });
 
   /** Verify that clearing the search box restores the full, unfiltered stop list. */

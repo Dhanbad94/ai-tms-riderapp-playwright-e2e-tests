@@ -111,7 +111,16 @@ export class DateTimePicker {
 
   /** Click the date field to open the MUI calendar popper. */
   async openDatePicker() {
-    await this.dateInput.click();
+    // Idempotent: callers (ensureBookableSlot, selectRandomDateAndTime) open the
+    // picker once to read available days, then loop calling openDatePicker again
+    // per candidate date. A second click on the date field toggles an
+    // already-open popper CLOSED, after which selectDateByDay waits forever for a
+    // day cell that is no longer visible. Skip the click when it's already open.
+    const alreadyOpen = await this.page.locator('.MuiPickersDay-root').first()
+      .isVisible().catch(() => false);
+    if (!alreadyOpen) {
+      await this.dateInput.click();
+    }
     await this.calendarPopper.first().waitFor({ state: 'visible', timeout: RIDER_TIMEOUTS.DATE_PICKER });
     // The popper container mounts a beat before its day cells render (and
     // before shouldDisableDate has applied enabled/disabled state to them) —
