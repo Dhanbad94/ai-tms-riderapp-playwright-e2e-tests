@@ -1,6 +1,6 @@
 import { test, expect } from '../../../fixtures/test-fixtures';
 import { getOrgConfig, isOrgEnabled } from '../../../utils/rider-config';
-import { RIDER_TAGS } from '../../../constants';
+import { RIDER_TAGS, RIDER_TIMEOUTS } from '../../../constants';
 
 /**
  * Future Booking — Advanced Location Selection.
@@ -168,7 +168,13 @@ test.describe(`Future Booking — Map Marker Selection ${RIDER_TAGS.FUTURE} ${RI
 
   /** Verify that clicking a stop's marker pin on the map opens a card offering to set it as pickup or drop-off. */
   test('@smoke MAPPIN_001: Verify that clicking a stop map marker opens a card offering to set it as pickup or drop-off', async ({ selectLocationPage, page }) => {
-    await page.locator(`img[alt="${stops.dropoff}"]`).first().click();
+    // Staging defaults to the map view; the preprod/prod build defaults to the
+    // stop list, so switch to the map first (no-op on staging) before the
+    // marker is available to click.
+    await selectLocationPage.showMapView();
+    const marker = page.locator(`img[alt="${stops.dropoff}"]`).first();
+    await marker.waitFor({ state: 'visible', timeout: RIDER_TIMEOUTS.STOP_LIST });
+    await marker.click();
     const card = page
       .locator('div')
       .filter({ has: page.getByRole('heading', { name: stops.dropoff, exact: true, level: 3 }) })
@@ -181,7 +187,7 @@ test.describe(`Future Booking — Map Marker Selection ${RIDER_TAGS.FUTURE} ${RI
   test('@sanity MAPPIN_002: Verify that selecting a stop via its map marker sets it as the pickup location', async ({ selectLocationPage }) => {
     await selectLocationPage.pickupInput.click();
     await selectLocationPage.selectStopViaMapMarker(stops.dropoff);
-    await expect(selectLocationPage.pickupInput).toHaveValue(stops.dropoff);
+    await selectLocationPage.expectStopInputValue(selectLocationPage.pickupInput, stops.dropoff);
   });
 
   /** Verify that selecting a stop via its map marker sets it as the drop-off location once pickup is already chosen. */
@@ -189,7 +195,7 @@ test.describe(`Future Booking — Map Marker Selection ${RIDER_TAGS.FUTURE} ${RI
     await selectLocationPage.selectPickupStop(stops.pickup);
     await selectLocationPage.dropoffInput.click();
     await selectLocationPage.selectStopViaMapMarker(stops.dropoff);
-    await expect(selectLocationPage.dropoffInput).toHaveValue(stops.dropoff);
+    await selectLocationPage.expectStopInputValue(selectLocationPage.dropoffInput, stops.dropoff);
   });
 });
 
@@ -255,7 +261,7 @@ test.describe(`Future Booking — Go Back Confirmation ${RIDER_TAGS.FUTURE} ${RI
     await selectLocationPage.clickBack();
     await selectLocationPage.cancelGoBack();
     await expect(selectLocationPage.goBackDialogHeading).not.toBeVisible();
-    await expect(selectLocationPage.pickupInput).toHaveValue(stops.pickup);
+    await selectLocationPage.expectStopInputValue(selectLocationPage.pickupInput, stops.pickup);
   });
 
   /** Verify that confirming "Go Back" navigates away from the location page, discarding the in-progress selection. */

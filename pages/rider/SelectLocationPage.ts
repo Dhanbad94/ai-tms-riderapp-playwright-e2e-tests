@@ -370,6 +370,38 @@ export class SelectLocationPage {
     }
   }
 
+  /**
+   * Ensure the MAP view is showing. Staging defaults to the map view, but the
+   * preproduction/production build defaults to the stop LIST, exposing a
+   * "View on map" toggle. Click it when present so the map-dependent UI
+   * (markers, the map-theme button, the `.maplibregl-map` container) is
+   * mounted. No-op when the map is already showing — on the default map view
+   * the "View on map" control is hidden (both toggle labels stay mounted), so
+   * this never toggles a map-first build into the list.
+   */
+  async showMapView() {
+    if (await this.viewOnMapBtn.isVisible({ timeout: 3_000 }).catch(() => false)) {
+      await this.viewOnMapBtn.click();
+      // Wait on the provider-agnostic accessible Map region — ASAP renders
+      // Google Maps on preprod/prod but MapTiler on staging, so a MapLibre
+      // -specific class would not settle on every environment.
+      await this.page.getByRole('region', { name: 'Map' }).first()
+        .waitFor({ state: 'visible', timeout: RIDER_TIMEOUTS.STOP_LIST }).catch(() => {});
+    }
+  }
+
+  /**
+   * Assert a stop input shows `expected`, tolerating surrounding whitespace.
+   * The preproduction/production build populates a selected stop into the
+   * pickup/drop-off input with a stray leading space that the staging build
+   * trims; a strict equality check flakes across environments. Anchored so a
+   * genuinely different value is still rejected, and keeps web-first retry.
+   */
+  async expectStopInputValue(input: Locator, expected: string) {
+    const escaped = expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    await expect(input).toHaveValue(new RegExp(`^\\s*${escaped}\\s*$`));
+  }
+
   /** Click "Use Current Location" / "Use Closest Stop" */
   async clickUseCurrentLocation() {
     await this.useCurrentLocationBtn.click();
@@ -480,6 +512,10 @@ export class SelectLocationPage {
 
   /** Open the "Map Theme" dialog via the (unlabeled, position-based) theme icon button. */
   async openMapTheme() {
+    // The theme button lives in the map view; the preprod/prod build defaults
+    // to the stop list, so switch to the map first (no-op on the map-first
+    // staging build).
+    await this.showMapView();
     await this.mapThemeButton.click();
     await expect(this.mapThemeDialogHeading).toBeVisible({ timeout: RIDER_TIMEOUTS.STOP_LIST });
     // The dialog's swatch images are lazy-loaded (mapTheme.js) and the dual

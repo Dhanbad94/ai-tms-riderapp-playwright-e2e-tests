@@ -103,7 +103,7 @@ test.describe(`Future Booking — Location Selection ${RIDER_TAGS.FUTURE} ${RIDE
   /** Verify that selecting a pickup stop correctly populates the pickup input field. */
   test('Verify that selecting a pickup stop fills in the pickup field', async ({ selectLocationPage }) => {
     await selectLocationPage.selectPickupStop(stops.pickup);
-    await expect(selectLocationPage.pickupInput).toHaveValue(stops.pickup);
+    await selectLocationPage.expectStopInputValue(selectLocationPage.pickupInput, stops.pickup);
   });
 
   /** Verify that the same location cannot be selected for both pickup and drop-off. */

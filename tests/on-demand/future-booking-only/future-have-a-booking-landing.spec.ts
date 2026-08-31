@@ -102,6 +102,13 @@ test.describe(`Have a Booking — Landing Page (Phone) ${RIDER_TAGS.UI_ONLY} ${R
 
     /** Verify that submitting a registered phone number triggers a real OTP send and navigates to /otp. */
     test('@sanity HB_007: Verify that a registered phone number sends a one-time passcode and opens the OTP page', async ({ signInPage, page }) => {
+      // Preproduction and production SHARE the same database, so this fires a
+      // real OTP to the same registered test number on both — the preprod run
+      // (06:30) and the prod run (07:00) hit the OTP gateway's rate limit,
+      // failing the second (prod) send. Run it on staging + preproduction only;
+      // sending a real OTP SMS from production monitoring is an unwanted side
+      // effect regardless. (Preproduction still gives full daily coverage.)
+      test.skip(getRiderConfig().name === 'production', 'Sends a real OTP SMS; skipped on production to avoid the shared-DB duplicate send / rate-limit (covered on preproduction).');
       const org = rc.orgs.futureBookingOnly;
       await signInPage.fillPhone(org.phone.number);
       await expect(signInPage.nextButton).toBeEnabled();
