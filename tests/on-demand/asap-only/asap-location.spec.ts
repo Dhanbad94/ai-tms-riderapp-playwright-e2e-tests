@@ -92,13 +92,13 @@ test.describe(`ASAP Only — Location Selection ${RIDER_TAGS.ASAP} ${RIDER_TAGS.
 
   test('@smoke @sanity Verify that selecting a pickup stop fills the pickup field with that stop', async ({ selectLocationPage }) => {
     await selectLocationPage.selectPickupStop(stops.pickup);
-    await expect(selectLocationPage.pickupInput).toHaveValue(stops.pickup);
+    await selectLocationPage.expectStopInputValue(selectLocationPage.pickupInput, stops.pickup);
   });
 
   test('Verify that selecting a dropoff stop fills the dropoff field with that stop', async ({ selectLocationPage }) => {
     await selectLocationPage.selectPickupStop(stops.pickup);
     await selectLocationPage.selectDropoffStop(stops.dropoff);
-    await expect(selectLocationPage.dropoffInput).toHaveValue(stops.dropoff);
+    await selectLocationPage.expectStopInputValue(selectLocationPage.dropoffInput, stops.dropoff);
   });
 
   test('Verify that the same stop cannot be used for both pickup and dropoff', async ({ selectLocationPage, page }) => {

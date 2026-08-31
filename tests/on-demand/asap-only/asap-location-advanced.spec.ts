@@ -183,11 +183,15 @@ test.describe(`ASAP Only — Map View ${RIDER_TAGS.ASAP} ${RIDER_TAGS.UI_ONLY} $
     await expect(selectLocationPage.dropoffInput).not.toHaveValue('');
   });
 
-  test('MAP_004: Verify that the interactive map loads and is displayed on the location screen', async ({ page }) => {
-    // The screen defaults to the map view. The app uses MapTiler/MapLibre GL
-    // (not Google Maps), which renders a `.maplibregl-canvas` inside a
-    // `.maplibregl-map` container.
-    await expect(page.locator('.maplibregl-map').first()).toBeVisible({ timeout: 10_000 });
+  test('MAP_004: Verify that the interactive map loads and is displayed on the location screen', async ({ selectLocationPage, page }) => {
+    // Staging defaults to the map view; the preprod/prod build defaults to the
+    // stop list, so switch to the map first (no-op on staging). The map
+    // provider differs by environment — MapTiler/MapLibre GL on staging
+    // (`.maplibregl-map`) but Google Maps on preprod/prod (`.gm-style`) — so
+    // assert the provider-agnostic accessible Map region rather than a
+    // provider-specific container class.
+    await selectLocationPage.showMapView();
+    await expect(page.getByRole('region', { name: 'Map' }).first()).toBeVisible({ timeout: 10_000 });
   });
 });
 
