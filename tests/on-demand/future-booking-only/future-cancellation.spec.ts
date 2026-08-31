@@ -51,7 +51,7 @@ test.describe(`Future Booking — Cancellation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS
   });
 
   /** Verify that the Cancel Ride feature opens the Cancellation dialogue. */
-  test('@sanity FB_029: "Cancel Ride" opens the cancellation reason dialog', async ({ page, confirmationPage, cancellationDialog }) => {
+  test('@sanity FB_029: Verify that "Cancel Ride" opens the cancellation reason dialog', async ({ page, confirmationPage, cancellationDialog }) => {
     await submitFutureRideAndGetCode(page);
     await confirmationPage.clickCancelRide();
     await cancellationDialog.waitForDialog();
@@ -60,7 +60,7 @@ test.describe(`Future Booking — Cancellation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS
   });
 
   /** Verify that the Cancel submit button remains disabled until a cancellation reason is selected. */
-  test('FB_030: Submit stays disabled until a reason is selected', async ({ page, confirmationPage, cancellationDialog }) => {
+  test('FB_030: Verify that the cancel submit button stays disabled until a reason is selected', async ({ page, confirmationPage, cancellationDialog }) => {
     await submitFutureRideAndGetCode(page);
     await confirmationPage.clickCancelRide();
     await cancellationDialog.waitForDialog();
@@ -68,7 +68,7 @@ test.describe(`Future Booking — Cancellation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS
   });
 
   /** Verify that selecting a cancellation reason and confirming successfully cancels the ride. */
-  test('@sanity FB_031: Selecting a reason and confirming cancels the ride', async ({ page, confirmationPage, cancellationDialog }) => {
+  test('@sanity FB_031: Verify that selecting a reason and confirming cancels the ride', async ({ page, confirmationPage, cancellationDialog }) => {
     await submitFutureRideAndGetCode(page);
     await confirmationPage.clickCancelRide();
     await cancellationDialog.waitForDialog();
@@ -87,7 +87,7 @@ test.describe(`Future Booking — Cancellation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS
   });
 
   /** Verify that clicking Back on the cancellation dialogue closes it without cancelling the ride. */
-  test('FB_032: "Back" closes the dialog without cancelling', async ({ page, confirmationPage, cancellationDialog }) => {
+  test('FB_032: Verify that "Back" closes the cancellation dialog without cancelling the ride', async ({ page, confirmationPage, cancellationDialog }) => {
     await submitFutureRideAndGetCode(page);
     await confirmationPage.clickCancelRide();
     await cancellationDialog.waitForDialog();
@@ -114,7 +114,7 @@ test.describe(`Future Booking — Cancellation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS
    * functional difference from the real one is confusing UI, even though it
    * doesn't block cancellation.
    */
-  test('FB_033: Dialog reason set matches CANCEL_REASONS (first 5 entries)', async ({ page, confirmationPage, cancellationDialog }) => {
+  test('FB_033: Verify that the cancellation dialog lists the five standard reasons in the expected order', async ({ page, confirmationPage, cancellationDialog }) => {
     await submitFutureRideAndGetCode(page);
     await confirmationPage.clickCancelRide();
     await cancellationDialog.waitForDialog();
@@ -123,7 +123,7 @@ test.describe(`Future Booking — Cancellation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS
   });
 
   /** Verify that cancelling with "Wait time was too long" (reason index 1) succeeds. */
-  test('FB_034: Cancel with "Wait time was too long" succeeds', async ({ page, confirmationPage, cancellationDialog }) => {
+  test('FB_034: Verify that cancelling with "Wait time was too long" succeeds', async ({ page, confirmationPage, cancellationDialog }) => {
     await submitFutureRideAndGetCode(page);
     await confirmationPage.clickCancelRide();
     await cancellationDialog.waitForDialog();
@@ -134,7 +134,7 @@ test.describe(`Future Booking — Cancellation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS
   });
 
   /** Verify that cancelling with "Change in travel plans" (reason index 2) succeeds. */
-  test('FB_035: Cancel with "Change in travel plans" succeeds', async ({ page, confirmationPage, cancellationDialog }) => {
+  test('FB_035: Verify that cancelling with "Change in travel plans" succeeds', async ({ page, confirmationPage, cancellationDialog }) => {
     await submitFutureRideAndGetCode(page);
     await confirmationPage.clickCancelRide();
     await cancellationDialog.waitForDialog();
@@ -145,7 +145,7 @@ test.describe(`Future Booking — Cancellation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS
   });
 
   /** Verify that cancelling with "Found alternative ride" (reason index 3) succeeds. */
-  test('FB_036: Cancel with "Found alternative ride" succeeds', async ({ page, confirmationPage, cancellationDialog }) => {
+  test('FB_036: Verify that cancelling with "Found alternative ride" succeeds', async ({ page, confirmationPage, cancellationDialog }) => {
     await submitFutureRideAndGetCode(page);
     await confirmationPage.clickCancelRide();
     await cancellationDialog.waitForDialog();
@@ -156,7 +156,7 @@ test.describe(`Future Booking — Cancellation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS
   });
 
   /** Verify that "App or technical issue" (reason index 4) reveals a required details textarea and keeps submit disabled until it's filled. */
-  test('FB_037: "App or technical issue" requires details before submit enables', async ({ page, confirmationPage, cancellationDialog }) => {
+  test('FB_037: Verify that "App or technical issue" requires details before the submit button enables', async ({ page, confirmationPage, cancellationDialog }) => {
     await submitFutureRideAndGetCode(page);
     await confirmationPage.clickCancelRide();
     await cancellationDialog.waitForDialog();
@@ -168,7 +168,7 @@ test.describe(`Future Booking — Cancellation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS
   });
 
   /** Verify that cancelling with "App or technical issue" plus required details succeeds. */
-  test('FB_038: Cancel with "App or technical issue" + details succeeds', async ({ page, confirmationPage, cancellationDialog }) => {
+  test('FB_038: Verify that cancelling with "App or technical issue" plus details succeeds', async ({ page, confirmationPage, cancellationDialog }) => {
     await submitFutureRideAndGetCode(page);
     await confirmationPage.clickCancelRide();
     await cancellationDialog.waitForDialog();

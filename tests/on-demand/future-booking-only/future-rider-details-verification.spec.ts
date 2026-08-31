@@ -36,7 +36,7 @@ test.describe(`Future Booking — Rider Details Verification ${RIDER_TAGS.FUTURE
   });
 
   /** Verify that every rider detail entered at booking time (name, guest count, phone, special assistance, note, room, flight) is displayed correctly on the tracking page after ride creation. */
-  test('@sanity FB_RD_001: Every filled-in field is displayed correctly on the tracking page', async ({
+  test('@sanity FB_RD_001: Verify that every rider detail entered at booking is shown correctly on the tracking screen', async ({
     page, selectLocationPage, dateTimePicker, futureGuestFormSection, confirmationPage,
   }) => {
     const cfg = getOrgConfig('futureBookingOnly');
@@ -94,7 +94,7 @@ test.describe(`Future Booking — Rider Details Verification ${RIDER_TAGS.FUTURE
   });
 
   /** Verify that optional fields left empty at booking time (special assistance, note, flight number) do not render on the tracking page's rider-details card. */
-  test('FB_RD_002: Optional fields left empty are correctly absent from the tracking page', async ({
+  test('FB_RD_002: Verify that optional fields left empty at booking are absent from the tracking screen rider details', async ({
     confirmationPage, selectLocationPage, dateTimePicker, futureGuestFormSection,
   }) => {
     const cfg = getOrgConfig('futureBookingOnly');

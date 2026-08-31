@@ -14,14 +14,14 @@ test.describe(`ASAP Only — Stop Search ${RIDER_TAGS.ASAP} ${RIDER_TAGS.UI_ONLY
     await selectLocationPage.goto(org.trackingId);
   });
 
-  test('@smoke SEARCH_001: Search pickup stops by partial name', async ({ selectLocationPage, page }) => {
+  test('@smoke SEARCH_001: Verify that pickup stops can be found by typing part of a stop name', async ({ selectLocationPage, page }) => {
     await selectLocationPage.searchPickupStops(stops.searchKeyword);
     const results = await selectLocationPage.getVisibleStopNames();
     expect(results.length).toBeGreaterThan(0);
     expect(results.some(name => name.toLowerCase().includes(stops.searchKeyword.toLowerCase()))).toBe(true);
   });
 
-  test('SEARCH_002: Search dropoff stops by partial name', async ({ selectLocationPage }) => {
+  test('SEARCH_002: Verify that dropoff stops can be found by typing part of a stop name', async ({ selectLocationPage }) => {
     // First select a pickup to get to dropoff
     await selectLocationPage.selectPickupStop(stops.pickup);
     await selectLocationPage.searchDropoffStops(stops.searchKeyword);
@@ -30,12 +30,12 @@ test.describe(`ASAP Only — Stop Search ${RIDER_TAGS.ASAP} ${RIDER_TAGS.UI_ONLY
     expect(results.some(name => name.toLowerCase().includes(stops.searchKeyword.toLowerCase()))).toBe(true);
   });
 
-  test('SEARCH_003: Search with no results shows empty state', async ({ selectLocationPage }) => {
+  test('SEARCH_003: Verify that a stop search with no matches shows an empty-state message', async ({ selectLocationPage }) => {
     await selectLocationPage.searchPickupStops('zzz_nonexistent_xyz');
     await expect(selectLocationPage.notFoundMessage).toBeVisible({ timeout: 5_000 });
   });
 
-  test('SEARCH_004: Clearing search restores full stop list', async ({ selectLocationPage }) => {
+  test('SEARCH_004: Verify that clearing the search restores the full list of stops', async ({ selectLocationPage }) => {
     // Get initial count
     await selectLocationPage.pickupInput.click();
     const allStops = await selectLocationPage.getVisibleStopNames();
@@ -54,7 +54,7 @@ test.describe(`ASAP Only — Stop Search ${RIDER_TAGS.ASAP} ${RIDER_TAGS.UI_ONLY
     expect(restoredStops.length).toBe(initialCount);
   });
 
-  test('SEARCH_005: Search is case-insensitive', async ({ selectLocationPage }) => {
+  test('SEARCH_005: Verify that stop search returns the same results regardless of upper or lower case', async ({ selectLocationPage }) => {
     await selectLocationPage.searchPickupStops(stops.searchKeyword.toUpperCase());
     const upper = await selectLocationPage.getVisibleStopNames();
 
@@ -65,7 +65,7 @@ test.describe(`ASAP Only — Stop Search ${RIDER_TAGS.ASAP} ${RIDER_TAGS.UI_ONLY
     expect(upper.length).toBe(lower.length);
   });
 
-  test('SEARCH_006: Select a stop from search results', async ({ selectLocationPage }) => {
+  test('SEARCH_006: Verify that a stop can be selected directly from the search results', async ({ selectLocationPage }) => {
     await selectLocationPage.searchPickupStops(stops.searchKeyword);
     const results = await selectLocationPage.getVisibleStopNames();
     expect(results.length).toBeGreaterThan(0);
@@ -75,7 +75,7 @@ test.describe(`ASAP Only — Stop Search ${RIDER_TAGS.ASAP} ${RIDER_TAGS.UI_ONLY
     await expect(selectLocationPage.pickupInput).not.toHaveValue('');
   });
 
-  test('SEARCH_007: Search by single character returns results', async ({ selectLocationPage }) => {
+  test('SEARCH_007: Verify that searching stops by a single character returns matching results', async ({ selectLocationPage }) => {
     await selectLocationPage.searchPickupStops('T');
     const results = await selectLocationPage.getVisibleStopNames();
     expect(results.length).toBeGreaterThan(0);
@@ -91,7 +91,7 @@ test.describe(`ASAP Only — Random Stops & Dynamic Riders ${RIDER_TAGS.ASAP} ${
     await selectLocationPage.goto(org.trackingId);
   });
 
-  test('@smoke RANDOM_001: Select random pickup and dropoff stops', async ({ selectLocationPage }) => {
+  test('@smoke RANDOM_001: Verify that randomly selected pickup and dropoff stops are different and populate both fields', async ({ selectLocationPage }) => {
     const { pickup, dropoff } = await selectLocationPage.selectRandomStops();
     expect(pickup).toBeTruthy();
     expect(dropoff).toBeTruthy();
@@ -100,14 +100,14 @@ test.describe(`ASAP Only — Random Stops & Dynamic Riders ${RIDER_TAGS.ASAP} ${
     await expect(selectLocationPage.dropoffInput).not.toHaveValue('');
   });
 
-  test('RANDOM_002: All available stops are listed for pickup', async ({ selectLocationPage }) => {
+  test('RANDOM_002: Verify that all available stops are listed for pickup selection', async ({ selectLocationPage }) => {
     await selectLocationPage.pickupInput.click();
     const stopNames = await selectLocationPage.getVisibleStopNames();
     // ODASAP staging has ~10 stops
     expect(stopNames.length).toBeGreaterThanOrEqual(5);
   });
 
-  test('RANDOM_003: Selected pickup is removed from dropoff list', async ({ selectLocationPage }) => {
+  test('RANDOM_003: Verify that the selected pickup stop is removed from the dropoff stop list', async ({ selectLocationPage }) => {
     await selectLocationPage.pickupInput.click();
     const allPickupStops = await selectLocationPage.getVisibleStopNames();
     await selectLocationPage.selectPickupStop(stops.pickup);
@@ -119,7 +119,7 @@ test.describe(`ASAP Only — Random Stops & Dynamic Riders ${RIDER_TAGS.ASAP} ${
     expect(dropoffStops.length).toBeLessThan(allPickupStops.length);
   });
 
-  test('RANDOM_004: Multiple riders can be selected from dropdown', async ({ selectLocationPage, page }) => {
+  test('RANDOM_004: Verify that more than one rider can be selected from the riders dropdown', async ({ selectLocationPage, page }) => {
     await selectLocationPage.selectBothStops(stops.pickup, stops.dropoff);
     // Check if riders dropdown is visible on location page
     const ridersDD = page.locator('#demo-simple-select');
@@ -138,7 +138,7 @@ test.describe(`ASAP Only — Random Stops & Dynamic Riders ${RIDER_TAGS.ASAP} ${
     }
   });
 
-  test('RANDOM_005: Complete ride request with random stops', async ({ selectLocationPage, guestFormSection, page }) => {
+  test('RANDOM_005: Verify that a rider can complete a ride request end to end using randomly chosen stops', async ({ selectLocationPage, guestFormSection, page }) => {
     test.skip(!canCreateRides(), 'Ride creation disabled');
     const { pickup, dropoff } = await selectLocationPage.selectRandomStops();
     await selectLocationPage.clickConfirm();
@@ -160,13 +160,13 @@ test.describe(`ASAP Only — Map View ${RIDER_TAGS.ASAP} ${RIDER_TAGS.UI_ONLY} $
     await selectLocationPage.goto(org.trackingId);
   });
 
-  test('@smoke MAP_001: map/list toggle is visible and clickable', async ({ selectLocationPage }) => {
+  test('@smoke MAP_001: Verify that the map and list view toggle is visible and clickable', async ({ selectLocationPage }) => {
     // Screen defaults to the map view, so the toggle reads "View Stop List";
     // mapListToggle matches whichever label is currently rendered.
     await expect(selectLocationPage.mapListToggle).toBeVisible();
   });
 
-  test('MAP_002: Toggling the map/list view changes the page', async ({ selectLocationPage }) => {
+  test('MAP_002: Verify that switching from map view to list view shows the stop list and flips the toggle label', async ({ selectLocationPage }) => {
     // Default is the map view — clicking "View Stop List" must surface the list.
     await selectLocationPage.showStopList();
     const names = await selectLocationPage.getVisibleStopNames();
@@ -175,7 +175,7 @@ test.describe(`ASAP Only — Map View ${RIDER_TAGS.ASAP} ${RIDER_TAGS.UI_ONLY} $
     await expect(selectLocationPage.viewOnMapBtn).toBeVisible();
   });
 
-  test('MAP_003: Map area loads after selecting both stops', async ({ selectLocationPage, page }) => {
+  test('MAP_003: Verify that both stop selections are preserved when the map view loads after choosing both stops', async ({ selectLocationPage, page }) => {
     await selectLocationPage.selectBothStops(stops.pickup, stops.dropoff);
     // After both stops selected, the page switches to map view + form
     // Verify the stop inputs still show selected values (map view preserves selection)
@@ -183,7 +183,7 @@ test.describe(`ASAP Only — Map View ${RIDER_TAGS.ASAP} ${RIDER_TAGS.UI_ONLY} $
     await expect(selectLocationPage.dropoffInput).not.toHaveValue('');
   });
 
-  test('MAP_004: Map container renders (MapTiler)', async ({ page }) => {
+  test('MAP_004: Verify that the interactive map loads and is displayed on the location screen', async ({ page }) => {
     // The screen defaults to the map view. The app uses MapTiler/MapLibre GL
     // (not Google Maps), which renders a `.maplibregl-canvas` inside a
     // `.maplibregl-map` container.
@@ -200,11 +200,11 @@ test.describe(`ASAP Only — Use Current Location ${RIDER_TAGS.ASAP} ${RIDER_TAG
     await selectLocationPage.goto(org.trackingId);
   });
 
-  test('@smoke LOC_001: "Use Current Location" button is visible', async ({ selectLocationPage }) => {
+  test('@smoke LOC_001: Verify that the Use Current Location button is visible on the location screen', async ({ selectLocationPage }) => {
     await expect(selectLocationPage.useCurrentLocationBtn).toBeVisible();
   });
 
-  test('LOC_002: Clicking "Use Current Location" triggers location dialog or action', async ({ selectLocationPage, page, context }) => {
+  test('LOC_002: Verify that tapping Use Current Location prompts for permission or fills the pickup from the rider location', async ({ selectLocationPage, page, context }) => {
     // Grant geolocation deterministically — without this, Chromium silently denies
     // and the app surfaces no visible UI, making the assertion non-deterministic.
     await context.grantPermissions(['geolocation']);
@@ -222,7 +222,7 @@ test.describe(`ASAP Only — Use Current Location ${RIDER_TAGS.ASAP} ${RIDER_TAG
     expect(hasDialog || hasDenied || pickupFilled.length > 0).toBe(true);
   });
 
-  test('LOC_003: Location permission dialog shows Allow and Not Now buttons', async ({ selectLocationPage, page, context }) => {
+  test('LOC_003: Verify that the location permission dialog offers Allow and Not Now options', async ({ selectLocationPage, page, context }) => {
     // Clear any existing permissions to trigger the dialog
     await context.clearPermissions();
     await selectLocationPage.clickUseCurrentLocation();
@@ -233,7 +233,7 @@ test.describe(`ASAP Only — Use Current Location ${RIDER_TAGS.ASAP} ${RIDER_TAG
     }
   });
 
-  test('LOC_004: Clicking "Not Now" dismisses the location dialog', async ({ selectLocationPage, context }) => {
+  test('LOC_004: Verify that choosing Not Now dismisses the location permission dialog', async ({ selectLocationPage, context }) => {
     await context.clearPermissions();
     await selectLocationPage.clickUseCurrentLocation();
     const hasDialog = await selectLocationPage.isLocationPermissionDialogVisible();
@@ -245,7 +245,7 @@ test.describe(`ASAP Only — Use Current Location ${RIDER_TAGS.ASAP} ${RIDER_TAG
     }
   });
 
-  test('LOC_005: Geolocation granted selects nearest stop', async ({ selectLocationPage, context }) => {
+  test('LOC_005: Verify that allowing location access auto-selects the nearest stop as pickup', async ({ selectLocationPage, context }) => {
     // Mock geolocation to a known position (near O'Hare Airport for ODASAP)
     await context.grantPermissions(['geolocation']);
     await context.setGeolocation({ latitude: 41.9742, longitude: -87.9073 });
@@ -262,7 +262,7 @@ test.describe(`ASAP Only — Use Current Location ${RIDER_TAGS.ASAP} ${RIDER_TAG
     expect(pickupValue.length).toBeGreaterThanOrEqual(0); // May or may not fill based on radius
   });
 
-  test('LOC_006: Geolocation denied shows denied modal', async ({ selectLocationPage, context }) => {
+  test('LOC_006: Verify that denying location access shows the location-denied message', async ({ selectLocationPage, context }) => {
     // Deny geolocation permission
     await context.clearPermissions();
     await selectLocationPage.clickUseCurrentLocation();
@@ -277,7 +277,7 @@ test.describe(`ASAP Only — Use Current Location ${RIDER_TAGS.ASAP} ${RIDER_TAG
     }
   });
 
-  test('LOC_007: "Use Current Location" hidden when dropoff input is focused', async ({ selectLocationPage }) => {
+  test('LOC_007: Verify that the Use Current Location button is not offered while the dropoff field is focused', async ({ selectLocationPage }) => {
     // First select a pickup
     await selectLocationPage.selectPickupStop(stops.pickup);
     // Focus on dropoff

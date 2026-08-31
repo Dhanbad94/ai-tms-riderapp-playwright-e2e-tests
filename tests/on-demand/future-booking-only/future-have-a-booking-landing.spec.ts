@@ -26,7 +26,7 @@ const rc = getRiderConfig();
 
 test.describe(`Have a Booking — Landing Page (Phone) ${RIDER_TAGS.UI_ONLY} ${RIDER_TAGS.SAFE} ${RIDER_TAGS.REGRESSION}`, () => {
   /** Verify that the "Have a Booking?" link is visible on the landing page and navigates to /sign-in. */
-  test('@smoke HB_001: "Have a Booking?" link on the landing page navigates to /sign-in', async ({ page }) => {
+  test('@smoke HB_001: Verify that the Have a Booking link on the landing page opens the sign-in page', async ({ page }) => {
     await page.goto(rc.urls.ride, { waitUntil: 'domcontentloaded' });
     const link = page.getByRole('link', { name: 'Have a Booking?' });
     await expect(link).toBeVisible();
@@ -45,33 +45,33 @@ test.describe(`Have a Booking — Landing Page (Phone) ${RIDER_TAGS.UI_ONLY} ${R
     });
 
     /** Verify that no Phone/Flight tabs render on the plain landing-page /sign-in (phone-only). */
-    test('HB_002: No Phone/Flight tabs render without the showFlight query param', async ({ signInPage }) => {
+    test('HB_002: Verify that no phone or flight tabs appear on the plain sign-in page', async ({ signInPage }) => {
       await expect(signInPage.phoneTabLabel).not.toBeVisible();
       await expect(signInPage.flightTabLabel).not.toBeVisible();
       await expect(signInPage.phoneInput).toBeVisible();
     });
 
     /** Verify that "Next" stays disabled while the phone field is empty. */
-    test('@smoke HB_003: "Next" is disabled with an empty phone number', async ({ signInPage }) => {
+    test('@smoke HB_003: Verify that the Next button is disabled while the phone number field is empty', async ({ signInPage }) => {
       await expect(signInPage.nextButton).toBeDisabled();
     });
 
     /** Verify that entering invalid/script-like characters shows "Please enter a valid phone number." */
-    test('@negative HB_004: Invalid characters in the phone field show a validation error', async ({ signInPage }) => {
+    test('@negative HB_004: Verify that entering invalid characters in the phone field shows a validation error', async ({ signInPage }) => {
       await signInPage.fillPhone('8676913831');
       await signInPage.fillPhone('<script>');
       await expect.poll(() => signInPage.getPhoneErrorText()).toBe('Please enter a valid phone number.');
     });
 
     /** Verify that a phone number longer than the country's expected length shows "Phone must be {N} digits". */
-    test('@negative HB_005: A too-long phone number shows the digit-count validation error', async ({ signInPage }) => {
+    test('@negative HB_005: Verify that a phone number that is too long shows the digit-count validation error', async ({ signInPage }) => {
       await signInPage.fillPhone('86769138311');
       await expect.poll(() => signInPage.getPhoneErrorText()).toBe('Phone must be 10 digits');
       await expect(signInPage.nextButton).toBeDisabled();
     });
 
     /** Verify that submitting a valid but unregistered phone number shows "No active booking found." with a "Create a booking" link. */
-    test('@negative HB_006: An unregistered phone number shows "No active booking found."', async ({ signInPage }) => {
+    test('@negative HB_006: Verify that an unregistered phone number shows a no-active-booking message with a create option', async ({ signInPage }) => {
       await signInPage.fillPhone('7418529630');
       await expect(signInPage.nextButton).toBeEnabled();
       await signInPage.clickNext();
@@ -81,7 +81,7 @@ test.describe(`Have a Booking — Landing Page (Phone) ${RIDER_TAGS.UI_ONLY} ${R
     });
 
     /** Verify that clicking "Create a booking" navigates to the marketing site's tracking-code landing page. */
-    test('HB_016: "Create a booking" link navigates to the tracking-code landing page', async ({ signInPage, page }) => {
+    test('HB_016: Verify that the Create a booking link opens the tracking-code landing page', async ({ signInPage, page }) => {
       await signInPage.fillPhone('7418529630');
       await signInPage.clickNext();
       await expect(signInPage.createBookingLink).toBeVisible({ timeout: 15_000 });
@@ -101,7 +101,7 @@ test.describe(`Have a Booking — Landing Page (Phone) ${RIDER_TAGS.UI_ONLY} ${R
     });
 
     /** Verify that submitting a registered phone number triggers a real OTP send and navigates to /otp. */
-    test('@sanity HB_007: A registered phone number triggers a real OTP and navigates to /otp', async ({ signInPage, page }) => {
+    test('@sanity HB_007: Verify that a registered phone number sends a one-time passcode and opens the OTP page', async ({ signInPage, page }) => {
       const org = rc.orgs.futureBookingOnly;
       await signInPage.fillPhone(org.phone.number);
       await expect(signInPage.nextButton).toBeEnabled();

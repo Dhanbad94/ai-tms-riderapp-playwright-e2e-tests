@@ -64,7 +64,7 @@ test.describe(`Future Booking — API Payload Verification ${RIDER_TAGS.FUTURE} 
   });
 
   /** Verify that the ride-submission payload includes a "booking" object containing pickup_time and pickup_date. */
-  test('@smoke @sanity FB_033: Payload includes a booking object (pickup_time, pickup_date)', async ({ page }) => {
+  test('@smoke @sanity FB_033: Verify that the booking request includes a booking object carrying the pickup time and pickup date', async ({ page }) => {
     const { gf, getPayload } = await setupFormAndCapture(page);
     await gf.requestRideButton.scrollIntoViewIfNeeded();
     await gf.submitForm();
@@ -77,7 +77,7 @@ test.describe(`Future Booking — API Payload Verification ${RIDER_TAGS.FUTURE} 
   });
 
   /** Verify that the ride-submission request is sent to the correct type-suffixed Future Booking endpoint, not the ASAP endpoint. */
-  test('@smoke FB_034: Submit URL is type-suffixed (uses API_ENDPOINT_FUTURE, not the ASAP /request)', async ({ page }) => {
+  test('@smoke FB_034: Verify that the booking request is sent to the Future Booking type-suffixed endpoint and not the ASAP request endpoint', async ({ page }) => {
     const { gf, getUrl } = await setupFormAndCapture(page);
     await gf.requestRideButton.scrollIntoViewIfNeeded();
     await gf.submitForm();
@@ -89,7 +89,7 @@ test.describe(`Future Booking — API Payload Verification ${RIDER_TAGS.FUTURE} 
   });
 
   /** Verify that the ride-submission payload contains the correct rider name and phone number. */
-  test('FB_035: Payload has correct rider details', async ({ page }) => {
+  test('FB_035: Verify that the booking request carries the rider name and phone number', async ({ page }) => {
     const { gf, getPayload } = await setupFormAndCapture(page);
     await gf.requestRideButton.scrollIntoViewIfNeeded();
     await gf.submitForm();
@@ -100,7 +100,7 @@ test.describe(`Future Booking — API Payload Verification ${RIDER_TAGS.FUTURE} 
   });
 
   /** Verify that the ride-submission payload contains the correct pickup and drop-off stop IDs matching the selected locations. */
-  test('FB_036: Stop IDs are real values matching the selected stops', async ({ page }) => {
+  test('FB_036: Verify that the booking request pickup and drop-off stops match the selected stop names', async ({ page }) => {
     const { gf, getPayload } = await setupFormAndCapture(page);
     await gf.requestRideButton.scrollIntoViewIfNeeded();
     await gf.submitForm();
@@ -113,7 +113,7 @@ test.describe(`Future Booking — API Payload Verification ${RIDER_TAGS.FUTURE} 
   });
 
   /** Verify that a booking created with a randomly selected date and time still produces a correctly structured payload. */
-  test('FB_039: Random-slot booking payload includes the booking object with the picked time', async ({ page }) => {
+  test('FB_039: Verify that a booking with a randomly picked date and time still produces a booking object with the chosen time', async ({ page }) => {
     // Uses random stops + a random date/time (rather than the fixed default
     // pair) to spot-check that randomized selections still produce a correct
     // payload — the POST is mocked, so this is safe to run anywhere,
@@ -166,7 +166,7 @@ test.describe(`Future Booking — API Failure Negatives ${RIDER_TAGS.FUTURE} ${R
   });
 
   /** Verify that a 500 server error on submission displays an error toast and keeps the user on the form. */
-  test('@negative NEG_FB_001: 500 on submit → error toast shown, stays on form', async ({ page, futureGuestFormSection }) => {
+  test('@negative NEG_FB_001: Verify that a server error on submission shows an error toast and keeps the user on the booking form', async ({ page, futureGuestFormSection }) => {
     await page.route(`${config.urls.api}/**/request/*`, async (route) => {
       if (route.request().method() === 'POST') {
         await route.fulfill({
@@ -183,7 +183,7 @@ test.describe(`Future Booking — API Failure Negatives ${RIDER_TAGS.FUTURE} ${R
   });
 
   /** Verify that a "success: false" API response prevents ride creation and keeps the user on the form. */
-  test('@negative NEG_FB_002: success:false response → no ride, stays on form', async ({ page, futureGuestFormSection }) => {
+  test('@negative NEG_FB_002: Verify that an unsuccessful booking response creates no ride and keeps the user on the booking form', async ({ page, futureGuestFormSection }) => {
     await page.route(`${config.urls.api}/**/request/*`, async (route) => {
       if (route.request().method() === 'POST') {
         await route.fulfill({
@@ -212,7 +212,7 @@ test.describe(`Future Booking — Date/Slot Edge Cases (mocked) ${RIDER_TAGS.FUT
   });
 
   /** Verify that when no dates are available, an inline error message is shown and the date field remains empty. */
-  test('@negative NEG_FB_003: No available dates → inline error shown, date field stays empty', async ({ page, selectLocationPage, dateTimePicker }) => {
+  test('@negative NEG_FB_003: Verify that when no dates are available an inline error is shown and the date field stays empty', async ({ page, selectLocationPage, dateTimePicker }) => {
     // Live-verified shape (GET /dates/{type}?pickup=&dropoff=):
     // {code:200, response:{availability, from, to, only:[...]}}. Per
     // guestForm.js, "No dates are available for the selected stops." is set
@@ -233,7 +233,7 @@ test.describe(`Future Booking — Date/Slot Edge Cases (mocked) ${RIDER_TAGS.FUT
   });
 
   /** Verify that when the available-dates API returns an empty list with a 200 status, the calendar shows no selectable dates without displaying an error banner. */
-  test('@negative NEG_FB_003b: 200 with an empty "only" list leaves the calendar with nothing selectable (no error banner)', async ({ page, selectLocationPage, dateTimePicker }) => {
+  test('@negative NEG_FB_003b: Verify that an empty available-dates list leaves the calendar with no selectable dates and shows no error banner', async ({ page, selectLocationPage, dateTimePicker }) => {
     // Companion to NEG_FB_003 — documents the actual (silent) behavior for a
     // 200/empty-list response, so the two 0-dates paths aren't conflated.
     await page.route(`${config.urls.api}/**/dates/*`, async (route) => {
@@ -250,7 +250,7 @@ test.describe(`Future Booking — Date/Slot Edge Cases (mocked) ${RIDER_TAGS.FUT
   });
 
   /** Verify that when no time slots are available for the selected date, the message "No time slots available on this date!" is displayed and the time input is disabled. */
-  test('@negative NEG_FB_004: No time slots on the selected date → "No time slots available on this date!" shown, time input disabled', async ({ page, selectLocationPage, dateTimePicker }) => {
+  test('@negative NEG_FB_004: Verify that when no time slots exist for the selected date the no-slots message is shown and the time input is disabled', async ({ page, selectLocationPage, dateTimePicker }) => {
     // This exact message (timeSlotError in guestForm.js) only fires when the
     // slot-less date being evaluated IS today — the filter block that sets it
     // is nested inside `if (dayjs(selectedDate).isSame(dayjs(), "day"))`.

@@ -16,7 +16,7 @@ test.describe(`ASAP Only — End-to-End Flows ${RIDER_TAGS.ASAP} ${RIDER_TAGS.CR
     await page.waitForTimeout(RIDER_TIMEOUTS.RIDE_COOLDOWN);
   });
 
-  test('@sanity ASAP_047: Full happy path — Location → Form → Submit → Confirmation', async ({ page, selectLocationPage, guestFormSection }) => {
+  test('@sanity ASAP_047: Verify that a rider can complete the full on-demand booking flow from location to confirmation', async ({ page, selectLocationPage, guestFormSection }) => {
     test.skip(getRiderConfig().name === 'staging', 'Skipped on staging for now — runs on preproduction/production');
     await selectLocationPage.goto(org.trackingId);
     await selectLocationPage.verifyDateTimePickerAbsent();
@@ -36,7 +36,7 @@ test.describe(`ASAP Only — End-to-End Flows ${RIDER_TAGS.ASAP} ${RIDER_TAGS.CR
     await expect(status.first()).toBeVisible({ timeout: RIDER_TIMEOUTS.CONFIRMATION });
   });
 
-  test('Full flow with minimum fields', async ({ page, selectLocationPage, guestFormSection }) => {
+  test('Verify that a rider can book a ride filling only the required fields', async ({ page, selectLocationPage, guestFormSection }) => {
     await selectLocationPage.goto(org.trackingId);
     await selectLocationPage.selectBothStops(stops.pickup, stops.dropoff);
     await selectLocationPage.clickConfirm();
@@ -48,7 +48,7 @@ test.describe(`ASAP Only — End-to-End Flows ${RIDER_TAGS.ASAP} ${RIDER_TAGS.CR
     expect(page.url()).toMatch(/\/j\/[A-Za-z0-9_]+\/s/);
   });
 
-  test('Full flow with all optional fields', async ({ page, selectLocationPage, guestFormSection }) => {
+  test('Verify that a rider can book a ride after filling every optional field as well', async ({ page, selectLocationPage, guestFormSection }) => {
     await selectLocationPage.goto(org.trackingId);
     await selectLocationPage.selectBothStops(stops.pickup, stops.dropoff);
     await selectLocationPage.clickConfirm();
@@ -61,7 +61,7 @@ test.describe(`ASAP Only — End-to-End Flows ${RIDER_TAGS.ASAP} ${RIDER_TAGS.CR
     await page.waitForURL(/\/j\/.*\/s/, { timeout: RIDER_TIMEOUTS.RIDE_SUBMIT });
   });
 
-  test('Full flow verifies no future booking data in payload', async ({ page, selectLocationPage, guestFormSection }) => {
+  test('Verify that an on-demand booking request contains no scheduled-booking data', async ({ page, selectLocationPage, guestFormSection }) => {
     let payload: Record<string, unknown> | null = null;
     await page.route(`${config.urls.api}/**/request`, async (route) => {
       if (route.request().method() === 'POST') payload = route.request().postDataJSON();
@@ -79,7 +79,7 @@ test.describe(`ASAP Only — End-to-End Flows ${RIDER_TAGS.ASAP} ${RIDER_TAGS.CR
     expect(payload!).not.toHaveProperty('booking');
   });
 
-  test('Full flow with different stops', async ({ page, selectLocationPage, guestFormSection }) => {
+  test('Verify that a rider can complete a booking using an alternate pickup and dropoff', async ({ page, selectLocationPage, guestFormSection }) => {
     await selectLocationPage.goto(org.trackingId);
     await selectLocationPage.selectBothStops(stops.altPickup, stops.altDropoff);
     await selectLocationPage.clickConfirm();
@@ -91,7 +91,7 @@ test.describe(`ASAP Only — End-to-End Flows ${RIDER_TAGS.ASAP} ${RIDER_TAGS.CR
     expect(page.url()).toMatch(/\/j\/[A-Za-z0-9_]+\/s/);
   });
 
-  test('ASAP mode — no Future Booking elements anywhere', async ({ page, selectLocationPage, guestFormSection }) => {
+  test('Verify that no scheduled-booking date or time controls appear anywhere in on-demand mode', async ({ page, selectLocationPage, guestFormSection }) => {
     await selectLocationPage.goto(org.trackingId);
     await expect(page.getByText('Pick-up Date & Time')).not.toBeVisible();
     await expect(page.getByPlaceholder('Pick-up Date')).not.toBeVisible();
@@ -104,19 +104,19 @@ test.describe(`ASAP Only — End-to-End Flows ${RIDER_TAGS.ASAP} ${RIDER_TAGS.CR
     await guestFormSection.verifyAsapFormState();
   });
 
-  test.fixme('Error flow — API failure stays on form', async () => {
+  test.fixme('Verify that a booking request failure keeps the rider on the form', async () => {
     // App navigates away on API error instead of staying
   });
 
-  test.fixme('Error flow — API timeout stays on form', async () => {
+  test.fixme('Verify that a booking request timeout keeps the rider on the form', async () => {
     // Cross-origin route abort unreliable on staging
   });
 
-  test.fixme('ASAP_043: Guest data restored from cookies', async () => {
+  test.fixme('ASAP_043: Verify that saved guest details are restored from cookies on a return visit', async () => {
     // Cookie path scoping prevents cross-visit restoration
   });
 
-  test.fixme('ASAP_044: Auth removed when phone changes', async () => {
+  test.fixme('ASAP_044: Verify that the saved sign-in is cleared when the rider changes their phone number', async () => {
     // localStorage state unreliable across cross-origin staging navigation
   });
 });

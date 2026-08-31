@@ -33,7 +33,7 @@ test.describe(`Future Booking — Validation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.U
   });
 
   /** Verify that submitting the form with an empty Name field displays a validation error and blocks submission. */
-  test('@smoke @sanity FB_018: Empty form submission blocked — validation error on name', async ({ futureGuestFormSection }) => {
+  test('@smoke @sanity FB_018: Verify that submitting an empty future-booking form is blocked and shows a validation error on the name field', async ({ futureGuestFormSection }) => {
     await futureGuestFormSection.requestRideButton.scrollIntoViewIfNeeded();
     await futureGuestFormSection.submitForm();
     // Web-first assertion auto-retries until the error class applies (validation
@@ -42,7 +42,7 @@ test.describe(`Future Booking — Validation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.U
   });
 
   /** Verify that entering a phone number shorter than the valid length displays a phone validation error. */
-  test('FB_019: Phone field shows error for too-short phone', async ({ futureGuestFormSection }) => {
+  test('FB_019: Verify that entering a phone number shorter than the required length shows a phone validation error', async ({ futureGuestFormSection }) => {
     await futureGuestFormSection.fillName('Test User');
     await futureGuestFormSection.fillPhone('12345');
     await futureGuestFormSection.nameInput.click();
@@ -50,7 +50,7 @@ test.describe(`Future Booking — Validation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.U
   });
 
   /** Verify that entering a valid phone number (10-16 digits) does not trigger a validation error. */
-  test('FB_020: Phone field accepts a valid phone (10-16 digits)', async ({ futureGuestFormSection }) => {
+  test('FB_020: Verify that entering a valid phone number of 10 to 16 digits shows no validation error', async ({ futureGuestFormSection }) => {
     await futureGuestFormSection.selectCountryCode(org.phone.countryCode);
     await futureGuestFormSection.fillName('Test User');
     await futureGuestFormSection.fillPhone(org.phone.number);
@@ -59,7 +59,7 @@ test.describe(`Future Booking — Validation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.U
   });
 
   /** Verify that script/HTML entered in the Name field is sanitized and not rendered as executable script (XSS protection). */
-  test('@smoke FB_021: XSS sanitized in name', async ({ futureGuestFormSection }) => {
+  test('@smoke FB_021: Verify that script or HTML entered in the name field is sanitized and not kept as executable content', async ({ futureGuestFormSection }) => {
     await futureGuestFormSection.fillName('<script>alert("xss")</script>');
     const val = await futureGuestFormSection.nameInput.inputValue();
     expect(val).not.toContain('<script>');
@@ -67,7 +67,7 @@ test.describe(`Future Booking — Validation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.U
   });
 
   /** Verify that submitting the form without selecting a Rider Type displays the required-field validation error, when configured. */
-  test('FB_022: Rider Type required — submitting without a selection shows the error', async ({ futureGuestFormSection }) => {
+  test('FB_022: Verify that submitting without choosing a rider type shows the required rider type error when configured', async ({ futureGuestFormSection }) => {
     const optionCount = await futureGuestFormSection.riderTypeSection.locator('input[type="radio"]').count();
     test.skip(optionCount === 0, 'Org does not configure futureOthers.riderType for this environment');
     await futureGuestFormSection.fillName('Test User');
@@ -84,7 +84,7 @@ test.describe(`Future Booking — Validation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.U
   });
 
   /** Verify that the Rider Type validation error clears once an option is selected. */
-  test('FB_023: Rider Type error clears once an option is selected', async ({ futureGuestFormSection }) => {
+  test('FB_023: Verify that the rider type validation error clears once an option is selected', async ({ futureGuestFormSection }) => {
     const optionLabels = await futureGuestFormSection.getRiderTypeOptions();
     test.skip(optionLabels.length === 0, 'Org does not configure futureOthers.riderType for this environment');
     await futureGuestFormSection.requestRideButton.scrollIntoViewIfNeeded();
@@ -96,7 +96,7 @@ test.describe(`Future Booking — Validation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.U
   });
 
   /** Verify that submitting the form with an empty Room Number field displays a validation error, since Room Number is mandatory. */
-  test('FB_024: Room Number required — submitting empty shows a border error', async ({ futureGuestFormSection }) => {
+  test('FB_024: Verify that submitting with an empty room number shows a validation error when room number is required', async ({ futureGuestFormSection }) => {
     const roomVisible = await futureGuestFormSection.roomInput.isVisible({ timeout: 3_000 }).catch(() => false);
     test.skip(!roomVisible, 'Org does not configure futureOthers.room for this environment');
     await futureGuestFormSection.fillName('Test User');
@@ -113,7 +113,7 @@ test.describe(`Future Booking — Validation ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.U
   });
 
   /** Verify that correcting the Name field after a validation error clears the error state. */
-  test('Form recovery — fixing name clears the error', async ({ futureGuestFormSection }) => {
+  test('Verify that correcting the name field after a validation error clears the error', async ({ futureGuestFormSection }) => {
     await futureGuestFormSection.fillPhone(org.phone.number);
     await futureGuestFormSection.requestRideButton.scrollIntoViewIfNeeded();
     await futureGuestFormSection.submitForm();

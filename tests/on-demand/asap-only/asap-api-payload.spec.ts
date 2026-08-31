@@ -36,7 +36,7 @@ test.describe(`ASAP Only — API Payload Verification ${RIDER_TAGS.ASAP} ${RIDER
     return { gf, getPayload: () => capturedPayload, getUrl: () => capturedUrl };
   }
 
-  test('@smoke @sanity ASAP_027: No booking object in payload', async ({ page }) => {
+  test('@smoke @sanity ASAP_027: Verify that the on-demand booking request contains no scheduled-booking object', async ({ page }) => {
     const { gf, getPayload } = await setupFormAndCapture(page);
     await gf.requestRideButton.scrollIntoViewIfNeeded();
     await gf.submitForm();
@@ -45,7 +45,7 @@ test.describe(`ASAP Only — API Payload Verification ${RIDER_TAGS.ASAP} ${RIDER
     expect(getPayload()).not.toHaveProperty('booking');
   });
 
-  test('ASAP_028: No luggage/riderType in payload', async ({ page }) => {
+  test('ASAP_028: Verify that the booking request omits the luggage and rider-type fields', async ({ page }) => {
     const { gf, getPayload } = await setupFormAndCapture(page);
     await gf.requestRideButton.scrollIntoViewIfNeeded();
     await gf.submitForm();
@@ -57,7 +57,7 @@ test.describe(`ASAP Only — API Payload Verification ${RIDER_TAGS.ASAP} ${RIDER
     expect(riders).not.toHaveProperty('rider_type');
   });
 
-  test('ASAP_047: Flight & room numbers included in payload when filled', async ({ page }) => {
+  test('ASAP_047: Verify that the booking request includes the flight and room numbers when the rider enters them', async ({ page }) => {
     test.skip(config.name === 'staging', 'Skipped on staging for now — runs on preproduction/production');
     const { gf, getPayload } = await setupFormAndCapture(page);
     await gf.fillFlight('ua1234');
@@ -71,7 +71,7 @@ test.describe(`ASAP Only — API Payload Verification ${RIDER_TAGS.ASAP} ${RIDER
     expect(riders.room_no).toBe('room707');
   });
 
-  test('ASAP_048: Flight & room are null when not filled', async ({ page }) => {
+  test('ASAP_048: Verify that the booking request sends empty flight and room numbers when the rider leaves them blank', async ({ page }) => {
     const { gf, getPayload } = await setupFormAndCapture(page);
     await gf.requestRideButton.scrollIntoViewIfNeeded();
     await gf.submitForm();
@@ -81,7 +81,7 @@ test.describe(`ASAP Only — API Payload Verification ${RIDER_TAGS.ASAP} ${RIDER
     expect(riders.room_no).toBeNull();
   });
 
-  test('ASAP_029: Stop IDs are real values (not 0)', async ({ page }) => {
+  test('ASAP_029: Verify that the booking request carries the real selected pickup and dropoff stops with valid IDs', async ({ page }) => {
     const { gf, getPayload } = await setupFormAndCapture(page);
     await gf.requestRideButton.scrollIntoViewIfNeeded();
     await gf.submitForm();
@@ -95,7 +95,7 @@ test.describe(`ASAP Only — API Payload Verification ${RIDER_TAGS.ASAP} ${RIDER
     expect(dropoff?.id).not.toBe(0);
   });
 
-  test('@smoke ASAP_030: API uses /rider/api/v1 endpoint', async ({ page }) => {
+  test('@smoke ASAP_030: Verify that the booking request is sent to the current rider API endpoint and not the legacy one', async ({ page }) => {
     const { gf, getUrl } = await setupFormAndCapture(page);
     await gf.requestRideButton.scrollIntoViewIfNeeded();
     await gf.submitForm();
@@ -104,7 +104,7 @@ test.describe(`ASAP Only — API Payload Verification ${RIDER_TAGS.ASAP} ${RIDER
     expect(getUrl()).not.toContain('/rider/web/basic/v1');
   });
 
-  test('ASAP_031: Submit uses /request (no type suffix)', async ({ page }) => {
+  test('ASAP_031: Verify that submitting the booking calls the plain request endpoint with no ride-type suffix', async ({ page }) => {
     const { gf, getUrl } = await setupFormAndCapture(page);
     await gf.requestRideButton.scrollIntoViewIfNeeded();
     await gf.submitForm();
@@ -112,7 +112,7 @@ test.describe(`ASAP Only — API Payload Verification ${RIDER_TAGS.ASAP} ${RIDER
     expect(getUrl()).toMatch(/\/request$/);
   });
 
-  test('ASAP_044: Payload has correct rider details', async ({ page }) => {
+  test('ASAP_044: Verify that the booking request includes the special-assistance flag and the rider note as entered', async ({ page }) => {
     const { gf, getPayload } = await setupFormAndCapture(page);
     await gf.toggleSpecialAssistance();
     await gf.fillNotes('VIP guest');
@@ -125,7 +125,7 @@ test.describe(`ASAP Only — API Payload Verification ${RIDER_TAGS.ASAP} ${RIDER
     expect(riders?.note).toBe('VIP guest');
   });
 
-  test('Payload has pickup/dropoff coordinates', async ({ page }) => {
+  test('Verify that the booking request includes latitude and longitude for both pickup and dropoff', async ({ page }) => {
     const { gf, getPayload } = await setupFormAndCapture(page);
     await gf.requestRideButton.scrollIntoViewIfNeeded();
     await gf.submitForm();
@@ -139,13 +139,13 @@ test.describe(`ASAP Only — API Payload Verification ${RIDER_TAGS.ASAP} ${RIDER
     expect(dropoff?.longitude).toBeDefined();
   });
 
-  test.fixme('ASAP_045: Loader appears during submission', async () => {
+  test.fixme('ASAP_045: Verify that a loading indicator appears while the booking is being submitted', async () => {
     // Cross-origin route delay unreliable on staging
   });
 
   // ASAP_046 (toast error on API failure) is now implemented as NEG_API_001 below.
 
-  test.fixme('API timeout shows error state', async () => {
+  test.fixme('Verify that a booking request timeout shows an error state to the rider', async () => {
     // Cross-origin route abort unreliable on staging
   });
 });
@@ -163,7 +163,7 @@ test.describe(`ASAP Only — API Failure Negatives ${RIDER_TAGS.ASAP} ${RIDER_TA
     await guestFormSection.waitForFormVisible();
   });
 
-  test('@negative NEG_API_001: 500 on submit → error shown, stays on form', async ({ page, guestFormSection }) => {
+  test('@negative NEG_API_001: Verify that a server error on submit shows an error message and keeps the rider on the form', async ({ page, guestFormSection }) => {
     await page.route(`${config.urls.api}/**/request`, async (route) => {
       if (route.request().method() === 'POST') {
         await route.fulfill({
@@ -181,7 +181,7 @@ test.describe(`ASAP Only — API Failure Negatives ${RIDER_TAGS.ASAP} ${RIDER_TA
     expect(page.url()).not.toMatch(/\/j\/.*\/s/);
   });
 
-  test('@negative NEG_API_002: success:false response → error shown, no ride', async ({ page, guestFormSection }) => {
+  test('@negative NEG_API_002: Verify that a failed booking response shows an error and creates no ride', async ({ page, guestFormSection }) => {
     await page.route(`${config.urls.api}/**/request`, async (route) => {
       if (route.request().method() === 'POST') {
         await route.fulfill({

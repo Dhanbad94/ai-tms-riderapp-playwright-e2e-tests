@@ -31,7 +31,7 @@ test.describe(`Future Booking — End-to-End Flows (randomized) ${RIDER_TAGS.FUT
   });
 
   /** Verify that a ride can be successfully booked using randomly selected pickup/drop-off locations and a randomly selected pickup date & time. */
-  test('@sanity FB_037: Random pickup/dropoff + random pickup date & time books successfully', async ({ page }) => {
+  test('@sanity FB_037: Verify that a ride books with randomly selected pickup and drop-off stops and a random pickup date and time', async ({ page }) => {
     const cfg = getOrgConfig('futureBookingOnly');
     const lp = new SelectLocationPage(page);
     const dt = new DateTimePicker(page);
@@ -56,7 +56,7 @@ test.describe(`Future Booking — End-to-End Flows (randomized) ${RIDER_TAGS.FUT
   });
 
   /** Verify that repeated randomized booking runs select different stops and times on each run. */
-  test('FB_038: A second random run picks (very likely) different stops and a different time', async ({ page }) => {
+  test('FB_038: Verify that a repeated randomized run books with different stops and a different pickup time', async ({ page }) => {
     const cfg = getOrgConfig('futureBookingOnly');
     const lp = new SelectLocationPage(page);
     const dt = new DateTimePicker(page);

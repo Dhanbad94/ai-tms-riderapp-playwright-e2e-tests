@@ -141,37 +141,51 @@ function generateHTML(report: PlaywrightReport, rows: TestRow[]): string {
 
   const statusClass = (s: string) => s;
 
+  // Escape a string for safe embedding inside an HTML text node.
+  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  // Escape a string for safe embedding inside a double-quoted HTML attribute.
+  const escAttr = (s: string) => esc(s).replace(/"/g, '&quot;');
+
+  // Slug used to tie a file's header row to its test/error rows for group toggling.
+  const fileId = (f: string) => f.replace(/[^a-z0-9]+/gi, '-');
+
   let testRows = '';
+  let fileIndex = 0;
   for (const [file, fileRows] of byFile) {
     const filePassed = fileRows.filter(r => r.status === 'passed').length;
     const fileFailed = fileRows.filter(r => r.status === 'failed').length;
     const fileSkipped = fileRows.filter(r => r.status === 'skipped').length;
+    const fileFlaky = fileRows.filter(r => r.status === 'flaky').length;
     const fileDuration = fileRows.reduce((s, r) => s + r.duration, 0);
+    const fid = `${fileId(file)}-${fileIndex++}`;
 
     testRows += `
-      <tr class="file-header">
+      <tr class="file-header" data-file="${fid}">
         <td colspan="5">
-          <strong>📄 ${file}</strong>
+          <strong>📄 ${esc(file)}</strong>
           <span class="file-stats">
-            ${filePassed}P / ${fileFailed}F / ${fileSkipped}S — ${formatDuration(fileDuration)}
+            ${filePassed}P / ${fileFailed}F / ${fileSkipped}S${fileFlaky ? ` / ${fileFlaky}⚠️` : ''} — ${formatDuration(fileDuration)}
           </span>
         </td>
       </tr>`;
 
     for (const row of fileRows) {
+      // Lowercased haystack for the live text search (test name + status).
+      const search = `${row.name} ${row.status}`.toLowerCase();
+      const retried = row.retries > 0 ? '1' : '0';
       testRows += `
-      <tr class="${statusClass(row.status)}">
+      <tr class="test-row ${statusClass(row.status)}" data-file="${fid}" data-row="test" data-status="${row.status}" data-retried="${retried}" data-search="${escAttr(search)}">
         <td>${statusIcon(row.status)}</td>
-        <td>${row.name}</td>
+        <td>${esc(row.name)}</td>
         <td class="status-cell ${row.status}">${row.status.toUpperCase()}</td>
         <td>${formatDuration(row.duration)}</td>
         <td>${row.retries > 0 ? `🔄 ${row.retries}` : '—'}</td>
       </tr>`;
       if (row.error) {
         testRows += `
-      <tr class="error-row">
+      <tr class="error-row" data-file="${fid}" data-row="error" data-status="${row.status}" data-retried="${retried}" data-search="${escAttr(search)}">
         <td></td>
-        <td colspan="4" class="error-msg">${row.error.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</td>
+        <td colspan="4" class="error-msg">${esc(row.error)}</td>
       </tr>`;
       }
     }
@@ -202,6 +216,21 @@ function generateHTML(report: PlaywrightReport, rows: TestRow[]): string {
     .card.rate .number { color: ${passRate >= 90 ? '#0d9e0d' : passRate >= 70 ? '#f9a825' : '#d93025'}; }
     .progress-bar { height: 6px; background: #e0e0e0; border-radius: 3px; margin: 20px 40px; overflow: hidden; }
     .progress-bar .fill { height: 100%; background: #0d9e0d; border-radius: 3px; transition: width 0.3s; }
+    /* Filter cards are clickable; show which one is active. */
+    .card.clickable { cursor: pointer; border: 2px solid transparent; transition: border-color 0.15s, box-shadow 0.15s; }
+    .card.clickable:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.14); }
+    .card.clickable.active { border-color: #1a73e8; box-shadow: 0 4px 14px rgba(26,115,232,0.25); }
+    /* Controls: search box + filter chips. */
+    .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 0 40px 4px; }
+    .controls input[type="search"] { flex: 1 1 240px; min-width: 200px; padding: 10px 14px; font-size: 14px; border: 1px solid #d0d5dd; border-radius: 8px; outline: none; }
+    .controls input[type="search"]:focus { border-color: #1a73e8; box-shadow: 0 0 0 3px rgba(26,115,232,0.15); }
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip { cursor: pointer; user-select: none; padding: 8px 14px; font-size: 13px; font-weight: 600; border-radius: 20px; border: 1px solid #d0d5dd; background: white; color: #555; transition: all 0.15s; }
+    .chip:hover { border-color: #1a73e8; color: #1a73e8; }
+    .chip.active { background: #1a73e8; border-color: #1a73e8; color: white; }
+    .chip .cnt { opacity: 0.75; font-weight: 500; margin-left: 4px; }
+    .visible-count { padding: 6px 40px 0; font-size: 12px; color: #888; }
+    tr.no-match-row td { text-align: center; color: #999; padding: 24px; font-style: italic; }
     table { width: calc(100% - 80px); margin: 10px 40px 40px; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
     th { background: #f8f9fa; padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: #666; border-bottom: 2px solid #e0e0e0; }
     td { padding: 10px 16px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
@@ -226,16 +255,29 @@ function generateHTML(report: PlaywrightReport, rows: TestRow[]): string {
   </div>
 
   <div class="summary">
-    <div class="card total"><div class="number">${total}</div><div class="label">Total Tests</div></div>
-    <div class="card passed"><div class="number">${stats.expected}</div><div class="label">Passed</div></div>
-    <div class="card failed"><div class="number">${stats.unexpected}</div><div class="label">Failed</div></div>
-    <div class="card skipped"><div class="number">${stats.skipped}</div><div class="label">Skipped</div></div>
-    <div class="card retried"><div class="number">${retriedCount}</div><div class="label">Retried</div></div>
+    <div class="card total clickable active" data-filter="all"><div class="number">${total}</div><div class="label">Total Tests</div></div>
+    <div class="card passed clickable" data-filter="passed"><div class="number">${stats.expected}</div><div class="label">Passed</div></div>
+    <div class="card failed clickable" data-filter="failed"><div class="number">${stats.unexpected}</div><div class="label">Failed</div></div>
+    <div class="card skipped clickable" data-filter="skipped"><div class="number">${stats.skipped}</div><div class="label">Skipped</div></div>
+    <div class="card retried clickable" data-filter="retried"><div class="number">${retriedCount}</div><div class="label">Retried</div></div>
     <div class="card rate"><div class="number">${passRate}%</div><div class="label">Pass Rate</div></div>
     <div class="card duration"><div class="number">${formatDuration(stats.duration)}</div><div class="label">Duration</div></div>
   </div>
 
   <div class="progress-bar"><div class="fill" style="width: ${passRate}%"></div></div>
+
+  <div class="controls">
+    <input type="search" id="searchBox" placeholder="🔍 Search test name…" aria-label="Search test name">
+    <div class="chips" id="filterChips">
+      <span class="chip active" data-filter="all">All<span class="cnt">${total}</span></span>
+      <span class="chip" data-filter="passed">✅ Passed<span class="cnt">${stats.expected}</span></span>
+      <span class="chip" data-filter="failed">❌ Failed<span class="cnt">${stats.unexpected}</span></span>
+      <span class="chip" data-filter="skipped">⏭️ Skipped<span class="cnt">${stats.skipped}</span></span>
+      <span class="chip" data-filter="flaky">⚠️ Flaky<span class="cnt">${stats.flaky}</span></span>
+      <span class="chip" data-filter="retried">🔄 Retried<span class="cnt">${retriedCount}</span></span>
+    </div>
+  </div>
+  <div class="visible-count" id="visibleCount"></div>
 
   <table>
     <thead>
@@ -249,10 +291,80 @@ function generateHTML(report: PlaywrightReport, rows: TestRow[]): string {
     </thead>
     <tbody>
       ${testRows}
+      <tr class="no-match-row" id="noMatchRow" style="display:none"><td colspan="5">No tests match the current filter.</td></tr>
     </tbody>
   </table>
 
   <div class="footer">Generated by TMS Rider E2E Test Framework</div>
+
+  <script>
+    (function () {
+      var searchBox = document.getElementById('searchBox');
+      var noMatchRow = document.getElementById('noMatchRow');
+      var visibleCount = document.getElementById('visibleCount');
+      var testRows = Array.prototype.slice.call(document.querySelectorAll('tr[data-row="test"]'));
+      var errorRows = Array.prototype.slice.call(document.querySelectorAll('tr[data-row="error"]'));
+      var fileHeaders = Array.prototype.slice.call(document.querySelectorAll('tr.file-header'));
+      var chips = Array.prototype.slice.call(document.querySelectorAll('#filterChips .chip'));
+      var cards = Array.prototype.slice.call(document.querySelectorAll('.card.clickable'));
+
+      var activeFilter = 'all';
+      var query = '';
+
+      // A row passes the status filter if the chosen bucket matches. 'retried'
+      // keys off the data-retried flag; 'all' matches everything.
+      function statusMatch(row) {
+        if (activeFilter === 'all') return true;
+        if (activeFilter === 'retried') return row.getAttribute('data-retried') === '1';
+        return row.getAttribute('data-status') === activeFilter;
+      }
+      function searchMatch(row) {
+        return !query || row.getAttribute('data-search').indexOf(query) !== -1;
+      }
+
+      function apply() {
+        var visible = 0;
+        // Track which file groups still have at least one visible test row.
+        var filesWithVisible = {};
+        testRows.forEach(function (row) {
+          var show = statusMatch(row) && searchMatch(row);
+          row.style.display = show ? '' : 'none';
+          if (show) { visible++; filesWithVisible[row.getAttribute('data-file')] = true; }
+        });
+        // Error detail rows follow their test row's visibility.
+        errorRows.forEach(function (row) {
+          var show = statusMatch(row) && searchMatch(row);
+          row.style.display = show ? '' : 'none';
+        });
+        // Hide a file header when none of its tests are visible.
+        fileHeaders.forEach(function (h) {
+          h.style.display = filesWithVisible[h.getAttribute('data-file')] ? '' : 'none';
+        });
+        noMatchRow.style.display = visible === 0 ? '' : 'none';
+        visibleCount.textContent = 'Showing ' + visible + ' of ' + testRows.length + ' tests';
+      }
+
+      function setFilter(f) {
+        activeFilter = f;
+        chips.forEach(function (c) { c.classList.toggle('active', c.getAttribute('data-filter') === f); });
+        cards.forEach(function (c) { c.classList.toggle('active', c.getAttribute('data-filter') === f); });
+        apply();
+      }
+
+      chips.forEach(function (c) {
+        c.addEventListener('click', function () { setFilter(c.getAttribute('data-filter')); });
+      });
+      cards.forEach(function (c) {
+        c.addEventListener('click', function () { setFilter(c.getAttribute('data-filter')); });
+      });
+      searchBox.addEventListener('input', function () {
+        query = searchBox.value.trim().toLowerCase();
+        apply();
+      });
+
+      apply();
+    })();
+  </script>
 </body>
 </html>`;
 }
