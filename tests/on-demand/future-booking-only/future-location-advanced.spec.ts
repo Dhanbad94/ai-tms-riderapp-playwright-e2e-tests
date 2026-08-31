@@ -28,7 +28,7 @@ test.describe(`Future Booking — Stop Search ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.
   });
 
   /** Verify that searching pickup stops by a partial name returns matching results. */
-  test('@smoke SEARCH_001: Search pickup stops by partial name', async ({ selectLocationPage }) => {
+  test('@smoke SEARCH_001: Verify that searching pickup stops by a partial name returns matching results', async ({ selectLocationPage }) => {
     await selectLocationPage.searchPickupStops(stops.searchKeyword);
     const results = await selectLocationPage.getVisibleStopNames();
     expect(results.length).toBeGreaterThan(0);
@@ -36,7 +36,7 @@ test.describe(`Future Booking — Stop Search ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.
   });
 
   /** Verify that searching drop-off stops by a partial name returns matching results. */
-  test('SEARCH_002: Search dropoff stops by partial name', async ({ selectLocationPage }) => {
+  test('SEARCH_002: Verify that searching drop-off stops by a partial name returns matching results', async ({ selectLocationPage }) => {
     await selectLocationPage.selectPickupStop(stops.pickup);
     await selectLocationPage.searchDropoffStops(stops.searchKeyword);
     const results = await selectLocationPage.getVisibleStopNames();
@@ -45,7 +45,7 @@ test.describe(`Future Booking — Stop Search ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.
   });
 
   /** Verify that a search with no matches shows "Location not found in the defined service area." */
-  test('@negative SEARCH_003: Search with no results shows the not-found message', async ({ selectLocationPage }) => {
+  test('@negative SEARCH_003: Verify that a search with no matches shows the location not found message', async ({ selectLocationPage }) => {
     await selectLocationPage.searchPickupStops('zzz_nonexistent_xyz');
     // 10s (not 5s): the screen defaults to the map view, so the search first
     // switches to the list and then debounces before the empty-state renders —
@@ -54,7 +54,7 @@ test.describe(`Future Booking — Stop Search ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.
   });
 
   /** Verify that clearing the search box restores the full, unfiltered stop list. */
-  test('SEARCH_004: Clearing search restores the full stop list', async ({ selectLocationPage }) => {
+  test('SEARCH_004: Verify that clearing the search box restores the full stop list', async ({ selectLocationPage }) => {
     await selectLocationPage.pickupInput.click();
     const allStops = await selectLocationPage.getVisibleStopNames();
     const initialCount = allStops.length;
@@ -70,7 +70,7 @@ test.describe(`Future Booking — Stop Search ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.
   });
 
   /** Verify that stop search is case-insensitive. */
-  test('SEARCH_005: Search is case-insensitive', async ({ selectLocationPage }) => {
+  test('SEARCH_005: Verify that stop search returns the same results regardless of letter case', async ({ selectLocationPage }) => {
     await selectLocationPage.searchPickupStops(stops.searchKeyword.toUpperCase());
     const upper = await selectLocationPage.getVisibleStopNames();
 
@@ -83,7 +83,7 @@ test.describe(`Future Booking — Stop Search ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.
   });
 
   /** Verify that a randomly chosen result from a filtered search list can be selected as the pickup stop. */
-  test('@sanity SEARCH_006: A random result from search can be selected as pickup', async ({ selectLocationPage }) => {
+  test('@sanity SEARCH_006: Verify that a random result from a filtered search can be selected as the pickup stop', async ({ selectLocationPage }) => {
     await selectLocationPage.searchPickupStops(stops.searchKeyword);
     const results = await selectLocationPage.getVisibleStopNames();
     expect(results.length).toBeGreaterThan(0);
@@ -93,7 +93,7 @@ test.describe(`Future Booking — Stop Search ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.
   });
 
   /** Verify that a single-character search still returns results. */
-  test('SEARCH_007: Search by a single character returns results', async ({ selectLocationPage }) => {
+  test('SEARCH_007: Verify that searching by a single character still returns results', async ({ selectLocationPage }) => {
     await selectLocationPage.searchPickupStops('t');
     const results = await selectLocationPage.getVisibleStopNames();
     expect(results.length).toBeGreaterThan(0);
@@ -107,7 +107,7 @@ test.describe(`Future Booking — Random Stop Selection ${RIDER_TAGS.FUTURE} ${R
   });
 
   /** Verify that random pickup and drop-off stops can be selected from the full listing, and are never the same stop. */
-  test('@smoke RANDOM_001: Select random pickup and dropoff stops from the listing', async ({ selectLocationPage }) => {
+  test('@smoke RANDOM_001: Verify that random pickup and drop-off stops can be selected from the listing and are never the same stop', async ({ selectLocationPage }) => {
     const { pickup, dropoff } = await selectLocationPage.selectRandomStops();
     expect(pickup).toBeTruthy();
     expect(dropoff).toBeTruthy();
@@ -117,7 +117,7 @@ test.describe(`Future Booking — Random Stop Selection ${RIDER_TAGS.FUTURE} ${R
   });
 
   /** Verify that repeated random selections vary across runs rather than always picking the same pair. */
-  test('RANDOM_002: Repeated random selections are not always the same pair', async ({ selectLocationPage, page }) => {
+  test('RANDOM_002: Verify that repeated random selections vary rather than always picking the same pair', async ({ selectLocationPage, page }) => {
     const seen = new Set<string>();
     for (let i = 0; i < 4; i++) {
       await selectLocationPage.goto(org.trackingId);
@@ -131,14 +131,14 @@ test.describe(`Future Booking — Random Stop Selection ${RIDER_TAGS.FUTURE} ${R
   });
 
   /** Verify that the full stop listing is available to pick a random pickup from. */
-  test('RANDOM_003: All available stops are listed for pickup', async ({ selectLocationPage }) => {
+  test('RANDOM_003: Verify that the full stop listing is available when choosing a pickup', async ({ selectLocationPage }) => {
     await selectLocationPage.pickupInput.click();
     const stopNames = await selectLocationPage.getVisibleStopNames();
     expect(stopNames.length).toBeGreaterThanOrEqual(5);
   });
 
   /** Verify that the selected pickup stop is filtered out of the drop-off list. */
-  test('RANDOM_004: Selected pickup is removed from the dropoff list', async ({ selectLocationPage }) => {
+  test('RANDOM_004: Verify that the chosen pickup stop is removed from the drop-off list', async ({ selectLocationPage }) => {
     await selectLocationPage.pickupInput.click();
     const allPickupStops = await selectLocationPage.getVisibleStopNames();
     await selectLocationPage.selectPickupStop(stops.pickup);
@@ -150,7 +150,7 @@ test.describe(`Future Booking — Random Stop Selection ${RIDER_TAGS.FUTURE} ${R
   });
 
   /** Verify that random pickup and drop-off stops can be selected via their map-marker pins rather than the text stop list. */
-  test('@sanity RANDOM_005: Random pickup and dropoff selected via map markers', async ({ selectLocationPage }) => {
+  test('@sanity RANDOM_005: Verify that random pickup and drop-off stops can be selected using their map markers', async ({ selectLocationPage }) => {
     const { pickup, dropoff } = await selectLocationPage.selectRandomStopsViaMapMarkers();
     expect(pickup).toBeTruthy();
     expect(dropoff).toBeTruthy();
@@ -167,7 +167,7 @@ test.describe(`Future Booking — Map Marker Selection ${RIDER_TAGS.FUTURE} ${RI
   });
 
   /** Verify that clicking a stop's marker pin on the map opens a card offering to set it as pickup or drop-off. */
-  test('@smoke MAPPIN_001: Clicking a map marker opens a "set as pickup" card for that stop', async ({ selectLocationPage, page }) => {
+  test('@smoke MAPPIN_001: Verify that clicking a stop map marker opens a card offering to set it as pickup or drop-off', async ({ selectLocationPage, page }) => {
     await page.locator(`img[alt="${stops.dropoff}"]`).first().click();
     const card = page
       .locator('div')
@@ -178,14 +178,14 @@ test.describe(`Future Booking — Map Marker Selection ${RIDER_TAGS.FUTURE} ${RI
   });
 
   /** Verify that selecting a stop via its map marker sets it as the pickup location. */
-  test('@sanity MAPPIN_002: Selecting a stop via its map marker sets it as pickup', async ({ selectLocationPage }) => {
+  test('@sanity MAPPIN_002: Verify that selecting a stop via its map marker sets it as the pickup location', async ({ selectLocationPage }) => {
     await selectLocationPage.pickupInput.click();
     await selectLocationPage.selectStopViaMapMarker(stops.dropoff);
     await expect(selectLocationPage.pickupInput).toHaveValue(stops.dropoff);
   });
 
   /** Verify that selecting a stop via its map marker sets it as the drop-off location once pickup is already chosen. */
-  test('MAPPIN_003: Selecting a stop via its map marker sets it as drop-off after pickup is chosen', async ({ selectLocationPage }) => {
+  test('MAPPIN_003: Verify that selecting a stop via its map marker sets it as the drop-off after pickup is chosen', async ({ selectLocationPage }) => {
     await selectLocationPage.selectPickupStop(stops.pickup);
     await selectLocationPage.dropoffInput.click();
     await selectLocationPage.selectStopViaMapMarker(stops.dropoff);
@@ -200,7 +200,7 @@ test.describe(`Future Booking — Map Theme ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.UI
   });
 
   /** Verify that the Map Theme dialog opens with Classic, Silver, and Satellite options. */
-  test('@smoke THEME_001: Map Theme dialog opens with Classic, Silver, and Satellite options', async ({ selectLocationPage, page }) => {
+  test('@smoke THEME_001: Verify that the Map Theme dialog opens with Classic, Silver, and Satellite options', async ({ selectLocationPage, page }) => {
     await selectLocationPage.openMapTheme();
     await expect(page.getByRole('heading', { name: 'Classic' }).first()).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Silver' }).first()).toBeVisible();
@@ -208,28 +208,28 @@ test.describe(`Future Booking — Map Theme ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.UI
   });
 
   /** Verify that selecting the Silver theme updates the persisted mapTheme cookie to "2". */
-  test('@sanity THEME_002: Selecting Silver updates the mapTheme cookie', async ({ selectLocationPage }) => {
+  test('@sanity THEME_002: Verify that selecting the Silver map theme saves it as the persisted map theme preference', async ({ selectLocationPage }) => {
     await selectLocationPage.openMapTheme();
     await selectLocationPage.selectMapTheme('Silver');
     await expect.poll(() => selectLocationPage.getMapThemeCookieValue()).toBe('2');
   });
 
   /** Verify that selecting the Satellite theme updates the persisted mapTheme cookie to "3". */
-  test('THEME_003: Selecting Satellite updates the mapTheme cookie', async ({ selectLocationPage }) => {
+  test('THEME_003: Verify that selecting the Satellite map theme saves it as the persisted map theme preference', async ({ selectLocationPage }) => {
     await selectLocationPage.openMapTheme();
     await selectLocationPage.selectMapTheme('Satellite');
     await expect.poll(() => selectLocationPage.getMapThemeCookieValue()).toBe('3');
   });
 
   /** Verify that selecting the Classic theme updates the persisted mapTheme cookie to "1". */
-  test('THEME_004: Selecting Classic updates the mapTheme cookie', async ({ selectLocationPage }) => {
+  test('THEME_004: Verify that selecting the Classic map theme saves it as the persisted map theme preference', async ({ selectLocationPage }) => {
     await selectLocationPage.openMapTheme();
     await selectLocationPage.selectMapTheme('Classic');
     await expect.poll(() => selectLocationPage.getMapThemeCookieValue()).toBe('1');
   });
 
   /** Verify that closing the Map Theme dialog dismisses it. */
-  test('THEME_005: Closing the Map Theme dialog dismisses it', async ({ selectLocationPage }) => {
+  test('THEME_005: Verify that closing the Map Theme dialog dismisses it', async ({ selectLocationPage }) => {
     await selectLocationPage.openMapTheme();
     await selectLocationPage.closeMapTheme();
     await expect(selectLocationPage.mapThemeDialogHeading).not.toBeVisible();
@@ -244,14 +244,14 @@ test.describe(`Future Booking — Go Back Confirmation ${RIDER_TAGS.FUTURE} ${RI
   });
 
   /** Verify that the "Go Back?" alert shows the exact heading and warning message. */
-  test('@smoke GOBACK_001: "Go Back?" alert shows the exact heading and warning message', async ({ selectLocationPage, page }) => {
+  test('@smoke GOBACK_001: Verify that the "Go Back?" alert shows the correct heading and warning message', async ({ selectLocationPage, page }) => {
     await selectLocationPage.clickBack();
     await expect(selectLocationPage.goBackDialogHeading).toHaveText('Go Back?');
     await expect(page.getByText('Your entered details will be lost.')).toBeVisible();
   });
 
   /** Verify that clicking "Cancel" on the "Go Back?" alert dismisses it and keeps the current selection. */
-  test('GOBACK_002: "Cancel" dismisses the alert and keeps the current selection', async ({ selectLocationPage }) => {
+  test('GOBACK_002: Verify that choosing Cancel on the "Go Back?" alert dismisses it and keeps the current selection', async ({ selectLocationPage }) => {
     await selectLocationPage.clickBack();
     await selectLocationPage.cancelGoBack();
     await expect(selectLocationPage.goBackDialogHeading).not.toBeVisible();
@@ -259,7 +259,7 @@ test.describe(`Future Booking — Go Back Confirmation ${RIDER_TAGS.FUTURE} ${RI
   });
 
   /** Verify that confirming "Go Back" navigates away from the location page, discarding the in-progress selection. */
-  test('@sanity GOBACK_003: Confirming "Go Back" navigates away and discards the selection', async ({ selectLocationPage, page }) => {
+  test('@sanity GOBACK_003: Verify that confirming Go Back leaves the location page and discards the in-progress selection', async ({ selectLocationPage, page }) => {
     await selectLocationPage.clickBack();
     await selectLocationPage.confirmGoBack();
     // Live-verified: navigates cross-domain to the org Welcome screen on the

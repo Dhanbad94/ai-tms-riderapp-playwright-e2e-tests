@@ -159,7 +159,7 @@ test.describe(`ASAP Only — Dispatch Lifecycle ${RIDER_TAGS.ASAP} ${RIDER_TAGS.
     return { client, dispatchId: row.id };
   }
 
-  test('@dispatch-lifecycle DISPATCH_001: Create → assign driver → complete', async ({ page, request }) => {
+  test('@dispatch-lifecycle DISPATCH_001: Verify that a booked ride can be assigned a driver and then marked completed', async ({ page, request }) => {
     const { client, dispatchId } = await createAssignAndReturn(page, request);
 
     // [4] Complete the dispatch.
@@ -171,7 +171,7 @@ test.describe(`ASAP Only — Dispatch Lifecycle ${RIDER_TAGS.ASAP} ${RIDER_TAGS.
     cleanup = null;
   });
 
-  test('@dispatch-lifecycle DISPATCH_002: Create → assign driver → cancel', async ({ page, request }) => {
+  test('@dispatch-lifecycle DISPATCH_002: Verify that a booked ride can be assigned a driver and then canceled', async ({ page, request }) => {
     const { client, dispatchId } = await createAssignAndReturn(page, request);
 
     // [4] Cancel the dispatch (fully self-cleaning — nothing left active).
@@ -190,7 +190,7 @@ test.describe(`ASAP Only — Dispatch Lifecycle ${RIDER_TAGS.ASAP} ${RIDER_TAGS.
    * details stay correct throughout. Driver/shuttle names are read from the API
    * so this is env-agnostic (works on preproduction and production).
    */
-  test('@dispatch-lifecycle DISPATCH_003: Driver assignment updates rider tracking UI in real time', async ({ page, request }) => {
+  test('@dispatch-lifecycle DISPATCH_003: Verify that assigning a driver updates the rider tracking screen live without a reload', async ({ page, request }) => {
     const cfg = getDriverApiConfig();
     const [assigner, assignee] = cfg.drivers;
 
@@ -245,7 +245,7 @@ test.describe(`ASAP Only — Dispatch Lifecycle ${RIDER_TAGS.ASAP} ${RIDER_TAGS.
    * start the trip"; completion by the rider's feedback screen. The live "on the
    * way"/ETA text is driver-GPS (Socket.IO) driven and intentionally not asserted.
    */
-  test('@dispatch-lifecycle DISPATCH_004: Full journey — submitted → assigned → start → complete (UI at each screen)', async ({ page, request }) => {
+  test('@dispatch-lifecycle DISPATCH_004: Verify that the rider tracking screen updates correctly through submit, assign, start, and complete', async ({ page, request }) => {
     const cfg = getDriverApiConfig();
     const [assigner, assignee] = cfg.drivers;
 
@@ -314,7 +314,7 @@ test.describe(`ASAP Only — Dispatch Lifecycle ${RIDER_TAGS.ASAP} ${RIDER_TAGS.
    * the reliable /proceed (granular per-passenger drop-off is fragile on the
    * shared, congested stops — see investigation notes).
    */
-  test('@dispatch-lifecycle DISPATCH_005: Full journey — pick up (granular) → drop off → complete', async ({ page, request }) => {
+  test('@dispatch-lifecycle DISPATCH_005: Verify that a per-passenger pickup starts the trip and the ride can then be dropped off and completed', async ({ page, request }) => {
     const cfg = getDriverApiConfig();
     const [assigner, assignee] = cfg.drivers;
 
@@ -422,7 +422,7 @@ test.describe(`ASAP Only — Driver API Negatives ${RIDER_TAGS.ASAP} ${RIDER_TAG
 
   // ── Authentication ──────────────────────────────────────────────────────
 
-  test('@negative NEG_DRV_001: login with wrong passcode → 400 Invalid passcode', async ({ request }) => {
+  test('@negative NEG_DRV_001: Verify that a driver login with the wrong passcode is rejected with an invalid-passcode error', async ({ request }) => {
     const cfg = getDriverApiConfig();
     const d = cfg.drivers[0]!;
     const { body } = await negPost(request, `${cfg.baseUrl}/login`, { Authorization: negBasicHeader(cfg) },
@@ -431,7 +431,7 @@ test.describe(`ASAP Only — Driver API Negatives ${RIDER_TAGS.ASAP} ${RIDER_TAG
     expect(String(body.message).toLowerCase()).toContain('passcode');
   });
 
-  test('@negative NEG_DRV_002: login with wrong Basic gateway creds → 401', async ({ request }) => {
+  test('@negative NEG_DRV_002: Verify that a driver login with wrong gateway credentials is rejected as unauthorized', async ({ request }) => {
     const cfg = getDriverApiConfig();
     const d = cfg.drivers[0]!;
     const { body } = await negPost(request, `${cfg.baseUrl}/login`, { Authorization: negBasicHeader(cfg, 'wrong', 'wrong') },
@@ -440,7 +440,7 @@ test.describe(`ASAP Only — Driver API Negatives ${RIDER_TAGS.ASAP} ${RIDER_TAG
     expect(String(body.message).toLowerCase()).toContain('authentication');
   });
 
-  test('@negative NEG_DRV_003: login without Authorization header → 401 Missing Authorization', async ({ request }) => {
+  test('@negative NEG_DRV_003: Verify that a driver login with no authorization header is rejected as unauthorized', async ({ request }) => {
     const cfg = getDriverApiConfig();
     const d = cfg.drivers[0]!;
     const { body } = await negPost(request, `${cfg.baseUrl}/login`, {},
@@ -449,7 +449,7 @@ test.describe(`ASAP Only — Driver API Negatives ${RIDER_TAGS.ASAP} ${RIDER_TAG
     expect(String(body.message).toLowerCase()).toContain('authorization');
   });
 
-  test('@negative NEG_DRV_004: login missing passcode → 422 validation error', async ({ request }) => {
+  test('@negative NEG_DRV_004: Verify that a driver login with no passcode is rejected with a validation error', async ({ request }) => {
     const cfg = getDriverApiConfig();
     const d = cfg.drivers[0]!;
     const { body } = await negPost(request, `${cfg.baseUrl}/login`, { Authorization: negBasicHeader(cfg) },
@@ -458,13 +458,13 @@ test.describe(`ASAP Only — Driver API Negatives ${RIDER_TAGS.ASAP} ${RIDER_TAG
     expect(JSON.stringify(body.response ?? body)).toMatch(/passcode/i);
   });
 
-  test('@negative NEG_DRV_005: authed endpoint with garbage Bearer → 401', async ({ request }) => {
+  test('@negative NEG_DRV_005: Verify that a protected endpoint rejects an invalid access token as unauthorized', async ({ request }) => {
     const cfg = getDriverApiConfig();
     const { body } = await negGet(request, `${cfg.baseUrl}/dashboard`, { Authorization: 'Bearer garbage.token.xyz' });
     expect(body.code).toBe(401);
   });
 
-  test('@negative NEG_DRV_006: authed endpoint with no Bearer → 401 Unauthorised', async ({ request }) => {
+  test('@negative NEG_DRV_006: Verify that a protected endpoint rejects a request with no access token as unauthorized', async ({ request }) => {
     const cfg = getDriverApiConfig();
     const { body } = await negGet(request, `${cfg.baseUrl}/dashboard`, {});
     expect(body.code).toBe(401);
@@ -473,7 +473,7 @@ test.describe(`ASAP Only — Driver API Negatives ${RIDER_TAGS.ASAP} ${RIDER_TAG
 
   // ── Parameter validation ────────────────────────────────────────────────
 
-  test('@negative NEG_DRV_007: dispatch-action missing dispatch → 422', async ({ request }) => {
+  test('@negative NEG_DRV_007: Verify that a dispatch action with no dispatch specified is rejected with a validation error', async ({ request }) => {
     const cfg = getDriverApiConfig();
     const token = await negValidToken(request, cfg);
     const { body } = await negPost(request, `${cfg.baseUrl}/dispatch-action`, { Authorization: `Bearer ${token}` },
@@ -482,7 +482,7 @@ test.describe(`ASAP Only — Driver API Negatives ${RIDER_TAGS.ASAP} ${RIDER_TAG
     expect(JSON.stringify(body.response ?? body)).toMatch(/dispatch/i);
   });
 
-  test('@negative NEG_DRV_008: drivers-for-dispatch missing dispatch → 422', async ({ request }) => {
+  test('@negative NEG_DRV_008: Verify that requesting available drivers with no dispatch specified is rejected with a validation error', async ({ request }) => {
     const cfg = getDriverApiConfig();
     const token = await negValidToken(request, cfg);
     const { body } = await negPost(request, `${cfg.baseUrl}/drivers-for-dispatch`, { Authorization: `Bearer ${token}` }, {});
@@ -491,7 +491,7 @@ test.describe(`ASAP Only — Driver API Negatives ${RIDER_TAGS.ASAP} ${RIDER_TAG
 
   // ── Invalid targets (nonexistent ids — no ride created) ─────────────────
 
-  test('@negative NEG_DRV_009: dispatch-action on nonexistent dispatch → 400 Invalid request', async ({ request }) => {
+  test('@negative NEG_DRV_009: Verify that a dispatch action on a nonexistent dispatch is rejected as an invalid request', async ({ request }) => {
     const cfg = getDriverApiConfig();
     const token = await negValidToken(request, cfg);
     const { body } = await negPost(request, `${cfg.baseUrl}/dispatch-action`, { Authorization: `Bearer ${token}` },
@@ -499,7 +499,7 @@ test.describe(`ASAP Only — Driver API Negatives ${RIDER_TAGS.ASAP} ${RIDER_TAG
     expect(body.code).toBe(400);
   });
 
-  test('@negative NEG_DRV_010: dispatch-status on nonexistent dispatch → 206 No Data Found', async ({ request }) => {
+  test('@negative NEG_DRV_010: Verify that requesting the status of a nonexistent dispatch returns a no-data-found response', async ({ request }) => {
     const cfg = getDriverApiConfig();
     const token = await negValidToken(request, cfg);
     const { body } = await negPost(request, `${cfg.baseUrl}/dispatch-status`, { Authorization: `Bearer ${token}` },
@@ -507,7 +507,7 @@ test.describe(`ASAP Only — Driver API Negatives ${RIDER_TAGS.ASAP} ${RIDER_TAG
     expect(body.code).toBe(206);
   });
 
-  test('@negative NEG_DRV_011: assign-request to nonexistent dispatch/driver → 400 Invalid request', async ({ request }) => {
+  test('@negative NEG_DRV_011: Verify that assigning a nonexistent driver to a nonexistent dispatch is rejected as an invalid request', async ({ request }) => {
     const cfg = getDriverApiConfig();
     const token = await negValidToken(request, cfg);
     const { body } = await negPost(request, `${cfg.baseUrl}/assign-request`, { Authorization: `Bearer ${token}` },

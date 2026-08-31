@@ -13,14 +13,14 @@ test.describe(`ASAP Only — Validation ${RIDER_TAGS.ASAP} ${RIDER_TAGS.UI_ONLY}
     await guestFormSection.waitForFormVisible();
   });
 
-  test('@smoke @sanity ASAP_019: Empty form submission blocked — validation errors on name and phone', async ({ guestFormSection, page }) => {
+  test('@smoke @sanity ASAP_019: Verify that submitting an empty booking form is blocked and shows a validation error on the name field', async ({ guestFormSection, page }) => {
     await guestFormSection.requestRideButton.scrollIntoViewIfNeeded();
     await guestFormSection.submitForm();
     const nameHasError = await guestFormSection.hasNameError();
     expect(nameHasError).toBe(true);
   });
 
-  test('ASAP_020: Name field shows validation error when empty', async ({ guestFormSection, page }) => {
+  test('ASAP_020: Verify that the name field shows a validation error when left empty on submit', async ({ guestFormSection, page }) => {
     await guestFormSection.fillPhone(org.phone.number);
     await guestFormSection.requestRideButton.scrollIntoViewIfNeeded();
     await guestFormSection.submitForm();
@@ -28,7 +28,7 @@ test.describe(`ASAP Only — Validation ${RIDER_TAGS.ASAP} ${RIDER_TAGS.UI_ONLY}
     expect(nameHasError).toBe(true);
   });
 
-  test('ASAP_021: Phone field shows error for too-short phone', async ({ guestFormSection, page }) => {
+  test('ASAP_021: Verify that the phone field shows an error when the phone number is too short', async ({ guestFormSection, page }) => {
     await guestFormSection.fillName('Test User');
     await guestFormSection.fillPhone('12345');
     await guestFormSection.nameInput.click();
@@ -36,7 +36,7 @@ test.describe(`ASAP Only — Validation ${RIDER_TAGS.ASAP} ${RIDER_TAGS.UI_ONLY}
     expect(phoneHasError).toBe(true);
   });
 
-  test('Phone field accepts valid phone (10-16 digits)', async ({ guestFormSection, page }) => {
+  test('Verify that the phone field accepts a valid phone number of 10 to 16 digits without error', async ({ guestFormSection, page }) => {
     await guestFormSection.selectCountryCode(org.phone.countryCode);
     await guestFormSection.fillName('Test User');
     await guestFormSection.fillPhone(org.phone.number);
@@ -45,39 +45,39 @@ test.describe(`ASAP Only — Validation ${RIDER_TAGS.ASAP} ${RIDER_TAGS.UI_ONLY}
     expect(phoneHasError).toBe(false);
   });
 
-  test('Phone too-long is truncated', async ({ guestFormSection }) => {
+  test('Verify that an overly long phone number is truncated to at most 16 digits', async ({ guestFormSection }) => {
     await guestFormSection.fillPhone('12345678901234567890');
     const value = await guestFormSection.phoneInput.inputValue();
     expect(value.length).toBeLessThanOrEqual(16);
   });
 
-  test('ASAP_022: Riders were required and selected', async ({ guestFormSection }) => {
+  test('ASAP_022: Verify that the booking form is displayed after stops and riders are selected', async ({ guestFormSection }) => {
     await expect(guestFormSection.formTitle).toBeVisible();
   });
 
-  test('ASAP_023: No time-related validation error', async ({ guestFormSection }) => {
+  test('ASAP_023: Verify that no time-related validation error is shown on the booking form', async ({ guestFormSection }) => {
     await expect(guestFormSection.timeValidationError).not.toBeVisible();
   });
 
-  test('@smoke ASAP_024: XSS sanitized in name', async ({ guestFormSection }) => {
+  test('@smoke ASAP_024: Verify that script content typed into the name field is stripped out for safety', async ({ guestFormSection }) => {
     await guestFormSection.fillName('<script>alert("xss")</script>');
     const val = await guestFormSection.nameInput.inputValue();
     expect(val).not.toContain('<script>');
     expect(val).not.toContain('alert');
   });
 
-  test('ASAP_025: XSS sanitized in notes', async ({ guestFormSection }) => {
+  test('ASAP_025: Verify that unsafe script content typed into the notes field is stripped out for safety', async ({ guestFormSection }) => {
     await guestFormSection.fillNotes('javascript:void(0)');
     const val = await guestFormSection.notesTextarea.inputValue();
     expect(val).not.toContain('javascript:');
   });
 
-  test('ASAP_026: Scroll to first error on submit', async ({ guestFormSection }) => {
+  test('ASAP_026: Verify that submitting an invalid form scrolls to and reveals the first field in error', async ({ guestFormSection }) => {
     await guestFormSection.submitForm();
     await expect(guestFormSection.nameInput).toBeVisible();
   });
 
-  test('Form recovery — fixing name clears error', async ({ guestFormSection, page }) => {
+  test('Verify that entering a valid name clears the previously shown name validation error', async ({ guestFormSection, page }) => {
     await guestFormSection.fillPhone(org.phone.number);
     await guestFormSection.requestRideButton.scrollIntoViewIfNeeded();
     await guestFormSection.submitForm();
@@ -90,7 +90,7 @@ test.describe(`ASAP Only — Validation ${RIDER_TAGS.ASAP} ${RIDER_TAGS.UI_ONLY}
     expect(nameErr).toBe(false);
   });
 
-  test('Form recovery — fixing phone clears error', async ({ guestFormSection, page }) => {
+  test('Verify that entering a valid phone number clears the previously shown phone validation error', async ({ guestFormSection, page }) => {
     await guestFormSection.fillPhone('123');
     await guestFormSection.nameInput.click();
     let phoneErr = await guestFormSection.hasPhoneError();
@@ -103,12 +103,12 @@ test.describe(`ASAP Only — Validation ${RIDER_TAGS.ASAP} ${RIDER_TAGS.UI_ONLY}
     expect(phoneErr).toBe(false);
   });
 
-  test('Riders already selected — form functional', async ({ guestFormSection }) => {
+  test('Verify that the booking form and Request Ride button are available when riders are already selected', async ({ guestFormSection }) => {
     await expect(guestFormSection.nameInput).toBeVisible();
     await expect(guestFormSection.requestRideButton).toBeVisible();
   });
 
-  test('Notes textarea respects maxLength', async ({ guestFormSection }) => {
+  test('Verify that the notes field prevents entering more than its maximum allowed characters', async ({ guestFormSection }) => {
     const maxLen = Number(await guestFormSection.notesTextarea.getAttribute('maxlength') || '250');
     const over = 'X'.repeat(maxLen + 100);
     await guestFormSection.fillNotes(over);
@@ -134,27 +134,27 @@ test.describe(`ASAP Only — Form Negatives ${RIDER_TAGS.ASAP} ${RIDER_TAGS.SAFE
 
   // Phone is a plain type=tel, maxlength 16; it does NOT strip non-numeric
   // characters, so the boundary here is length-based.
-  test('@negative NEG_FORM_001: phone input enforces maxLength (16)', async ({ guestFormSection }) => {
+  test('@negative NEG_FORM_001: Verify that the phone field prevents entering more than 16 digits', async ({ guestFormSection }) => {
     await guestFormSection.fillPhone('1'.repeat(30));
     const val = await guestFormSection.phoneInput.inputValue();
     expect(val.length).toBeLessThanOrEqual(16);
   });
 
-  test('@negative NEG_FORM_002: name input sanitizes HTML/script characters', async ({ guestFormSection }) => {
+  test('@negative NEG_FORM_002: Verify that the name field removes HTML and script characters entered by the user', async ({ guestFormSection }) => {
     await guestFormSection.fillName('<img src=x onerror=alert(1)>');
     const val = await guestFormSection.nameInput.inputValue();
     expect(val).not.toContain('<');
     expect(val).not.toContain('onerror');
   });
 
-  test('@negative NEG_FORM_003: partial submit (name only) → phone validation error', async ({ guestFormSection }) => {
+  test('@negative NEG_FORM_003: Verify that submitting with only the name filled shows a validation error on the phone field', async ({ guestFormSection }) => {
     await guestFormSection.fillName('Only Name');
     await guestFormSection.requestRideButton.scrollIntoViewIfNeeded();
     await guestFormSection.submitForm();
     expect(await guestFormSection.hasPhoneError()).toBe(true);
   });
 
-  test('@negative NEG_FORM_004: whitespace-only name does not produce a ride', async ({ guestFormSection, page }) => {
+  test('@negative NEG_FORM_004: Verify that a name containing only spaces is rejected and no ride is created', async ({ guestFormSection, page }) => {
     await guestFormSection.fillName('     ');
     await guestFormSection.selectCountryCode(org.phone.countryCode);
     await guestFormSection.fillPhone(org.phone.number);

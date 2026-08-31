@@ -47,7 +47,7 @@ test.describe(`Future Booking — Confirmation Page ${RIDER_TAGS.FUTURE} ${RIDER
   });
 
   /** Verify that the booking status text (e.g. "Scheduled for {date, time}") is displayed after successfully submitting a Future Booking ride. */
-  test('@sanity FB_025: Shows status text after a Future Booking submission', async ({ page }) => {
+  test('@sanity FB_025: Verify that the booking status text is shown after submitting a future booking', async ({ page }) => {
     await submitFutureRideAndGetCode(page);
     // Live-verified on staging/ODFB: the future-booking status heading reads
     // "Scheduled for {Month Day, h:mm AM/PM TZ}" — distinct from ASAP's
@@ -59,7 +59,7 @@ test.describe(`Future Booking — Confirmation Page ${RIDER_TAGS.FUTURE} ${RIDER
   });
 
   /** Verify that the live map is displayed on the tracking/confirmation screen. */
-  test('FB_026: Map area present on the tracking screen', async ({ page }) => {
+  test('FB_026: Verify that the live map is shown on the tracking screen', async ({ page }) => {
     await submitFutureRideAndGetCode(page);
     // The Future Booking tracking screen renders a MapTiler/OpenStreetMap
     // embed (attribution links confirmed live), not Google Maps — so ASAP's
@@ -71,7 +71,7 @@ test.describe(`Future Booking — Confirmation Page ${RIDER_TAGS.FUTURE} ${RIDER
   });
 
   /** Verify that either the "Call Operator" or "Cancel Ride" action is visible after booking. */
-  test('FB_027: Call Operator or Cancel Ride action visible', async ({ page }) => {
+  test('FB_027: Verify that a Call Operator or Cancel Ride action is shown after booking', async ({ page }) => {
     await submitFutureRideAndGetCode(page);
     const callOp = await page.getByText(/Call Operator/i).isVisible().catch(() => false);
     const cancel = await page.getByText(/Cancel Ride/i).isVisible().catch(() => false);
@@ -79,7 +79,7 @@ test.describe(`Future Booking — Confirmation Page ${RIDER_TAGS.FUTURE} ${RIDER
   });
 
   /** Verify that the rider's submitted name and phone number are correctly displayed on the tracking screen. */
-  test('FB_028: Rider details visible on tracking screen after submit', async ({ page, confirmationPage }) => {
+  test('FB_028: Verify that the submitted rider name and phone number are shown on the tracking screen', async ({ page, confirmationPage }) => {
     const cfg = getOrgConfig('futureBookingOnly');
     const lp = new SelectLocationPage(page);
     const dt = new DateTimePicker(page);
@@ -100,7 +100,7 @@ test.describe(`Future Booking — Confirmation Page ${RIDER_TAGS.FUTURE} ${RIDER
   });
 
   /** Verify that no critical JavaScript errors occur during a Future Booking submission. */
-  test('No critical JavaScript errors during a Future Booking submission', async ({ page }) => {
+  test('Verify that no critical JavaScript errors occur during a future booking submission', async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', (err) => errors.push(err.message));
     await submitFutureRideAndGetCode(page);

@@ -23,7 +23,7 @@ test.describe(`Future Booking — Date Picker ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.
   });
 
   /** Verify that the Pick-up Date field is visible and pre-populated with a default date on page load. */
-  test('@smoke FB_DT_001: Pick-up Date field is visible and pre-populated', async ({ dateTimePicker }) => {
+  test('@smoke FB_DT_001: Verify that the pick-up date field is displayed and pre-filled with a default date on load', async ({ dateTimePicker }) => {
     await expect(dateTimePicker.dateInput).toBeVisible();
     // guestForm.js auto-selects today (if available) or the next available
     // future date on mount — the field should never be left blank.
@@ -31,18 +31,18 @@ test.describe(`Future Booking — Date Picker ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.
   });
 
   /** Verify that clicking the Pick-up Date field opens the calendar date-picker popup. */
-  test('FB_DT_002: Clicking the date field opens the calendar popper', async ({ dateTimePicker }) => {
+  test('FB_DT_002: Verify that clicking the pick-up date field opens the calendar date picker', async ({ dateTimePicker }) => {
     await dateTimePicker.openDatePicker();
     await expect(dateTimePicker.calendarPopper.first()).toBeVisible();
   });
 
   /** Verify that the Pick-up Date field is read-only and does not accept typed input. */
-  test('FB_DT_003: Date field is read-only (no typed input accepted)', async ({ dateTimePicker }) => {
+  test('FB_DT_003: Verify that the pick-up date field is read-only and does not accept typed input', async ({ dateTimePicker }) => {
     await expect(dateTimePicker.dateInput).toHaveAttribute('readonly', '');
   });
 
   /** Verify that selecting a different date clears the previously selected pick-up time and disables the "Next" button. */
-  test('FB_DT_004: Selecting a date resets the previously-set pick-up time', async ({ dateTimePicker }) => {
+  test('FB_DT_004: Verify that selecting a different date clears the previously chosen pick-up time and disables Next', async ({ dateTimePicker }) => {
     // The auto-selected date's slots can be sold out from earlier test runs
     // (see DateTimePicker.ensureBookableSlot) — get onto a bookable date and
     // actually confirm a time first, so there's a real "previously-set" time
@@ -70,7 +70,7 @@ test.describe(`Future Booking — Date Picker ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.
   });
 
   /** Verify that only the organization's available dates are selectable in the calendar (unavailable dates are disabled). */
-  test('FB_DT_005: Only org-available dates are selectable in the calendar', async ({ dateTimePicker }) => {
+  test('FB_DT_005: Verify that only the organization available dates can be selected and other dates are disabled', async ({ dateTimePicker }) => {
     await dateTimePicker.openDatePicker();
     const anyEnabledDay = dateTimePicker.page.locator('.MuiPickersDay-root:not(.Mui-disabled)').first();
     await expect(anyEnabledDay).toBeVisible({ timeout: 5_000 });

@@ -76,19 +76,19 @@ test.describe(`Have a Booking — Org-Scoped Tabs (Phone/Flight) ${RIDER_TAGS.FU
     });
 
     /** Verify that both "Find by Phone No." and "Find by Flight No." tabs render when reached via the org-scoped link. */
-    test('@smoke HB_008: Both Phone and Flight tabs are visible with ?showFlight&orgCode', async ({ signInPage }) => {
+    test('@smoke HB_008: Verify that both the phone and flight lookup tabs appear when opened from the booking link', async ({ signInPage }) => {
       await expect(signInPage.phoneTabLabel).toBeVisible();
       await expect(signInPage.flightTabLabel).toBeVisible();
     });
 
     /** Verify that the Phone tab is the default active tab. */
-    test('HB_009: Phone tab is selected by default', async ({ signInPage }) => {
+    test('HB_009: Verify that the phone lookup tab is selected by default', async ({ signInPage }) => {
       await expect(signInPage.phoneInput).toBeVisible();
       await expect(signInPage.flightNumberInput).not.toBeVisible();
     });
 
     /** Verify that switching to the Flight tab shows the "Select Day" date field and "Enter Flight Number" field. */
-    test('HB_010: Switching to the Flight tab shows the date and flight-number fields', async ({ signInPage }) => {
+    test('HB_010: Verify that switching to the flight tab shows the travel-day and flight-number fields', async ({ signInPage }) => {
       await signInPage.switchToFlightTab();
       await expect(signInPage.flightDateInput).toBeVisible();
       await expect(signInPage.flightDateInput).toHaveValue('Today');
@@ -97,7 +97,7 @@ test.describe(`Have a Booking — Org-Scoped Tabs (Phone/Flight) ${RIDER_TAGS.FU
     });
 
     /** Verify that switching back to the Phone tab restores the phone field and clears the Flight tab's state. */
-    test('HB_011: Switching back to the Phone tab restores the phone field', async ({ signInPage }) => {
+    test('HB_011: Verify that switching back to the phone tab restores the phone number field', async ({ signInPage }) => {
       await signInPage.switchToFlightTab();
       await signInPage.switchToPhoneTab();
       await expect(signInPage.phoneInput).toBeVisible();
@@ -105,7 +105,7 @@ test.describe(`Have a Booking — Org-Scoped Tabs (Phone/Flight) ${RIDER_TAGS.FU
     });
 
     /** Verify that "Next" on the Flight tab stays disabled until a flight number of at least 3 characters is entered. */
-    test('HB_012: "Next" on the Flight tab is disabled until a valid flight number is entered', async ({ signInPage }) => {
+    test('HB_012: Verify that the Next button stays disabled until a valid flight number is entered', async ({ signInPage }) => {
       await signInPage.switchToFlightTab();
       await expect(signInPage.nextButton).toBeDisabled();
       await signInPage.fillFlightNumber('A1');
@@ -115,7 +115,7 @@ test.describe(`Have a Booking — Org-Scoped Tabs (Phone/Flight) ${RIDER_TAGS.FU
     });
 
     /** Verify that looking up a flight number with no matching booking shows "No reservation records match the provided flight number." */
-    test('@negative HB_013: A non-existent flight number shows "No reservation records match" error', async ({ signInPage }) => {
+    test('@negative HB_013: Verify that looking up an unknown flight number shows a no-matching-reservation message', async ({ signInPage }) => {
       await signInPage.switchToFlightTab();
       await signInPage.fillFlightNumber('ZZ0000000');
       await expect(signInPage.nextButton).toBeEnabled();
@@ -125,7 +125,7 @@ test.describe(`Have a Booking — Org-Scoped Tabs (Phone/Flight) ${RIDER_TAGS.FU
     });
 
     /** Verify that the Phone tab's validation messages (from HB_004/HB_005) also apply when reached via the org-scoped tabbed URL. */
-    test('HB_014: Phone tab validation still applies on the org-scoped tabbed page', async ({ signInPage }) => {
+    test('HB_014: Verify that phone number validation still applies on the tabbed lookup page', async ({ signInPage }) => {
       // Fresh sessions default to United States (+1) — select India explicitly
       // to match this suite's phone test-data format (see SignInPage.ts).
       await signInPage.selectCountryCode('India');
@@ -152,7 +152,7 @@ test.describe(`Have a Booking — Org-Scoped Tabs (Phone/Flight) ${RIDER_TAGS.FU
     // widens the client poll window (~90s) and CI retries cover the rest, but
     // this can only be truly fixed backend-side. Tracked in the PR description.
     /** Verify that a Flight Number lookup for a real, just-created booking succeeds and lands on the bookings page with matching details. */
-    test('@sanity HB_015: A real flight number finds the booking and navigates to /bookings', async ({ page }) => {
+    test('@sanity HB_015: Verify that looking up a real flight number finds the booking and opens the bookings page', async ({ page }) => {
       const flightNo = `FL${Math.floor(1000 + Math.random() * 9000)}`;
       const { pickup, dropoff, dateText } = await createFutureRideWithFlight(page, flightNo);
 

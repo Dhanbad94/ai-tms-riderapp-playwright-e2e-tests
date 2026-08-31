@@ -36,7 +36,7 @@ test.describe(`ASAP Only — Confirmation Page ${RIDER_TAGS.ASAP} ${RIDER_TAGS.C
     await page.waitForTimeout(RIDER_TIMEOUTS.RIDE_COOLDOWN);
   });
 
-  test('@sanity ASAP_032: Shows status text, not TrackingCard', async ({ page }) => {
+  test('@sanity ASAP_032: Verify that the confirmation screen shows ride status text and not the bookings card', async ({ page }) => {
     await submitRideAndGetCode(page);
     const status = page.getByText(/Request Submitted|Finding Driver|Driver Assigned/i);
     await expect(status.first()).toBeVisible({ timeout: RIDER_TIMEOUTS.CONFIRMATION });
@@ -45,7 +45,7 @@ test.describe(`ASAP Only — Confirmation Page ${RIDER_TAGS.ASAP} ${RIDER_TAGS.C
 
   // ASAP_033: In ASAP-only mode, pickup/dropoff names are intentionally NOT displayed
   // on the confirmation page. This is correct app behavior — not a bug.
-  test('ASAP_033: Pickup and dropoff names are NOT shown in ASAP mode', async ({ page }) => {
+  test('ASAP_033: Verify that pickup and dropoff names are not shown on the confirmation screen in ASAP mode', async ({ page }) => {
     test.skip(getRiderConfig().name === 'staging', 'Skipped on staging for now — runs on preproduction/production');
     await submitRideAndGetCode(page);
     // In ASAP mode, the PickupDropoff header is hidden — verify absence
@@ -55,37 +55,37 @@ test.describe(`ASAP Only — Confirmation Page ${RIDER_TAGS.ASAP} ${RIDER_TAGS.C
     expect(dropoffVisible).toBe(false);
   });
 
-  test('ASAP_034: Shows ride status message', async ({ page }) => {
+  test('ASAP_034: Verify that the confirmation screen shows a ride status message', async ({ page }) => {
     await submitRideAndGetCode(page);
     const status = page.getByText(/Request Submitted|Finding Driver|Driver Assigned|Driver on the way/i);
     await expect(status.first()).toBeVisible({ timeout: RIDER_TIMEOUTS.CONFIRMATION });
   });
 
-  test('ASAP_035: Page has status heading elements', async ({ page }) => {
+  test('ASAP_035: Verify that the confirmation screen displays status heading text', async ({ page }) => {
     await submitRideAndGetCode(page);
     const headings = page.getByRole('heading');
     expect(await headings.count()).toBeGreaterThan(0);
   });
 
-  test('TrackingCard "View All Bookings" NOT visible', async ({ page }) => {
+  test('Verify that the "View All Bookings" link is not shown on the ASAP confirmation screen', async ({ page }) => {
     await submitRideAndGetCode(page);
     await expect(page.getByText('View All Bookings')).not.toBeVisible();
   });
 
-  test('Map area present', async ({ page }) => {
+  test('Verify that the map is displayed on the confirmation screen', async ({ page }) => {
     await submitRideAndGetCode(page);
     const mapEl = page.locator('.gm-style');
     expect(await mapEl.count()).toBeGreaterThan(0);
   });
 
-  test('Call Operator or Cancel Ride visible', async ({ page }) => {
+  test('Verify that the confirmation screen shows a Call Operator or Cancel Ride option', async ({ page }) => {
     await submitRideAndGetCode(page);
     const callOp = await page.getByText(/Call Operator/i).isVisible().catch(() => false);
     const cancel = await page.getByText(/Cancel Ride/i).isVisible().catch(() => false);
     expect(callOp || cancel).toBe(true);
   });
 
-  test('ASAP_040: Client-side fetch includes ride code', async ({ page }) => {
+  test('ASAP_040: Verify that the ride details request includes the booking ride code', async ({ page }) => {
     let rideDetailsUrl = '';
     page.on('request', (req) => { if (req.url().includes('ride-details')) rideDetailsUrl = req.url(); });
     const code = await submitRideAndGetCode(page);
@@ -93,7 +93,7 @@ test.describe(`ASAP Only — Confirmation Page ${RIDER_TAGS.ASAP} ${RIDER_TAGS.C
     if (rideDetailsUrl) expect(rideDetailsUrl).toContain(code);
   });
 
-  test('No critical JavaScript errors', async ({ page }) => {
+  test('Verify that the confirmation screen loads without critical application errors', async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', (err) => errors.push(err.message));
     await submitRideAndGetCode(page);
@@ -103,13 +103,13 @@ test.describe(`ASAP Only — Confirmation Page ${RIDER_TAGS.ASAP} ${RIDER_TAGS.C
     expect(critical).toHaveLength(0);
   });
 
-  test('Confirmation page renders content', async ({ page }) => {
+  test('Verify that the confirmation screen renders meaningful page content', async ({ page }) => {
     await submitRideAndGetCode(page);
     const body = await page.locator('body').textContent();
     expect(body?.length).toBeGreaterThan(50);
   });
 
-  test('Progress animation or status card visible', async ({ page }) => {
+  test('Verify that the confirmation screen shows a progress animation or status card', async ({ page }) => {
     await submitRideAndGetCode(page);
     const el = page.locator('[class*="progressAnimation"], [class*="ProgressAnimation"], h2, h3');
     expect(await el.count()).toBeGreaterThan(0);
@@ -118,7 +118,7 @@ test.describe(`ASAP Only — Confirmation Page ${RIDER_TAGS.ASAP} ${RIDER_TAGS.C
   // ASAP_049: After submitting, the tracking screen shows a rider-details card
   // (name + guest count, phone, room, flight). On mobile it sits below the fold,
   // so we scroll it into view first — mirroring the manual verification step.
-  test('ASAP_049: Rider details visible on tracking screen after submit', async ({ page, confirmationPage }) => {
+  test('ASAP_049: Verify that the tracking screen shows the rider details after a ride is submitted', async ({ page, confirmationPage }) => {
     test.skip(getRiderConfig().name === 'staging', 'Skipped on staging for now — runs on preproduction/production');
     const lp = new SelectLocationPage(page);
     const gf = new GuestFormSection(page);

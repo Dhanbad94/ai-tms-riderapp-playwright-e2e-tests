@@ -28,7 +28,7 @@ test.describe(`Future Booking — Location Selection ${RIDER_TAGS.FUTURE} ${RIDE
   });
 
   /** Verify that the Pick-up Date & Time picker is displayed only after both pickup and drop-off locations are selected. */
-  test('@smoke FB_001: Date/time picker IS rendered once both stops are chosen', async ({ selectLocationPage }) => {
+  test('@smoke FB_001: Verify that the pickup date and time picker appears only after both pickup and drop-off stops are chosen', async ({ selectLocationPage }) => {
     // The Pick-up Date & Time section is part of the map/GuestForm view,
     // which only mounts after both pickup and dropoff are selected — it is
     // NOT present on the bare location page (see FB_002 below, which asserts
@@ -38,7 +38,7 @@ test.describe(`Future Booking — Location Selection ${RIDER_TAGS.FUTURE} ${RIDE
   });
 
   /** Verify that the page header displays "Select Location" (without "Time") before any stop is selected. */
-  test('FB_002: Header shows "Select Location" before stops chosen (no "Time" yet)', async ({ selectLocationPage }) => {
+  test('FB_002: Verify that the header reads "Select Location" without "Time" before any stop is chosen', async ({ selectLocationPage }) => {
     const text = await selectLocationPage.getHeaderText();
     expect(text).toContain('Select');
     expect(text).toContain('Location');
@@ -46,7 +46,7 @@ test.describe(`Future Booking — Location Selection ${RIDER_TAGS.FUTURE} ${RIDE
   });
 
   /** Verify that the page header updates to "Confirm Location & Time" once both pickup and drop-off stops are selected. */
-  test('FB_003: Header shows "Confirm Location & Time" after both stops selected', async ({ selectLocationPage }) => {
+  test('FB_003: Verify that the header updates to "Confirm Location & Time" after both stops are selected', async ({ selectLocationPage }) => {
     await selectLocationPage.selectBothStops(stops.pickup, stops.dropoff);
     const text = await selectLocationPage.getHeaderText();
     expect(text).toContain('Confirm');
@@ -55,7 +55,7 @@ test.describe(`Future Booking — Location Selection ${RIDER_TAGS.FUTURE} ${RIDE
   });
 
   /** Verify that the CTA button displays "Next" instead of "Confirm Location" once both stops are selected. */
-  test('@smoke FB_004: CTA button text shows "Next" (not "Confirm Location")', async ({ selectLocationPage }) => {
+  test('@smoke FB_004: Verify that the action button reads "Next" and not "Confirm Location" after both stops are selected', async ({ selectLocationPage }) => {
     await selectLocationPage.selectBothStops(stops.pickup, stops.dropoff);
     const text = await selectLocationPage.getConfirmButtonText();
     expect(text.toLowerCase()).toContain('next');
@@ -63,7 +63,7 @@ test.describe(`Future Booking — Location Selection ${RIDER_TAGS.FUTURE} ${RIDE
   });
 
   /** Verify that the "Use Current Location" quick-select option is visible on the Future Booking org. */
-  test('FB_005: "Use Current Location" quick action is visible on the ODFB org', async ({ selectLocationPage }) => {
+  test('FB_005: Verify that the "Use Current Location" quick action is visible on the Future Booking org', async ({ selectLocationPage }) => {
     // Reading selectLocation.js in isolation suggested this quick-select only
     // renders when !future_booking (`focusedInput !== "dropOff" && !pickUpVal
     // && !future_booking`). Live-verified against staging/ODFB on 2026-08-20:
@@ -75,7 +75,7 @@ test.describe(`Future Booking — Location Selection ${RIDER_TAGS.FUTURE} ${RIDE
   });
 
   /** Verify that the "Get Available Dates" API is called once both pickup and drop-off stops are selected. */
-  test('FB_006: getAvailableDates API call fires once both stops are chosen', async ({ selectLocationPage, page }) => {
+  test('FB_006: Verify that the available dates request is sent once both stops are chosen', async ({ selectLocationPage, page }) => {
     let called = false;
     page.on('request', (r) => { if (r.url().includes('/dates/')) called = true; });
     await selectLocationPage.selectBothStops(stops.pickup, stops.dropoff);
@@ -83,7 +83,7 @@ test.describe(`Future Booking — Location Selection ${RIDER_TAGS.FUTURE} ${RIDE
   });
 
   /** Verify that the "Get Available Slots" API is called after a date is auto-selected. */
-  test('FB_007: getAvailableSlots API call fires after a date is auto-selected', async ({ selectLocationPage, page }) => {
+  test('FB_007: Verify that the available slots request is sent after a date is auto-selected', async ({ selectLocationPage, page }) => {
     let called = false;
     page.on('request', (r) => { if (r.url().includes('/slots/')) called = true; });
     await selectLocationPage.selectBothStops(stops.pickup, stops.dropoff);
@@ -91,7 +91,7 @@ test.describe(`Future Booking — Location Selection ${RIDER_TAGS.FUTURE} ${RIDE
   });
 
   /** Verify that the stop list loads and displays at least one available stop when the pickup field is clicked. */
-  test('@smoke Stop list loads with available stops', async ({ selectLocationPage }) => {
+  test('@smoke Verify that the pickup stop list loads and shows at least one available stop', async ({ selectLocationPage }) => {
     // ODFB's location page loads directly into the map view (unlike ODASAP,
     // which loads straight into the stop list) — the pickup field must be
     // clicked to open the stop-list panel before any h4 stop headings render.
@@ -101,13 +101,13 @@ test.describe(`Future Booking — Location Selection ${RIDER_TAGS.FUTURE} ${RIDE
   });
 
   /** Verify that selecting a pickup stop correctly populates the pickup input field. */
-  test('Pickup stop selection populates input', async ({ selectLocationPage }) => {
+  test('Verify that selecting a pickup stop fills in the pickup field', async ({ selectLocationPage }) => {
     await selectLocationPage.selectPickupStop(stops.pickup);
     await expect(selectLocationPage.pickupInput).toHaveValue(stops.pickup);
   });
 
   /** Verify that the same location cannot be selected for both pickup and drop-off. */
-  test('Cannot select same stop for both', async ({ selectLocationPage, page }) => {
+  test('Verify that the same stop cannot be selected for both pickup and drop-off', async ({ selectLocationPage, page }) => {
     await selectLocationPage.selectPickupStop(stops.pickup);
     await selectLocationPage.dropoffInput.click();
     const sameInDropoff = page.getByRole('heading', { level: 4, name: stops.pickup });
@@ -122,7 +122,7 @@ test.describe(`Future Booking — Location Selection ${RIDER_TAGS.FUTURE} ${RIDE
   });
 
   /** Verify that clicking the Back button displays a "Go Back?" confirmation dialog. */
-  test('Back button triggers "Go Back?" confirmation dialog', async ({ selectLocationPage }) => {
+  test('Verify that clicking Back opens the "Go Back?" confirmation dialog', async ({ selectLocationPage }) => {
     await selectLocationPage.selectPickupStop(stops.pickup);
     await selectLocationPage.clickBack();
     await expect(selectLocationPage.goBackDialogHeading).toBeVisible();

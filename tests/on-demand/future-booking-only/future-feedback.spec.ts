@@ -62,19 +62,19 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
   // ── Feedback Modal UI ─────────────────────────────────────────────
 
   /** Verify that the feedback modal opens with the "How Was Your Experience?" heading after a cancellation. */
-  test('@smoke FFB_001: Feedback modal opens with heading', async ({ page }) => {
+  test('@smoke FFB_001: Verify that the feedback modal opens with the How Was Your Experience heading after a cancellation', async ({ page }) => {
     await submitCancelAndOpenFeedback(page);
     await expect(page.getByText('How Was Your Experience?')).toBeVisible();
   });
 
   /** Verify that the feedback modal's subheading is visible. */
-  test('FFB_002: Subheading visible', async ({ page }) => {
+  test('FFB_002: Verify that the feedback modal subheading is displayed', async ({ page }) => {
     await submitCancelAndOpenFeedback(page);
     await expect(page.getByText('Your feedback helps us improve for you!')).toBeVisible();
   });
 
   /** Verify that all 3 emoji rating buttons (Sad, Neutral, Happy) are visible. */
-  test('FFB_003: 3 emoji rating buttons visible', async ({ page, feedbackModal }) => {
+  test('FFB_003: Verify that all three emoji rating buttons (Sad, Neutral, Happy) are displayed', async ({ page, feedbackModal }) => {
     await submitCancelAndOpenFeedback(page);
     await feedbackModal.waitForFeedbackVisible();
     await expect(feedbackModal.sadButton).toBeVisible();
@@ -83,7 +83,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
   });
 
   /** Verify that the feedback textarea is visible with the "Type your feedback" placeholder. */
-  test('FFB_004: Textarea visible with "Type your feedback" placeholder', async ({ page, feedbackModal }) => {
+  test('FFB_004: Verify that the feedback text box is displayed with the Type your feedback placeholder', async ({ page, feedbackModal }) => {
     await submitCancelAndOpenFeedback(page);
     await feedbackModal.waitForFeedbackVisible();
     await expect(feedbackModal.feedbackTextarea).toBeVisible();
@@ -92,7 +92,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
   });
 
   /** Verify that "Share Feedback" is visible but disabled until a rating is selected. */
-  test('FFB_005: "Share Feedback" button visible but disabled', async ({ page, feedbackModal }) => {
+  test('FFB_005: Verify that the Share Feedback button is displayed but disabled until a rating is selected', async ({ page, feedbackModal }) => {
     await submitCancelAndOpenFeedback(page);
     await feedbackModal.waitForFeedbackVisible();
     await expect(feedbackModal.shareFeedbackButton).toBeVisible();
@@ -102,7 +102,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
   // ── Rating 1 — Sad ────────────────────────────────────────────
 
   /** Verify that selecting the Sad rating enables "Share Feedback". */
-  test('FFB_006: Selecting Sad enables "Share Feedback"', async ({ page, feedbackModal }) => {
+  test('FFB_006: Verify that selecting the Sad rating enables the Share Feedback button', async ({ page, feedbackModal }) => {
     await submitCancelAndOpenFeedback(page);
     await feedbackModal.waitForFeedbackVisible();
     await feedbackModal.selectSad();
@@ -110,7 +110,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
   });
 
   /** Verify that submitting feedback with a Sad rating and text succeeds. */
-  test('FFB_007: Submit with Sad rating + text succeeds', async ({ page, feedbackModal }) => {
+  test('FFB_007: Verify that feedback with a Sad rating and text is submitted successfully', async ({ page, feedbackModal }) => {
     await submitCancelAndOpenFeedback(page);
     await feedbackModal.submitWithRating('sad', 'The shuttle was too slow');
     await feedbackModal.verifyThankYouScreen();
@@ -119,7 +119,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
   // ── Rating 2 — Neutral ────────────────────────────────────────
 
   /** Verify that selecting the Neutral rating enables "Share Feedback". */
-  test('FFB_008: Selecting Neutral enables "Share Feedback"', async ({ page, feedbackModal }) => {
+  test('FFB_008: Verify that selecting the Neutral rating enables the Share Feedback button', async ({ page, feedbackModal }) => {
     await submitCancelAndOpenFeedback(page);
     await feedbackModal.waitForFeedbackVisible();
     await feedbackModal.selectNeutral();
@@ -127,7 +127,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
   });
 
   /** Verify that submitting feedback with a Neutral rating and text succeeds. */
-  test('FFB_009: Submit with Neutral rating + text succeeds', async ({ page, feedbackModal }) => {
+  test('FFB_009: Verify that feedback with a Neutral rating and text is submitted successfully', async ({ page, feedbackModal }) => {
     await submitCancelAndOpenFeedback(page);
     await feedbackModal.submitWithRating('neutral', 'Could be better');
     await feedbackModal.verifyThankYouScreen();
@@ -136,7 +136,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
   // ── Rating 3 — Happy ──────────────────────────────────────────
 
   /** Verify that selecting the Happy rating enables "Share Feedback". */
-  test('FFB_010: Selecting Happy enables "Share Feedback"', async ({ page, feedbackModal }) => {
+  test('FFB_010: Verify that selecting the Happy rating enables the Share Feedback button', async ({ page, feedbackModal }) => {
     await submitCancelAndOpenFeedback(page);
     await feedbackModal.waitForFeedbackVisible();
     await feedbackModal.selectHappy();
@@ -144,7 +144,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
   });
 
   /** Verify that submitting feedback with a Happy rating and no text still succeeds. */
-  test('FFB_011: Submit with Happy rating (no text) succeeds', async ({ page, feedbackModal }) => {
+  test('FFB_011: Verify that feedback with a Happy rating and no text is submitted successfully', async ({ page, feedbackModal }) => {
     await submitCancelAndOpenFeedback(page);
     await feedbackModal.waitForFeedbackVisible();
     await feedbackModal.selectHappy();
@@ -153,7 +153,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
   });
 
   /** Verify that submitting feedback with a Happy rating and text succeeds. */
-  test('@sanity FFB_012: Submit with Happy rating + text succeeds', async ({ page, feedbackModal }) => {
+  test('@sanity FFB_012: Verify that feedback with a Happy rating and text is submitted successfully', async ({ page, feedbackModal }) => {
     await submitCancelAndOpenFeedback(page);
     await feedbackModal.submitWithRating('happy', 'Great service!');
     await feedbackModal.verifyThankYouScreen();
@@ -162,7 +162,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
   // ── Validation & Edge Cases ───────────────────────────────────
 
   /** Verify that selecting any rating enables the submit button. */
-  test('FFB_013: Selecting any rating enables submit', async ({ page, feedbackModal }) => {
+  test('FFB_013: Verify that selecting any rating enables the submit button', async ({ page, feedbackModal }) => {
     await submitCancelAndOpenFeedback(page);
     await feedbackModal.waitForFeedbackVisible();
     expect(await feedbackModal.isSubmitDisabled()).toBe(true);
@@ -171,7 +171,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
   });
 
   /** Verify that the feedback textarea sanitizes script/URL-like input. */
-  test('FFB_014: Textarea sanitizes XSS input', async ({ page, feedbackModal }) => {
+  test('FFB_014: Verify that the feedback text box removes script or URL-like input', async ({ page, feedbackModal }) => {
     await submitCancelAndOpenFeedback(page);
     await feedbackModal.waitForFeedbackVisible();
     await feedbackModal.selectSad();
@@ -181,7 +181,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
   });
 
   /** Verify that typed feedback text is retained when the selected rating is changed. */
-  test('FFB_015: Feedback text retained when switching ratings', async ({ page, feedbackModal }) => {
+  test('FFB_015: Verify that typed feedback text is kept when the selected rating is changed', async ({ page, feedbackModal }) => {
     await submitCancelAndOpenFeedback(page);
     await feedbackModal.waitForFeedbackVisible();
     await feedbackModal.selectSad();
@@ -194,7 +194,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
   // ── API Payload ───────────────────────────────────────────────
 
   /** Verify that submitting feedback fires a real POST /feedback API call. */
-  test('FFB_016: Feedback API called on submit', async ({ page, feedbackModal }) => {
+  test('FFB_016: Verify that submitting feedback sends a feedback request to the server', async ({ page, feedbackModal }) => {
     let feedbackCalled = false;
     page.on('request', (req) => {
       if (req.url().includes('/feedback') && req.method() === 'POST') feedbackCalled = true;
@@ -208,14 +208,14 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
   // ── Thank You Screen ──────────────────────────────────────────
 
   /** Verify that the "Thank you for your feedback!" screen is shown after submitting. */
-  test('FFB_017: Thank You screen shown after feedback', async ({ page, feedbackModal }) => {
+  test('FFB_017: Verify that the thank-you screen is shown after feedback is submitted', async ({ page, feedbackModal }) => {
     await submitCancelAndOpenFeedback(page);
     await feedbackModal.submitWithRating('happy', 'Excellent!');
     await expect(page.getByText('Thank you for your feedback!')).toBeVisible();
   });
 
   /** Verify that the "Request Again" button is visible on the Thank You screen. */
-  test('FFB_018: "Request Again" button visible on Thank You', async ({ page, feedbackModal }) => {
+  test('FFB_018: Verify that the Request Again button is displayed on the thank-you screen', async ({ page, feedbackModal }) => {
     await submitCancelAndOpenFeedback(page);
     await feedbackModal.submitWithRating('happy');
     await feedbackModal.verifyThankYouScreen();
@@ -223,7 +223,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
   });
 
   /** Verify that clicking "Request Again" on the Thank You screen navigates to the org page. */
-  test('FFB_019: "Request Again" navigates to org page', async ({ page, feedbackModal }) => {
+  test('FFB_019: Verify that clicking Request Again returns the rider to the organization booking page', async ({ page, feedbackModal }) => {
     await submitCancelAndOpenFeedback(page);
     await feedbackModal.submitWithRating('happy');
     await feedbackModal.verifyThankYouScreen();
@@ -233,7 +233,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
   });
 
   /** Verify that using the browser's Back button from the Thank You screen doesn't lose the completed state. */
-  test('FFB_020: Browser back blocked on Thank You', async ({ page, feedbackModal }) => {
+  test('FFB_020: Verify that using the browser back button on the thank-you screen keeps the completed state', async ({ page, feedbackModal }) => {
     await submitCancelAndOpenFeedback(page);
     await feedbackModal.submitWithRating('happy');
     await feedbackModal.verifyThankYouScreen();

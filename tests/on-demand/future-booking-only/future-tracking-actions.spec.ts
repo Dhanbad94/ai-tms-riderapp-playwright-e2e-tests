@@ -58,7 +58,7 @@ test.describe(`Future Booking — Tracking Actions ${RIDER_TAGS.FUTURE} ${RIDER_
   });
 
   /** Verify that the tracking screen's bottom-sheet drag handle is visible after a ride is created. */
-  test('@smoke TRACK_001: Drag handle is visible on the tracking screen', async ({ page, confirmationPage }) => {
+  test('@smoke TRACK_001: Verify that the tracking screen bottom-sheet drag handle is visible after a ride is created', async ({ page, confirmationPage }) => {
     await submitFutureRideAndGetCode(page);
     await expect(confirmationPage.dragHandle).toBeVisible({ timeout: RIDER_TIMEOUTS.CONFIRMATION });
   });
@@ -70,7 +70,7 @@ test.describe(`Future Booking — Tracking Actions ${RIDER_TAGS.FUTURE} ${RIDER_
    * the drag that actually moves it is UP (negative deltaY) — a drag-down
    * attempt from there has nowhere to go and correctly no-ops.
    */
-  test('@sanity TRACK_002: Dragging the bottom-sheet handle up expands the card height', async ({ page, confirmationPage }) => {
+  test('@sanity TRACK_002: Verify that dragging the bottom-sheet handle upward expands the tracking card height', async ({ page, confirmationPage }) => {
     await submitFutureRideAndGetCode(page);
     await expect(confirmationPage.dragHandle).toBeVisible({ timeout: RIDER_TIMEOUTS.CONFIRMATION });
 
@@ -84,7 +84,7 @@ test.describe(`Future Booking — Tracking Actions ${RIDER_TAGS.FUTURE} ${RIDER_
   });
 
   /** Verify that dragging the bottom sheet back down collapses it again from its expanded height. */
-  test('TRACK_003: Dragging the bottom sheet back down collapses the card', async ({ page, confirmationPage }) => {
+  test('TRACK_003: Verify that dragging the expanded bottom sheet back down collapses the tracking card', async ({ page, confirmationPage }) => {
     await submitFutureRideAndGetCode(page);
     await expect(confirmationPage.dragHandle).toBeVisible({ timeout: RIDER_TIMEOUTS.CONFIRMATION });
 
@@ -97,7 +97,7 @@ test.describe(`Future Booking — Tracking Actions ${RIDER_TAGS.FUTURE} ${RIDER_
   });
 
   /** Verify that "Create New Request" and "Back to Home" are both visible after dragging the personal-details sheet. */
-  test('@sanity TRACK_004: Both CTAs are visible after dragging the bottom sheet', async ({ page, confirmationPage }) => {
+  test('@sanity TRACK_004: Verify that "Create New Request" and "Back to Home" are both visible after dragging the bottom sheet', async ({ page, confirmationPage }) => {
     await submitFutureRideAndGetCode(page);
     await expect(confirmationPage.dragHandle).toBeVisible({ timeout: RIDER_TIMEOUTS.CONFIRMATION });
 
@@ -107,7 +107,7 @@ test.describe(`Future Booking — Tracking Actions ${RIDER_TAGS.FUTURE} ${RIDER_
   });
 
   /** Verify that "Create New Request" links to the same org's request-a-ride page. */
-  test('TRACK_005: "Create New Request" links to the same org', async ({ page, confirmationPage }) => {
+  test('TRACK_005: Verify that "Create New Request" links to the same organisation request-a-ride page', async ({ page, confirmationPage }) => {
     await submitFutureRideAndGetCode(page);
     await expect(confirmationPage.createNewRequestLink).toBeVisible({ timeout: RIDER_TIMEOUTS.CONFIRMATION });
     await expect(confirmationPage.createNewRequestLink).toHaveAttribute(
@@ -116,7 +116,7 @@ test.describe(`Future Booking — Tracking Actions ${RIDER_TAGS.FUTURE} ${RIDER_
   });
 
   /** Verify that clicking "Create New Request" navigates to the org's Welcome/request screen. */
-  test('@sanity TRACK_006: Clicking "Create New Request" navigates to the org Welcome screen', async ({ page, confirmationPage }) => {
+  test('@sanity TRACK_006: Verify that clicking "Create New Request" opens the organisation Welcome screen', async ({ page, confirmationPage }) => {
     await submitFutureRideAndGetCode(page);
     await expect(confirmationPage.createNewRequestLink).toBeVisible({ timeout: RIDER_TIMEOUTS.CONFIRMATION });
     await confirmationPage.clickCreateNewRequest();
@@ -124,7 +124,7 @@ test.describe(`Future Booking — Tracking Actions ${RIDER_TAGS.FUTURE} ${RIDER_
   });
 
   /** Verify that clicking "Back to Home" navigates to the bare landing page. */
-  test('@sanity TRACK_007: Clicking "Back to Home" navigates to the landing page', async ({ page, confirmationPage }) => {
+  test('@sanity TRACK_007: Verify that clicking "Back to Home" opens the bare landing page', async ({ page, confirmationPage }) => {
     await submitFutureRideAndGetCode(page);
     await expect(confirmationPage.backToHomeButton).toBeVisible({ timeout: RIDER_TIMEOUTS.CONFIRMATION });
     await confirmationPage.clickBackToHome();
