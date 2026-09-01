@@ -105,8 +105,14 @@ jobs:
         if: always()
         run: npx tsx helpers/generate-report.ts || true
 
-      # Stage the custom dashboard (+ full Playwright report for drill-down) into a
-      # per-run folder so each run gets its own URL and history is preserved.
+      # Stage ONLY the lightweight custom dashboard into a per-run folder so each
+      # run gets its own URL and history is preserved. The full Playwright report
+      # (traces/screenshots/videos) is deliberately NOT copied here — it bloated
+      # the gh-pages branch unboundedly (one full report per run × 3 envs/day),
+      # which made GitHub Pages rebuild the whole site on every push and pushed the
+      # async deploy to 20-30 min, so the Slack "View Report" link 404'd until it
+      # finished. The full report remains available in the 14-day upload artifact
+      # below for drill-down; the dashboard does not link into it.
       - name: Stage report for Pages
         id: stage
         if: always()
@@ -115,7 +121,6 @@ jobs:
             mkdir -p public
             cp dashboard-report.html public/index.html
             cp dashboard-report.html public/dashboard-report.html
-            [ -d playwright-report ] && cp -r playwright-report public/playwright-report || true
             echo "staged=true" >> $GITHUB_OUTPUT
           else
             echo "No dashboard-report.html to publish"
