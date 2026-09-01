@@ -47,19 +47,37 @@ async function submitFutureRideAndGetCode(page: import('@playwright/test').Page)
   return match[1];
 }
 
+// One real ride is created for the whole suite (RIDE-VOLUME REDUCTION): every
+// test here only VIEWS the tracking screen of an active ride or follows a CTA
+// away from it — none cancels or mutates the ride — so all 7 tests can reuse a
+// single ride's shareable tracking URL instead of each creating its own. This
+// cuts this suite from 7 real rides per run down to 1. The ride is real, so
+// navigating straight to /j/{code}/s server-renders genuine tracking data (no
+// fabricated payloads to drift out of sync).
+let trackingUrl = '';
+
 test.describe(`Future Booking — Tracking Actions ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.CREATES_RIDE} ${RIDER_TAGS.REGRESSION}`, () => {
-  test.beforeEach(async () => {
-    test.skip(!isOrgEnabled('futureBookingOnly'), 'Future Booking org not configured for this environment — set trackingId/stops in rider-config.ts');
-    test.skip(!canCreateRides(), 'Ride creation disabled on this environment');
+  test.beforeAll(async ({ browser }) => {
+    if (!isOrgEnabled('futureBookingOnly') || !canCreateRides()) return;
+    const page = await browser.newPage();
+    try {
+      const code = await submitFutureRideAndGetCode(page);
+      trackingUrl = `${rc.urls.ride}/j/${code}/s`;
+    } finally {
+      await page.close();
+    }
   });
 
-  test.afterEach(async ({ page }) => {
-    await page.waitForTimeout(RIDER_TIMEOUTS.RIDE_COOLDOWN);
+  test.beforeEach(async ({ page, confirmationPage }) => {
+    test.skip(!isOrgEnabled('futureBookingOnly'), 'Future Booking org not configured for this environment — set trackingId/stops in rider-config.ts');
+    test.skip(!canCreateRides(), 'Ride creation disabled on this environment');
+    // Reuse the suite's single ride: open its tracking screen fresh each test.
+    await page.goto(trackingUrl, { waitUntil: 'domcontentloaded' });
+    await expect(confirmationPage.dragHandle).toBeVisible({ timeout: RIDER_TIMEOUTS.CONFIRMATION });
   });
 
   /** Verify that the tracking screen's bottom-sheet drag handle is visible after a ride is created. */
-  test('@smoke TRACK_001: Verify that the tracking screen bottom-sheet drag handle is visible after a ride is created', async ({ page, confirmationPage }) => {
-    await submitFutureRideAndGetCode(page);
+  test('@smoke TRACK_001: Verify that the tracking screen bottom-sheet drag handle is visible after a ride is created', async ({ confirmationPage }) => {
     await expect(confirmationPage.dragHandle).toBeVisible({ timeout: RIDER_TIMEOUTS.CONFIRMATION });
   });
 
@@ -70,10 +88,7 @@ test.describe(`Future Booking — Tracking Actions ${RIDER_TAGS.FUTURE} ${RIDER_
    * the drag that actually moves it is UP (negative deltaY) — a drag-down
    * attempt from there has nowhere to go and correctly no-ops.
    */
-  test('@sanity TRACK_002: Verify that dragging the bottom-sheet handle upward expands the tracking card height', async ({ page, confirmationPage }) => {
-    await submitFutureRideAndGetCode(page);
-    await expect(confirmationPage.dragHandle).toBeVisible({ timeout: RIDER_TIMEOUTS.CONFIRMATION });
-
+  test('@sanity TRACK_002: Verify that dragging the bottom-sheet handle upward expands the tracking card height', async ({ confirmationPage }) => {
     const heightBefore = await confirmationPage.getTrackingCardHeight();
     await confirmationPage.dragBottomSheet(-300); // drag up — expand
     const heightAfter = await confirmationPage.getTrackingCardHeight();
@@ -84,10 +99,7 @@ test.describe(`Future Booking — Tracking Actions ${RIDER_TAGS.FUTURE} ${RIDER_
   });
 
   /** Verify that dragging the bottom sheet back down collapses it again from its expanded height. */
-  test('TRACK_003: Verify that dragging the expanded bottom sheet back down collapses the tracking card', async ({ page, confirmationPage }) => {
-    await submitFutureRideAndGetCode(page);
-    await expect(confirmationPage.dragHandle).toBeVisible({ timeout: RIDER_TIMEOUTS.CONFIRMATION });
-
+  test('TRACK_003: Verify that dragging the expanded bottom sheet back down collapses the tracking card', async ({ confirmationPage }) => {
     await confirmationPage.dragBottomSheet(-300); // expand up first
     const expandedHeight = await confirmationPage.getTrackingCardHeight();
     await confirmationPage.dragBottomSheet(300); // drag back down — collapse
@@ -97,18 +109,14 @@ test.describe(`Future Booking — Tracking Actions ${RIDER_TAGS.FUTURE} ${RIDER_
   });
 
   /** Verify that "Create New Request" and "Back to Home" are both visible after dragging the personal-details sheet. */
-  test('@sanity TRACK_004: Verify that "Create New Request" and "Back to Home" are both visible after dragging the bottom sheet', async ({ page, confirmationPage }) => {
-    await submitFutureRideAndGetCode(page);
-    await expect(confirmationPage.dragHandle).toBeVisible({ timeout: RIDER_TIMEOUTS.CONFIRMATION });
-
+  test('@sanity TRACK_004: Verify that "Create New Request" and "Back to Home" are both visible after dragging the bottom sheet', async ({ confirmationPage }) => {
     await confirmationPage.dragBottomSheet(-300);
     await expect(confirmationPage.createNewRequestLink).toBeVisible();
     await expect(confirmationPage.backToHomeButton).toBeVisible();
   });
 
   /** Verify that "Create New Request" links to the same org's request-a-ride page. */
-  test('TRACK_005: Verify that "Create New Request" links to the same organisation request-a-ride page', async ({ page, confirmationPage }) => {
-    await submitFutureRideAndGetCode(page);
+  test('TRACK_005: Verify that "Create New Request" links to the same organisation request-a-ride page', async ({ confirmationPage }) => {
     await expect(confirmationPage.createNewRequestLink).toBeVisible({ timeout: RIDER_TIMEOUTS.CONFIRMATION });
     await expect(confirmationPage.createNewRequestLink).toHaveAttribute(
       'href', new RegExp(`/a/${org.trackingId}$`, 'i')
@@ -117,7 +125,6 @@ test.describe(`Future Booking — Tracking Actions ${RIDER_TAGS.FUTURE} ${RIDER_
 
   /** Verify that clicking "Create New Request" navigates to the org's Welcome/request screen. */
   test('@sanity TRACK_006: Verify that clicking "Create New Request" opens the organisation Welcome screen', async ({ page, confirmationPage }) => {
-    await submitFutureRideAndGetCode(page);
     await expect(confirmationPage.createNewRequestLink).toBeVisible({ timeout: RIDER_TIMEOUTS.CONFIRMATION });
     await confirmationPage.clickCreateNewRequest();
     await expect(page).toHaveURL(new RegExp(`/a/${org.trackingId}$`, 'i'), { timeout: 15_000 });
@@ -125,7 +132,6 @@ test.describe(`Future Booking — Tracking Actions ${RIDER_TAGS.FUTURE} ${RIDER_
 
   /** Verify that clicking "Back to Home" navigates to the bare landing page. */
   test('@sanity TRACK_007: Verify that clicking "Back to Home" opens the bare landing page', async ({ page, confirmationPage }) => {
-    await submitFutureRideAndGetCode(page);
     await expect(confirmationPage.backToHomeButton).toBeVisible({ timeout: RIDER_TIMEOUTS.CONFIRMATION });
     await confirmationPage.clickBackToHome();
     // Live-verified: lands on the marketing site's bare root, "Here to Book
