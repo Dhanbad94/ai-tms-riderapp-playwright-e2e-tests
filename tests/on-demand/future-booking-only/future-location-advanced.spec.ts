@@ -89,7 +89,9 @@ test.describe(`Future Booking — Stop Search ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.
     expect(results.length).toBeGreaterThan(0);
     const randomResult = results[Math.floor(Math.random() * results.length)]!;
     await selectLocationPage.selectPickupStop(randomResult);
-    await expect(selectLocationPage.pickupInput).toHaveValue(randomResult);
+    // Whitespace-tolerant: the preprod/prod build populates the input with a
+    // stray leading space (see expectStopInputValue) — a strict match flakes.
+    await selectLocationPage.expectStopInputValue(selectLocationPage.pickupInput, randomResult);
   });
 
   /** Verify that a single-character search still returns results. */

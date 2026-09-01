@@ -79,20 +79,29 @@ export class SelectLocationPage {
     const id = orgId || config.orgs.asapOnly.trackingId;
     const url = `${config.urls.ride}/a/${id.toLowerCase()}/location`;
 
-    // Navigation to the shared staging org occasionally exceeds the default
-    // timeout under parallel load (the server is slow to respond, not down).
-    // Retry once on failure — loading a URL is idempotent, so this only costs
-    // time on a genuinely slow first attempt.
-    const MAX_NAV_ATTEMPTS = 2;
+    // Navigate AND confirm the screen actually rendered — the pickup input is
+    // the readiness signal. Under heavy parallel / preproduction load the SPA
+    // occasionally navigates (domcontentloaded fires) but then stalls rendering
+    // the location screen (or its stops fetch hangs), so the pickup input never
+    // becomes visible — which previously failed the shared beforeEach that
+    // every form/location test depends on (observed live: a cluster of
+    // "waiting for getByPlaceholder('Pick-up from?')" 15s timeouts under the
+    // scheduled run). Retry the whole navigate-and-render as a unit: each
+    // attempt re-issues page.goto, which reloads and re-fires the stalled
+    // render/fetch. Navigation is idempotent, so this only costs time on a
+    // genuinely slow attempt.
+    const MAX_NAV_ATTEMPTS = 3;
+    let lastError: unknown;
     for (let attempt = 0; attempt < MAX_NAV_ATTEMPTS; attempt++) {
       try {
         await this.page.goto(url, { waitUntil: 'domcontentloaded' });
-        break;
+        await this.pickupInput.waitFor({ state: 'visible', timeout: RIDER_TIMEOUTS.FORM_LOAD });
+        return;
       } catch (err) {
-        if (attempt === MAX_NAV_ATTEMPTS - 1) throw err;
+        lastError = err;
       }
     }
-    await this.pickupInput.waitFor({ state: 'visible', timeout: RIDER_TIMEOUTS.FORM_LOAD });
+    throw lastError;
   }
 
   async getHeaderText(): Promise<string> {
@@ -497,19 +506,6 @@ export class SelectLocationPage {
       }
       await marker.waitFor({ state: 'visible', timeout: RIDER_TIMEOUTS.STOP_LIST });
     }
-    const MAX_ATTEMPTS = 3;
-    let lastError: unknown;
-    let clicked = false;
-    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-      try {
-        await marker.click({ force: true, timeout: RIDER_TIMEOUTS.STOP_LIST });
-        clicked = true;
-        break;
-      } catch (err) {
-        lastError = err;
-      }
-    }
-    if (!clicked) throw lastError;
     // Find the button by walking UP from the specific heading to its nearest
     // ancestor div that also contains a button, rather than filtering `div`
     // elements broadly by "has this heading somewhere AND has a button
@@ -520,8 +516,30 @@ export class SelectLocationPage {
     // stops — "Door 4", "Door 2" — consistent with matching the wrong,
     // button-less-for-this-stop ancestor).
     const heading = this.page.getByRole('heading', { name: stopName, exact: true, level: 3 }).first();
-    const card = heading.locator('xpath=ancestor::div[.//button][1]');
-    await card.getByRole('button', { name: /^set as (pickup|drop-off)$/ }).click({ force: true, timeout: buttonTimeout });
+    const cardButton = heading.locator('xpath=ancestor::div[.//button][1]')
+      .getByRole('button', { name: /^set as (pickup|drop-off)$/ });
+    // Commit via the carousel as a UNIT with retry. Clicking the marker opens
+    // the swipeable carousel, but it does not always settle on THIS stop's card
+    // (or the card's button isn't actionable yet) on the first try — the button
+    // click then times out (live-confirmed flake on staging: "Terminal 5E" card
+    // button 10s timeout in MAPPIN_003). Re-clicking the marker re-opens/re
+    // -centres the carousel, so retry marker→button TOGETHER (the old code
+    // retried only the marker, then clicked the button once). Locators are
+    // re-resolved each action, absorbing the carousel's re-render; fail fast on
+    // early attempts so the 120s test budget covers the full-timeout last try.
+    const MAX_ATTEMPTS = 3;
+    let lastError: unknown;
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+      const isLast = attempt === MAX_ATTEMPTS - 1;
+      try {
+        await marker.click({ force: true, timeout: RIDER_TIMEOUTS.STOP_LIST });
+        await cardButton.click({ force: true, timeout: isLast ? buttonTimeout : 4_000 });
+        return;
+      } catch (err) {
+        lastError = err;
+      }
+    }
+    throw lastError;
   }
 
   /** Open the "Map Theme" dialog via the (unlabeled, position-based) theme icon button. */

@@ -103,7 +103,9 @@ test.describe(`Future Booking — Time Picker ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.
     const labels = await dateTimePicker.getGridSlotLabels();
     const label = labels[0]!;
     await dateTimePicker.selectGridSlot(label);
-    expect(await dateTimePicker.isGridSlotSelected(label)).toBe(true);
+    // Web-first: the "Selected" class is applied a beat after the click; poll
+    // rather than read once.
+    await expect.poll(() => dateTimePicker.isGridSlotSelected(label)).toBe(true);
     await dateTimePicker.clickSetPickupTime();
     await expect(dateTimePicker.timeModalHeading).not.toBeVisible({ timeout: 5_000 });
     await expect(dateTimePicker.timeInput).toHaveValue(label);

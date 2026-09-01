@@ -33,23 +33,33 @@ test.describe(`ASAP Only — API Payload Verification ${RIDER_TAGS.ASAP} ${RIDER
     await gf.waitForFormVisible();
     await gf.fillRequiredFields();
 
-    return { gf, getPayload: () => capturedPayload, getUrl: () => capturedUrl };
+    // Deterministic sync point after submit: the POST route handler sets
+    // capturedPayload AND capturedUrl together, so poll for the payload instead
+    // of waitForLoadState('networkidle'). The rider app runs a live map +
+    // Socket.IO, so the network never truly idles — 'networkidle' either hangs
+    // (its .catch swallowed the timeout and proceeded) or, on a quiet/fast env,
+    // resolved BEFORE the mocked POST fired, leaving capturedPayload null and
+    // the getPayload()! non-null assertion throwing. Behaviour flipped per env
+    // speed/load — the classic flaky-proxy. Polling the real capture is stable.
+    const waitForCapture = async () =>
+      expect.poll(() => capturedPayload, { timeout: 15_000 }).not.toBeNull();
+    return { gf, getPayload: () => capturedPayload, getUrl: () => capturedUrl, waitForCapture };
   }
 
   test('@smoke @sanity ASAP_027: Verify that the on-demand booking request contains no scheduled-booking object', async ({ page }) => {
-    const { gf, getPayload } = await setupFormAndCapture(page);
+    const { gf, getPayload, waitForCapture } = await setupFormAndCapture(page);
     await gf.requestRideButton.scrollIntoViewIfNeeded();
     await gf.submitForm();
-    await page.waitForLoadState("networkidle").catch(() => {});
+    await waitForCapture();
     expect(getPayload()).not.toBeNull();
     expect(getPayload()).not.toHaveProperty('booking');
   });
 
   test('ASAP_028: Verify that the booking request omits the luggage and rider-type fields', async ({ page }) => {
-    const { gf, getPayload } = await setupFormAndCapture(page);
+    const { gf, getPayload, waitForCapture } = await setupFormAndCapture(page);
     await gf.requestRideButton.scrollIntoViewIfNeeded();
     await gf.submitForm();
-    await page.waitForLoadState("networkidle").catch(() => {});
+    await waitForCapture();
     const payload = getPayload()!;
     const riders = payload.riders as Record<string, unknown>;
     // Flight/room are now part of ASAP (see ASAP_047); luggage & rider type are not.
@@ -58,13 +68,19 @@ test.describe(`ASAP Only — API Payload Verification ${RIDER_TAGS.ASAP} ${RIDER
   });
 
   test('ASAP_047: Verify that the booking request includes the flight and room numbers when the rider enters them', async ({ page }) => {
-    test.skip(config.name === 'staging', 'Skipped on staging for now — runs on preproduction/production');
-    const { gf, getPayload } = await setupFormAndCapture(page);
+    const { gf, getPayload, waitForCapture } = await setupFormAndCapture(page);
+    // Flight/Room are ORG-CONFIGURABLE fields — only run where the org actually
+    // renders them. The old `config.name === 'staging'` guard was brittle: it
+    // assumed every non-staging env has these fields, but ODASAP on
+    // preproduction does not (live-confirmed: flightInput.scrollIntoViewIfNeeded
+    // timed out). Feature-detect instead, mirroring FB_015's guard.
+    test.skip(!(await gf.flightInput.isVisible({ timeout: 3_000 }).catch(() => false)),
+      'Org does not render the Flight Number field in this environment');
     await gf.fillFlight('ua1234');
     await gf.fillRoom('room707');
     await gf.requestRideButton.scrollIntoViewIfNeeded();
     await gf.submitForm();
-    await page.waitForLoadState("networkidle").catch(() => {});
+    await waitForCapture();
     const riders = getPayload()!.riders as Record<string, unknown>;
     // Values are sent as entered — the uppercase styling is display-only (CSS).
     expect(riders.flight_no).toBe('ua1234');
@@ -72,20 +88,20 @@ test.describe(`ASAP Only — API Payload Verification ${RIDER_TAGS.ASAP} ${RIDER
   });
 
   test('ASAP_048: Verify that the booking request sends empty flight and room numbers when the rider leaves them blank', async ({ page }) => {
-    const { gf, getPayload } = await setupFormAndCapture(page);
+    const { gf, getPayload, waitForCapture } = await setupFormAndCapture(page);
     await gf.requestRideButton.scrollIntoViewIfNeeded();
     await gf.submitForm();
-    await page.waitForLoadState("networkidle").catch(() => {});
+    await waitForCapture();
     const riders = getPayload()!.riders as Record<string, unknown>;
     expect(riders.flight_no).toBeNull();
     expect(riders.room_no).toBeNull();
   });
 
   test('ASAP_029: Verify that the booking request carries the real selected pickup and dropoff stops with valid IDs', async ({ page }) => {
-    const { gf, getPayload } = await setupFormAndCapture(page);
+    const { gf, getPayload, waitForCapture } = await setupFormAndCapture(page);
     await gf.requestRideButton.scrollIntoViewIfNeeded();
     await gf.submitForm();
-    await page.waitForLoadState("networkidle").catch(() => {});
+    await waitForCapture();
     const payload = getPayload()!;
     const pickup = payload.pickup_stop as Record<string, unknown>;
     const dropoff = payload.dropoff_stop as Record<string, unknown>;
@@ -96,29 +112,29 @@ test.describe(`ASAP Only — API Payload Verification ${RIDER_TAGS.ASAP} ${RIDER
   });
 
   test('@smoke ASAP_030: Verify that the booking request is sent to the current rider API endpoint and not the legacy one', async ({ page }) => {
-    const { gf, getUrl } = await setupFormAndCapture(page);
+    const { gf, getUrl, waitForCapture } = await setupFormAndCapture(page);
     await gf.requestRideButton.scrollIntoViewIfNeeded();
     await gf.submitForm();
-    await page.waitForLoadState("networkidle").catch(() => {});
+    await waitForCapture();
     expect(getUrl()).toContain('/rider/api/v1');
     expect(getUrl()).not.toContain('/rider/web/basic/v1');
   });
 
   test('ASAP_031: Verify that submitting the booking calls the plain request endpoint with no ride-type suffix', async ({ page }) => {
-    const { gf, getUrl } = await setupFormAndCapture(page);
+    const { gf, getUrl, waitForCapture } = await setupFormAndCapture(page);
     await gf.requestRideButton.scrollIntoViewIfNeeded();
     await gf.submitForm();
-    await page.waitForLoadState("networkidle").catch(() => {});
+    await waitForCapture();
     expect(getUrl()).toMatch(/\/request$/);
   });
 
   test('ASAP_044: Verify that the booking request includes the special-assistance flag and the rider note as entered', async ({ page }) => {
-    const { gf, getPayload } = await setupFormAndCapture(page);
+    const { gf, getPayload, waitForCapture } = await setupFormAndCapture(page);
     await gf.toggleSpecialAssistance();
     await gf.fillNotes('VIP guest');
     await gf.requestRideButton.scrollIntoViewIfNeeded();
     await gf.submitForm();
-    await page.waitForLoadState("networkidle").catch(() => {});
+    await waitForCapture();
     const payload = getPayload()!;
     const riders = payload.riders as Record<string, unknown>;
     expect(riders?.ada).toBe(true);
@@ -126,10 +142,10 @@ test.describe(`ASAP Only — API Payload Verification ${RIDER_TAGS.ASAP} ${RIDER
   });
 
   test('Verify that the booking request includes latitude and longitude for both pickup and dropoff', async ({ page }) => {
-    const { gf, getPayload } = await setupFormAndCapture(page);
+    const { gf, getPayload, waitForCapture } = await setupFormAndCapture(page);
     await gf.requestRideButton.scrollIntoViewIfNeeded();
     await gf.submitForm();
-    await page.waitForLoadState("networkidle").catch(() => {});
+    await waitForCapture();
     const payload = getPayload()!;
     const pickup = payload.pickup_stop as Record<string, unknown>;
     const dropoff = payload.dropoff_stop as Record<string, unknown>;

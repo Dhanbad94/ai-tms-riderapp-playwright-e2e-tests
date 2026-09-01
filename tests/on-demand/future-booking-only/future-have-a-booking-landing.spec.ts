@@ -100,15 +100,20 @@ test.describe(`Have a Booking — Landing Page (Phone) ${RIDER_TAGS.UI_ONLY} ${R
       await expect(page.getByRole('textbox', { name: 'Enter Tracking Code' })).toBeVisible();
     });
 
-    /** Verify that submitting a registered phone number triggers a real OTP send and navigates to /otp. */
+    /** Verify that submitting a registered phone number that has an active booking sends a real OTP and navigates to /otp. */
     test('@sanity HB_007: Verify that a registered phone number sends a one-time passcode and opens the OTP page', async ({ signInPage, page }) => {
-      // Preproduction and production SHARE the same database, so this fires a
-      // real OTP to the same registered test number on both — the preprod run
-      // (06:30) and the prod run (07:00) hit the OTP gateway's rate limit,
-      // failing the second (prod) send. Run it on staging + preproduction only;
-      // sending a real OTP SMS from production monitoring is an unwanted side
-      // effect regardless. (Preproduction still gives full daily coverage.)
-      test.skip(getRiderConfig().name === 'production', 'Sends a real OTP SMS; skipped on production to avoid the shared-DB duplicate send / rate-limit (covered on preproduction).');
+      // PRECONDITION: this exercises the "booking found → OTP" path, which needs
+      // the test number to actually HAVE an active booking. That only holds on
+      // staging, where this suite creates rides with this number. On
+      // preproduction/production ride creation is disabled (canCreateRides:
+      // false), so the number has no active booking — live-confirmed: POST
+      // /find-my-bookings returns code 204 "No booking found" and the app shows
+      // "No active booking found" instead of sending an OTP, so /otp is never
+      // reached. That is an un-satisfiable data precondition on those envs, not
+      // a product defect (staging live-confirmed: find-my-bookings → 200 → /otp).
+      // The no-booking path is already covered by NEG_HB_002 (unregistered
+      // number), so run this booking-found case on staging only.
+      test.skip(getRiderConfig().name !== 'staging', 'Needs an active booking for the test number, which only exists on staging (ride creation is disabled on preproduction/production, so find-my-bookings returns 204).');
       const org = rc.orgs.futureBookingOnly;
       await signInPage.fillPhone(org.phone.number);
       await expect(signInPage.nextButton).toBeEnabled();

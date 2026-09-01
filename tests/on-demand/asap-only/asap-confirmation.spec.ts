@@ -64,7 +64,7 @@ test.describe(`ASAP Only — Confirmation Page ${RIDER_TAGS.ASAP} ${RIDER_TAGS.C
   test('ASAP_035: Verify that the confirmation screen displays status heading text', async ({ page }) => {
     await submitRideAndGetCode(page);
     const headings = page.getByRole('heading');
-    expect(await headings.count()).toBeGreaterThan(0);
+    await expect(headings.first()).toBeVisible({ timeout: RIDER_TIMEOUTS.CONFIRMATION });
   });
 
   test('Verify that the "View All Bookings" link is not shown on the ASAP confirmation screen', async ({ page }) => {
@@ -117,7 +117,7 @@ test.describe(`ASAP Only — Confirmation Page ${RIDER_TAGS.ASAP} ${RIDER_TAGS.C
   test('Verify that the confirmation screen shows a progress animation or status card', async ({ page }) => {
     await submitRideAndGetCode(page);
     const el = page.locator('[class*="progressAnimation"], [class*="ProgressAnimation"], h2, h3');
-    expect(await el.count()).toBeGreaterThan(0);
+    await expect(el.first()).toBeVisible({ timeout: RIDER_TIMEOUTS.CONFIRMATION });
   });
 
   // ASAP_049: After submitting, the tracking screen shows a rider-details card
