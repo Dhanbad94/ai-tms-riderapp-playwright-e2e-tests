@@ -16,8 +16,15 @@ import { CancellationDialog } from '../../../pages/rider/CancellationDialog';
 const org = getOrgConfig('futureBookingOnly');
 const { stops } = org;
 
-/** Submit a Future Booking ride → cancel it → click "Provide Feedback" → feedback modal open */
-async function submitCancelAndOpenFeedback(page: import('@playwright/test').Page): Promise<void> {
+// RIDE-VOLUME REDUCTION: submitting feedback is a ONE-SHOT per ride (once given,
+// the ride's screen permanently shows the thank-you state — live-verified). So
+// the modal-UI tests that only VIEW/interact and never submit all reuse ONE
+// shared cancelled ride, while the tests that actually submit each keep their
+// own fresh ride. This cuts the suite from 20 real rides per run down to ~10.
+let sharedFeedbackUrl = '';
+
+/** Submit a Future Booking ride → cancel it → return its (cancelled) tracking URL. */
+async function submitAndCancelRide(page: import('@playwright/test').Page): Promise<string> {
   const lp = new SelectLocationPage(page);
   const dt = new DateTimePicker(page);
   const gf = new FutureGuestFormSection(page);
@@ -30,6 +37,7 @@ async function submitCancelAndOpenFeedback(page: import('@playwright/test').Page
   await gf.waitForFormVisible();
   await gf.fillRequiredFields();
   await gf.submitAndAwaitTracking();
+  const trackingUrl = page.url();
 
   // The tracking page renders "Cancel Ride" a beat after navigation (once the
   // ride-details load); wait for it explicitly instead of relying on the 10s
@@ -44,12 +52,41 @@ async function submitCancelAndOpenFeedback(page: import('@playwright/test').Page
   }
   await cd.submitCancel();
   await page.getByText('Ride Canceled Successfully!').waitFor({ state: 'visible', timeout: 15_000 });
+  return trackingUrl;
+}
 
+/** Click "Provide Feedback" on a cancelled-ride screen and wait for the modal. */
+async function openFeedbackModal(page: import('@playwright/test').Page): Promise<void> {
   await page.getByText('Provide Feedback', { exact: true }).click();
   await page.getByText('How Was Your Experience?').waitFor({ state: 'visible', timeout: 15_000 });
 }
 
+/** Create a FRESH cancelled ride and open its feedback modal — for the tests
+ *  that submit feedback (a one-shot that consumes the ride). */
+async function submitCancelAndOpenFeedback(page: import('@playwright/test').Page): Promise<void> {
+  await submitAndCancelRide(page);
+  await openFeedbackModal(page);
+}
+
+/** Reuse the suite's single shared cancelled ride — for modal-UI tests that
+ *  only view/interact and never submit. Re-opens the modal fresh each time. */
+async function openFeedbackOnSharedRide(page: import('@playwright/test').Page): Promise<void> {
+  await page.goto(sharedFeedbackUrl, { waitUntil: 'domcontentloaded' });
+  await openFeedbackModal(page);
+}
+
 test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.CREATES_RIDE} ${RIDER_TAGS.REGRESSION}`, () => {
+  test.beforeAll(async ({ browser }) => {
+    // Create the single shared cancelled ride the view/interact tests reuse.
+    if (!isOrgEnabled('futureBookingOnly') || !canCreateRides()) return;
+    const page = await browser.newPage();
+    try {
+      sharedFeedbackUrl = await submitAndCancelRide(page);
+    } finally {
+      await page.close();
+    }
+  });
+
   test.beforeEach(async () => {
     test.skip(!isOrgEnabled('futureBookingOnly'), 'Future Booking org not configured for this environment — set trackingId/stops in rider-config.ts');
     test.skip(!canCreateRides(), 'Ride creation disabled on this environment');
@@ -63,19 +100,19 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
 
   /** Verify that the feedback modal opens with the "How Was Your Experience?" heading after a cancellation. */
   test('@smoke FFB_001: Verify that the feedback modal opens with the How Was Your Experience heading after a cancellation', async ({ page }) => {
-    await submitCancelAndOpenFeedback(page);
+    await openFeedbackOnSharedRide(page);
     await expect(page.getByText('How Was Your Experience?')).toBeVisible();
   });
 
   /** Verify that the feedback modal's subheading is visible. */
   test('FFB_002: Verify that the feedback modal subheading is displayed', async ({ page }) => {
-    await submitCancelAndOpenFeedback(page);
+    await openFeedbackOnSharedRide(page);
     await expect(page.getByText('Your feedback helps us improve for you!')).toBeVisible();
   });
 
   /** Verify that all 3 emoji rating buttons (Sad, Neutral, Happy) are visible. */
   test('FFB_003: Verify that all three emoji rating buttons (Sad, Neutral, Happy) are displayed', async ({ page, feedbackModal }) => {
-    await submitCancelAndOpenFeedback(page);
+    await openFeedbackOnSharedRide(page);
     await feedbackModal.waitForFeedbackVisible();
     await expect(feedbackModal.sadButton).toBeVisible();
     await expect(feedbackModal.neutralButton).toBeVisible();
@@ -84,7 +121,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
 
   /** Verify that the feedback textarea is visible with the "Type your feedback" placeholder. */
   test('FFB_004: Verify that the feedback text box is displayed with the Type your feedback placeholder', async ({ page, feedbackModal }) => {
-    await submitCancelAndOpenFeedback(page);
+    await openFeedbackOnSharedRide(page);
     await feedbackModal.waitForFeedbackVisible();
     await expect(feedbackModal.feedbackTextarea).toBeVisible();
     const placeholder = await feedbackModal.getTextareaPlaceholder();
@@ -93,7 +130,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
 
   /** Verify that "Share Feedback" is visible but disabled until a rating is selected. */
   test('FFB_005: Verify that the Share Feedback button is displayed but disabled until a rating is selected', async ({ page, feedbackModal }) => {
-    await submitCancelAndOpenFeedback(page);
+    await openFeedbackOnSharedRide(page);
     await feedbackModal.waitForFeedbackVisible();
     await expect(feedbackModal.shareFeedbackButton).toBeVisible();
     expect(await feedbackModal.isSubmitDisabled()).toBe(true);
@@ -103,7 +140,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
 
   /** Verify that selecting the Sad rating enables "Share Feedback". */
   test('FFB_006: Verify that selecting the Sad rating enables the Share Feedback button', async ({ page, feedbackModal }) => {
-    await submitCancelAndOpenFeedback(page);
+    await openFeedbackOnSharedRide(page);
     await feedbackModal.waitForFeedbackVisible();
     await feedbackModal.selectSad();
     expect(await feedbackModal.isSubmitDisabled()).toBe(false);
@@ -120,7 +157,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
 
   /** Verify that selecting the Neutral rating enables "Share Feedback". */
   test('FFB_008: Verify that selecting the Neutral rating enables the Share Feedback button', async ({ page, feedbackModal }) => {
-    await submitCancelAndOpenFeedback(page);
+    await openFeedbackOnSharedRide(page);
     await feedbackModal.waitForFeedbackVisible();
     await feedbackModal.selectNeutral();
     expect(await feedbackModal.isSubmitDisabled()).toBe(false);
@@ -137,7 +174,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
 
   /** Verify that selecting the Happy rating enables "Share Feedback". */
   test('FFB_010: Verify that selecting the Happy rating enables the Share Feedback button', async ({ page, feedbackModal }) => {
-    await submitCancelAndOpenFeedback(page);
+    await openFeedbackOnSharedRide(page);
     await feedbackModal.waitForFeedbackVisible();
     await feedbackModal.selectHappy();
     expect(await feedbackModal.isSubmitDisabled()).toBe(false);
@@ -163,7 +200,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
 
   /** Verify that selecting any rating enables the submit button. */
   test('FFB_013: Verify that selecting any rating enables the submit button', async ({ page, feedbackModal }) => {
-    await submitCancelAndOpenFeedback(page);
+    await openFeedbackOnSharedRide(page);
     await feedbackModal.waitForFeedbackVisible();
     expect(await feedbackModal.isSubmitDisabled()).toBe(true);
     await feedbackModal.selectNeutral();
@@ -172,7 +209,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
 
   /** Verify that the feedback textarea sanitizes script/URL-like input. */
   test('FFB_014: Verify that the feedback text box removes script or URL-like input', async ({ page, feedbackModal }) => {
-    await submitCancelAndOpenFeedback(page);
+    await openFeedbackOnSharedRide(page);
     await feedbackModal.waitForFeedbackVisible();
     await feedbackModal.selectSad();
     await feedbackModal.fillFeedback('javascript:void(0)');
@@ -182,7 +219,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
 
   /** Verify that typed feedback text is retained when the selected rating is changed. */
   test('FFB_015: Verify that typed feedback text is kept when the selected rating is changed', async ({ page, feedbackModal }) => {
-    await submitCancelAndOpenFeedback(page);
+    await openFeedbackOnSharedRide(page);
     await feedbackModal.waitForFeedbackVisible();
     await feedbackModal.selectSad();
     await feedbackModal.fillFeedback('My detailed feedback');

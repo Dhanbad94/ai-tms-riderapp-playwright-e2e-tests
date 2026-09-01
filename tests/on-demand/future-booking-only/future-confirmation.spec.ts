@@ -35,7 +35,25 @@ async function submitFutureRideAndGetCode(page: import('@playwright/test').Page)
   return match[1];
 }
 
+// RIDE-VOLUME REDUCTION: the pure-view tests (status text, live map, action
+// buttons) only read an active ride's tracking screen, so they reuse ONE shared
+// ride instead of each creating their own. FB_028 needs its own ride (it checks
+// the specific rider details it entered) and the JS-error test must observe a
+// live submission, so those two keep creating their own.
+let sharedTrackingUrl = '';
+
 test.describe(`Future Booking — Confirmation Page ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.CREATES_RIDE} ${RIDER_TAGS.REGRESSION}`, () => {
+  test.beforeAll(async ({ browser }) => {
+    if (!isOrgEnabled('futureBookingOnly') || !canCreateRides()) return;
+    const page = await browser.newPage();
+    try {
+      const code = await submitFutureRideAndGetCode(page);
+      sharedTrackingUrl = `${rc.urls.ride}/j/${code}/s`;
+    } finally {
+      await page.close();
+    }
+  });
+
   test.beforeEach(async () => {
     test.skip(!isOrgEnabled('futureBookingOnly'), 'Future Booking org not configured for this environment — set trackingId/stops in rider-config.ts');
     test.skip(!canCreateRides(), 'Ride creation disabled on this environment');
@@ -48,7 +66,7 @@ test.describe(`Future Booking — Confirmation Page ${RIDER_TAGS.FUTURE} ${RIDER
 
   /** Verify that the booking status text (e.g. "Scheduled for {date, time}") is displayed after successfully submitting a Future Booking ride. */
   test('@sanity FB_025: Verify that the booking status text is shown after submitting a future booking', async ({ page }) => {
-    await submitFutureRideAndGetCode(page);
+    await page.goto(sharedTrackingUrl, { waitUntil: 'domcontentloaded' });
     // Live-verified on staging/ODFB: the future-booking status heading reads
     // "Scheduled for {Month Day, h:mm AM/PM TZ}" — distinct from ASAP's
     // "Request Submitted"/"Finding Driver" copy, since the ride isn't being
@@ -60,7 +78,7 @@ test.describe(`Future Booking — Confirmation Page ${RIDER_TAGS.FUTURE} ${RIDER
 
   /** Verify that the live map is displayed on the tracking/confirmation screen. */
   test('FB_026: Verify that the live map is shown on the tracking screen', async ({ page }) => {
-    await submitFutureRideAndGetCode(page);
+    await page.goto(sharedTrackingUrl, { waitUntil: 'domcontentloaded' });
     // The Future Booking tracking screen renders a MapTiler/OpenStreetMap
     // embed (attribution links confirmed live), not Google Maps — so ASAP's
     // `.gm-style` class (see ConfirmationPage.mapContainer) doesn't apply
@@ -72,7 +90,7 @@ test.describe(`Future Booking — Confirmation Page ${RIDER_TAGS.FUTURE} ${RIDER
 
   /** Verify that either the "Call Operator" or "Cancel Ride" action is visible after booking. */
   test('FB_027: Verify that a Call Operator or Cancel Ride action is shown after booking', async ({ page }) => {
-    await submitFutureRideAndGetCode(page);
+    await page.goto(sharedTrackingUrl, { waitUntil: 'domcontentloaded' });
     const callOp = await page.getByText(/Call Operator/i).isVisible().catch(() => false);
     const cancel = await page.getByText(/Cancel Ride/i).isVisible().catch(() => false);
     expect(callOp || cancel).toBe(true);
