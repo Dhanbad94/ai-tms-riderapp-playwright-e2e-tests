@@ -182,20 +182,29 @@ export class DateTimePicker {
     return await this.dayCellLocator(day).isDisabled();
   }
 
-  /** Day-of-month numbers for every currently selectable (org-available) date. */
+  /**
+   * Day-of-month numbers for every currently selectable (org-available) date.
+   * Blank filler cells (the empty spacers MUI renders before the 1st of the
+   * month) are `.MuiPickersDay-root` without `.Mui-disabled` but have empty
+   * text — filter them out so callers never receive a "" day number.
+   */
   async getEnabledDayNumbers(): Promise<string[]> {
     const cells = this.page.locator('.MuiPickersDay-root:not(.Mui-disabled)');
-    return await cells.allTextContents();
+    return (await cells.allTextContents()).map(t => t.trim()).filter(Boolean);
   }
 
   /**
-   * Same as getEnabledDayNumbers(), but polls briefly first — MUI applies
-   * the Mui-disabled class to each cell a beat after the popper/cells
-   * themselves become visible, so reading immediately after openDatePicker()
-   * can transiently see zero enabled days even though the calendar does have
-   * available dates. Throws if none are enabled once the poll window elapses.
+   * Same as getEnabledDayNumbers(), but waits for the calendar to settle first.
+   * MUI mounts the day cells before the org's /dates availability is applied
+   * (shouldDisableDate): during that gap every real cell transiently looks
+   * enabled and blank filler cells report "". The app auto-selects an available
+   * date only once availability has been applied, so waiting for the selected
+   * cell is a reliable "calendar settled" signal before trusting the enabled
+   * set. Throws if none are enabled once the poll window elapses.
    */
-  private async waitForEnabledDayNumbers(): Promise<string[]> {
+  async waitForEnabledDayNumbers(): Promise<string[]> {
+    await this.page.locator('.MuiPickersDay-root.Mui-selected').first()
+      .waitFor({ state: 'visible', timeout: RIDER_TIMEOUTS.DATE_PICKER }).catch(() => {});
     await expect.poll(() => this.getEnabledDayNumbers(), { timeout: RIDER_TIMEOUTS.DATE_PICKER })
       .not.toHaveLength(0);
     return await this.getEnabledDayNumbers();
@@ -338,7 +347,18 @@ export class DateTimePicker {
    * date can be sold out — not just today.
    */
   async ensureBookableSlot(maxAttempts = 5) {
-    if (!(await this.isTimeInputDisabled())) return;
+    // RACE GUARD: the time input mounts disabled and only enables once the
+    // auto-selected date's /slots response lands. Checking isTimeInputDisabled()
+    // synchronously (as this used to) can read the still-loading input as sold
+    // out — or, worse, as bookable before slots arrive. Wait for it to settle
+    // into the enabled state first; only fall through to date-hopping when it
+    // stays disabled for the whole slots-load window (genuinely sold out).
+    try {
+      await expect(this.timeInput).toBeEnabled({ timeout: RIDER_TIMEOUTS.SLOTS_LOAD });
+      return;
+    } catch {
+      // Auto-selected date has no bookable slots — hop to another date below.
+    }
 
     await this.openDatePicker();
     const enabledDays = await this.waitForEnabledDayNumbers();
@@ -369,6 +389,19 @@ export class DateTimePicker {
     await this.ensureBookableSlot();
     await this.openTimeModal();
     await this.clickSetPickupTime();
+    // RACE GUARD: the modal's default pickerValue is seeded asynchronously from
+    // the /slots response; if the modal is confirmed before that lands (or the
+    // seeded first slot has just crossed the minimum lead-time), no time
+    // commits, the Pick-up Time field stays empty and the "Next" CTA never
+    // enables — leaving the guest form unreachable. Confirm a time actually
+    // took; if not, explicitly pick a valid grid slot (which self-verifies and
+    // retries across chips) on the already-bookable date.
+    if ((await this.timeInput.inputValue().catch(() => '')) === '') {
+      if (await this.timeModalHeading.isVisible({ timeout: 1_000 }).catch(() => false)) {
+        await this.closeTimeModal();
+      }
+      await this.pickRandomSlotViaGridView();
+    }
   }
 
   /**

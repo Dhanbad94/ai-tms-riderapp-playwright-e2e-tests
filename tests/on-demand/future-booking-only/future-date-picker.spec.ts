@@ -59,10 +59,15 @@ test.describe(`Future Booking — Date Picker ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.
     // fire onChange for reselecting the same underlying date), so identify
     // the currently-selected cell directly via MUI's own Mui-selected class.
     await dateTimePicker.openDatePicker();
-    const enabledDays = await dateTimePicker.getEnabledDayNumbers();
-    const currentDay = await dateTimePicker.page.locator('.MuiPickersDay-root.Mui-selected').first().textContent();
-    const otherDay = enabledDays.find(d => d !== currentDay) ?? enabledDays[0];
-    expect(otherDay, 'need at least one available date to switch to').toBeTruthy();
+    // Wait for the calendar to settle (availability applied, blank filler cells
+    // excluded) before reading — a bare read here used to catch an empty ""
+    // filler cell and fail the switch. See DateTimePicker.waitForEnabledDayNumbers.
+    const enabledDays = await dateTimePicker.waitForEnabledDayNumbers();
+    const currentDay = (await dateTimePicker.page.locator('.MuiPickersDay-root.Mui-selected').first().textContent())?.trim() ?? '';
+    const otherDay = enabledDays.find(d => d !== currentDay);
+    // When the org genuinely has only one available date there is nothing to
+    // switch to — skip rather than report a false failure.
+    test.skip(!otherDay, 'Org has only one available date today — cannot verify switching to a different date');
     await dateTimePicker.selectDateByDay(otherDay!);
 
     await expect(dateTimePicker.timeInput).toHaveValue('');

@@ -74,8 +74,13 @@ test.describe(`ASAP Only — Confirmation Page ${RIDER_TAGS.ASAP} ${RIDER_TAGS.C
 
   test('Verify that the map is displayed on the confirmation screen', async ({ page }) => {
     await submitRideAndGetCode(page);
-    const mapEl = page.locator('.gm-style');
-    expect(await mapEl.count()).toBeGreaterThan(0);
+    // The map provider differs by environment — MapTiler/MapLibre GL on staging
+    // (`.maplibregl-map`) but Google Maps on preprod/prod (`.gm-style`) — and it
+    // mounts a beat after the tracking screen loads. Match either provider (and
+    // the accessible Map region) and wait for it, rather than a bare, provider
+    // -specific count() read that raced the map render.
+    const mapEl = page.locator('.maplibregl-map, .gm-style, [role="region"][aria-label="Map" i]').first();
+    await expect(mapEl).toBeVisible({ timeout: RIDER_TIMEOUTS.CONFIRMATION });
   });
 
   test('Verify that the confirmation screen shows a Call Operator or Cancel Ride option', async ({ page }) => {
