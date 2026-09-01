@@ -43,7 +43,10 @@ export class ConfirmationPage {
     this.progressAnimation = page.locator('[class*="progressAnimation"], [class*="ProgressAnimation"]');
     this.trackingCard = page.locator('[class*="trackingCard"]');
     this.viewAllBookingsBtn = page.getByRole('button', { name: /View All Bookings/i });
-    this.mapContainer = page.locator('.gm-style').first();
+    // Provider-agnostic: MapTiler/MapLibre on staging (`.maplibregl-map`),
+    // Google Maps on preprod/prod (`.gm-style`); both expose the accessible
+    // Map region. Matching all three keeps this stable across the migration.
+    this.mapContainer = page.locator('.maplibregl-map, .gm-style, [role="region"][aria-label="Map" i]').first();
     // Rider-details card at the bottom of the tracking screen (name/guests, phone,
     // room, flight). CSS-module class is hash-suffixed, so match the stable part.
     this.riderDetailsCard = page.locator('[class*="riderItems"]').first();

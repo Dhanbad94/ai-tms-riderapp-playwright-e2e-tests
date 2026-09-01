@@ -196,6 +196,13 @@ export class SelectLocationPage {
       await this.page.locator('.MuiBackdrop-root').first()
         .waitFor({ state: 'detached', timeout: 5_000 }).catch(() => {});
     }
+    // RACE GUARD: on the future-booking flow the CTA ("Next") enables a beat
+    // after the pick-up time commits; clicking it while still disabled is a
+    // silent no-op that leaves the guest form unreached (intermittent
+    // "Enter Ride Details not visible"). Wait for it to be actionable first.
+    // Guarded so flows whose CTA is always enabled ("Confirm Location") are
+    // unaffected.
+    await expect(this.confirmButton).toBeEnabled({ timeout: RIDER_TIMEOUTS.FORM_LOAD }).catch(() => {});
     try {
       await this.confirmButton.click();
     } catch {
@@ -267,7 +274,14 @@ export class SelectLocationPage {
    * candidate" shape as DateTimePicker.ensureBookableSlot()/
    * pickRandomSlotViaGridView() use for their own real, live-observed races.
    */
-  private async selectStopViaMapMarkerFromCandidates(candidates: string[], maxAttempts = 5): Promise<string> {
+  private async selectStopViaMapMarkerFromCandidates(candidates: string[], maxAttempts = 8): Promise<string> {
+    // Try more candidates than before (was 5): a subset of this org's stops
+    // cluster at identical O'Hare coordinates ("Door 2/3/4 - Bus/Shuttle Ctr",
+    // "Duplicate Stop") and their overlapping markers don't reliably land the
+    // carousel on the right card. When the shuffle drew mostly those, all five
+    // attempts could fail even though the non-clustered stops select fine.
+    // The 120s per-test budget easily covers trying the rest fail-fast until a
+    // selectable marker is found.
     const shuffled = [...candidates].sort(() => Math.random() - 0.5).slice(0, maxAttempts);
     let lastError: unknown;
     for (let i = 0; i < shuffled.length; i++) {
