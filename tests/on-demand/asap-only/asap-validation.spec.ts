@@ -151,7 +151,7 @@ test.describe(`ASAP Only — Form Negatives ${RIDER_TAGS.ASAP} ${RIDER_TAGS.SAFE
     await guestFormSection.fillName('Only Name');
     await guestFormSection.requestRideButton.scrollIntoViewIfNeeded();
     await guestFormSection.submitForm();
-    expect(await guestFormSection.hasPhoneError()).toBe(true);
+    await expect(guestFormSection.phoneInput).toHaveClass(/borderError/);
   });
 
   test('@negative NEG_FORM_004: Verify that a name containing only spaces is rejected and no ride is created', async ({ guestFormSection, page }) => {

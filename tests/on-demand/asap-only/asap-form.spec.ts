@@ -23,7 +23,8 @@ test.describe(`ASAP Only — Form Fields & Behavior ${RIDER_TAGS.ASAP} ${RIDER_T
   });
 
   test('ASAP_012: Verify that the accessibility option is labelled "Special Assistance"', async ({ page }) => {
-    await expect(page.getByText('Special Assitance')).toBeVisible();
+    // Tolerate the app's current typo ("Assitance") and a future spelling fix.
+    await expect(page.getByText(/Special Assis?tance/i).first()).toBeVisible();
   });
 
   test('ASAP_013: Verify that the notes field is visible on the ride details form', async ({ guestFormSection }) => {

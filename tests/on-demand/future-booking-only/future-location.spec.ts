@@ -1,6 +1,6 @@
 import { test, expect } from '../../../fixtures/test-fixtures';
 import { getRiderConfig, isOrgEnabled } from '../../../utils/rider-config';
-import { RIDER_TAGS } from '../../../constants';
+import { RIDER_TAGS, RIDER_TIMEOUTS } from '../../../constants';
 
 /**
  * Future Booking — Location Selection.
@@ -115,7 +115,7 @@ test.describe(`Future Booking — Location Selection ${RIDER_TAGS.FUTURE} ${RIDE
     if (isVisible) {
       await sameInDropoff.first().click({ force: true });
       const toast = page.locator('.Toastify__toast');
-      await expect(toast).toBeVisible({ timeout: 3000 });
+      await expect(toast).toBeVisible({ timeout: RIDER_TIMEOUTS.STOP_LIST });
     } else {
       expect(isVisible).toBe(false); // Filtered out — valid
     }

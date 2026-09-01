@@ -75,7 +75,7 @@ test.describe(`ASAP Only — Feedback After Cancel ${RIDER_TAGS.ASAP} ${RIDER_TA
     await submitCancelAndOpenFeedback(page);
     await feedbackModal.waitForFeedbackVisible();
     await expect(feedbackModal.shareFeedbackButton).toBeVisible();
-    expect(await feedbackModal.isSubmitDisabled()).toBe(true);
+    await expect(feedbackModal.shareFeedbackButton).toBeDisabled();
   });
 
   // ── I. Rating 1 — Sad ────────────────────────────────────────────────
@@ -84,7 +84,7 @@ test.describe(`ASAP Only — Feedback After Cancel ${RIDER_TAGS.ASAP} ${RIDER_TA
     await submitCancelAndOpenFeedback(page);
     await feedbackModal.waitForFeedbackVisible();
     await feedbackModal.selectSad();
-    expect(await feedbackModal.isSubmitDisabled()).toBe(false);
+    await expect(feedbackModal.shareFeedbackButton).toBeEnabled();
   });
 
   test('FB_007: Verify that a rider can submit feedback with a sad rating and a comment', async ({ page, feedbackModal }) => {
@@ -99,7 +99,7 @@ test.describe(`ASAP Only — Feedback After Cancel ${RIDER_TAGS.ASAP} ${RIDER_TA
     await submitCancelAndOpenFeedback(page);
     await feedbackModal.waitForFeedbackVisible();
     await feedbackModal.selectNeutral();
-    expect(await feedbackModal.isSubmitDisabled()).toBe(false);
+    await expect(feedbackModal.shareFeedbackButton).toBeEnabled();
   });
 
   test('FB_009: Verify that a rider can submit feedback with a neutral rating and a comment', async ({ page, feedbackModal }) => {
@@ -114,7 +114,7 @@ test.describe(`ASAP Only — Feedback After Cancel ${RIDER_TAGS.ASAP} ${RIDER_TA
     await submitCancelAndOpenFeedback(page);
     await feedbackModal.waitForFeedbackVisible();
     await feedbackModal.selectHappy();
-    expect(await feedbackModal.isSubmitDisabled()).toBe(false);
+    await expect(feedbackModal.shareFeedbackButton).toBeEnabled();
   });
 
   test('FB_011: Verify that a rider can submit feedback with a happy rating and no comment', async ({ page, feedbackModal }) => {
@@ -136,9 +136,9 @@ test.describe(`ASAP Only — Feedback After Cancel ${RIDER_TAGS.ASAP} ${RIDER_TA
   test('FB_013: Verify that the submit button stays disabled until any rating is selected', async ({ page, feedbackModal }) => {
     await submitCancelAndOpenFeedback(page);
     await feedbackModal.waitForFeedbackVisible();
-    expect(await feedbackModal.isSubmitDisabled()).toBe(true);
+    await expect(feedbackModal.shareFeedbackButton).toBeDisabled();
     await feedbackModal.selectNeutral();
-    expect(await feedbackModal.isSubmitDisabled()).toBe(false);
+    await expect(feedbackModal.shareFeedbackButton).toBeEnabled();
   });
 
   test('FB_014: Verify that the comment box strips unsafe script content from what the rider types', async ({ page, feedbackModal }) => {

@@ -56,7 +56,15 @@ test.describe(`Future Booking — API Payload Verification ${RIDER_TAGS.FUTURE} 
     await gf.waitForFormVisible();
     await gf.fillRequiredFields();
 
-    return { gf, getPayload: () => capturedPayload, getUrl: () => capturedUrl };
+    // Deterministic sync point after submit: the POST route handler sets
+    // capturedPayload AND capturedUrl together, so poll for the payload instead
+    // of waitForLoadState('networkidle') — the live map + Socket.IO mean the
+    // network never truly idles, so networkidle either hangs (swallowed by
+    // .catch) or resolves BEFORE the mocked POST fires, leaving capturedPayload
+    // null and the getPayload()! assertion throwing (a per-env flaky proxy).
+    const waitForCapture = async () =>
+      expect.poll(() => capturedPayload, { timeout: 15_000 }).not.toBeNull();
+    return { gf, getPayload: () => capturedPayload, getUrl: () => capturedUrl, waitForCapture };
   }
 
   test.beforeEach(() => {
@@ -65,10 +73,10 @@ test.describe(`Future Booking — API Payload Verification ${RIDER_TAGS.FUTURE} 
 
   /** Verify that the ride-submission payload includes a "booking" object containing pickup_time and pickup_date. */
   test('@smoke @sanity FB_033: Verify that the booking request includes a booking object carrying the pickup time and pickup date', async ({ page }) => {
-    const { gf, getPayload } = await setupFormAndCapture(page);
+    const { gf, getPayload, waitForCapture } = await setupFormAndCapture(page);
     await gf.requestRideButton.scrollIntoViewIfNeeded();
     await gf.submitForm();
-    await page.waitForLoadState('networkidle').catch(() => {});
+    await waitForCapture();
     const payload = getPayload()!;
     expect(payload).toHaveProperty('booking');
     const booking = payload.booking as Record<string, unknown>;
@@ -78,10 +86,10 @@ test.describe(`Future Booking — API Payload Verification ${RIDER_TAGS.FUTURE} 
 
   /** Verify that the ride-submission request is sent to the correct type-suffixed Future Booking endpoint, not the ASAP endpoint. */
   test('@smoke FB_034: Verify that the booking request is sent to the Future Booking type-suffixed endpoint and not the ASAP request endpoint', async ({ page }) => {
-    const { gf, getUrl } = await setupFormAndCapture(page);
+    const { gf, getUrl, waitForCapture } = await setupFormAndCapture(page);
     await gf.requestRideButton.scrollIntoViewIfNeeded();
     await gf.submitForm();
-    await page.waitForLoadState('networkidle').catch(() => {});
+    await waitForCapture();
     // ASAP posts to plain `/request`; Future Booking posts to `/request/{type}`
     // (submitRequestForRide: `type ? /request/${type} : /request`).
     expect(getUrl()).toMatch(/\/request\/.+$/);
@@ -90,10 +98,10 @@ test.describe(`Future Booking — API Payload Verification ${RIDER_TAGS.FUTURE} 
 
   /** Verify that the ride-submission payload contains the correct rider name and phone number. */
   test('FB_035: Verify that the booking request carries the rider name and phone number', async ({ page }) => {
-    const { gf, getPayload } = await setupFormAndCapture(page);
+    const { gf, getPayload, waitForCapture } = await setupFormAndCapture(page);
     await gf.requestRideButton.scrollIntoViewIfNeeded();
     await gf.submitForm();
-    await page.waitForLoadState('networkidle').catch(() => {});
+    await waitForCapture();
     const riders = getPayload()!.riders as Record<string, unknown>;
     expect(riders.name).toBeTruthy();
     expect(riders.phone).toBeTruthy();
@@ -101,10 +109,10 @@ test.describe(`Future Booking — API Payload Verification ${RIDER_TAGS.FUTURE} 
 
   /** Verify that the ride-submission payload contains the correct pickup and drop-off stop IDs matching the selected locations. */
   test('FB_036: Verify that the booking request pickup and drop-off stops match the selected stop names', async ({ page }) => {
-    const { gf, getPayload } = await setupFormAndCapture(page);
+    const { gf, getPayload, waitForCapture } = await setupFormAndCapture(page);
     await gf.requestRideButton.scrollIntoViewIfNeeded();
     await gf.submitForm();
-    await page.waitForLoadState('networkidle').catch(() => {});
+    await waitForCapture();
     const payload = getPayload()!;
     const pickup = payload.pickup_stop as Record<string, unknown>;
     const dropoff = payload.dropoff_stop as Record<string, unknown>;
@@ -146,8 +154,9 @@ test.describe(`Future Booking — API Payload Verification ${RIDER_TAGS.FUTURE} 
     await gf.fillRequiredFields();
     await gf.requestRideButton.scrollIntoViewIfNeeded();
     await gf.submitForm();
-    await page.waitForLoadState('networkidle').catch(() => {});
-
+    // FB_039 uses its own inline mock (not the shared helper) — poll the local
+    // capture deterministically rather than the flaky networkidle proxy.
+    await expect.poll(() => capturedPayload, { timeout: 15_000 }).not.toBeNull();
     expect(capturedPayload).not.toBeNull();
     const payload = capturedPayload as unknown as Record<string, unknown>;
     expect(payload).toHaveProperty('booking');

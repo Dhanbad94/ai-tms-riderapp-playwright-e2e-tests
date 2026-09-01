@@ -88,7 +88,7 @@ test.describe(`ASAP Only — Cancel Ride ${RIDER_TAGS.ASAP} ${RIDER_TAGS.CREATES
   test('CANCEL_007: Verify that the Cancel Ride button stays disabled until a reason is selected', async ({ page, cancellationDialog }) => {
     await submitAndOpenCancelDialog(page);
     await cancellationDialog.waitForDialog();
-    expect(await cancellationDialog.isCancelButtonDisabled()).toBe(true);
+    await expect(cancellationDialog.cancelRideButton).toBeDisabled();
   });
 
   test('CANCEL_008: Verify that the Back button closes the dialog without canceling the ride', async ({ page, cancellationDialog }) => {
@@ -105,7 +105,7 @@ test.describe(`ASAP Only — Cancel Ride ${RIDER_TAGS.ASAP} ${RIDER_TAGS.CREATES
     await submitAndOpenCancelDialog(page);
     await cancellationDialog.waitForDialog();
     await cancellationDialog.selectReason('Ride request was not accepted');
-    expect(await cancellationDialog.isCancelButtonDisabled()).toBe(false);
+    await expect(cancellationDialog.cancelRideButton).toBeEnabled();
   });
 
   test('CANCEL_010: Verify that a ride can be canceled with the reason "Ride request was not accepted"', async ({ page, cancellationDialog }) => {
@@ -118,7 +118,7 @@ test.describe(`ASAP Only — Cancel Ride ${RIDER_TAGS.ASAP} ${RIDER_TAGS.CREATES
     await submitAndOpenCancelDialog(page);
     await cancellationDialog.waitForDialog();
     await cancellationDialog.selectReason('Wait time was too long');
-    expect(await cancellationDialog.isCancelButtonDisabled()).toBe(false);
+    await expect(cancellationDialog.cancelRideButton).toBeEnabled();
   });
 
   test('CANCEL_012: Verify that a ride can be canceled with the reason "Wait time was too long"', async ({ page, cancellationDialog }) => {
@@ -131,7 +131,7 @@ test.describe(`ASAP Only — Cancel Ride ${RIDER_TAGS.ASAP} ${RIDER_TAGS.CREATES
     await submitAndOpenCancelDialog(page);
     await cancellationDialog.waitForDialog();
     await cancellationDialog.selectReason('Change in travel plans');
-    expect(await cancellationDialog.isCancelButtonDisabled()).toBe(false);
+    await expect(cancellationDialog.cancelRideButton).toBeEnabled();
   });
 
   test('@sanity CANCEL_014: Verify that a ride can be canceled with the reason "Change in travel plans"', async ({ page, cancellationDialog }) => {
@@ -144,7 +144,7 @@ test.describe(`ASAP Only — Cancel Ride ${RIDER_TAGS.ASAP} ${RIDER_TAGS.CREATES
     await submitAndOpenCancelDialog(page);
     await cancellationDialog.waitForDialog();
     await cancellationDialog.selectReason('Found alternative ride');
-    expect(await cancellationDialog.isCancelButtonDisabled()).toBe(false);
+    await expect(cancellationDialog.cancelRideButton).toBeEnabled();
   });
 
   test('CANCEL_016: Verify that a ride can be canceled with the reason "Found alternative ride"', async ({ page, cancellationDialog }) => {
@@ -160,7 +160,7 @@ test.describe(`ASAP Only — Cancel Ride ${RIDER_TAGS.ASAP} ${RIDER_TAGS.CREATES
     // This reason requires a textarea ("Please share details")
     expect(await cancellationDialog.isTextareaVisible()).toBe(true);
     // Submit disabled until textarea filled
-    expect(await cancellationDialog.isCancelButtonDisabled()).toBe(true);
+    await expect(cancellationDialog.cancelRideButton).toBeDisabled();
   });
 
   test('CANCEL_018: Verify that adding details for "App or technical issue" enables the Cancel Ride button', async ({ page, cancellationDialog }) => {
@@ -168,7 +168,7 @@ test.describe(`ASAP Only — Cancel Ride ${RIDER_TAGS.ASAP} ${RIDER_TAGS.CREATES
     await cancellationDialog.waitForDialog();
     await cancellationDialog.selectReason('App or technical issue');
     await cancellationDialog.fillDetails('App crashed during booking');
-    expect(await cancellationDialog.isCancelButtonDisabled()).toBe(false);
+    await expect(cancellationDialog.cancelRideButton).toBeEnabled();
   });
 
   test('CANCEL_019: Verify that a ride can be canceled with "App or technical issue" and details provided', async ({ page, cancellationDialog }) => {
@@ -183,9 +183,9 @@ test.describe(`ASAP Only — Cancel Ride ${RIDER_TAGS.ASAP} ${RIDER_TAGS.CREATES
     await submitAndOpenCancelDialog(page);
     await cancellationDialog.waitForDialog();
     await cancellationDialog.selectReason('Change in travel plans');
-    expect(await cancellationDialog.isCancelButtonDisabled()).toBe(false);
+    await expect(cancellationDialog.cancelRideButton).toBeEnabled();
     await cancellationDialog.selectReason('Wait time was too long');
-    expect(await cancellationDialog.isCancelButtonDisabled()).toBe(false);
+    await expect(cancellationDialog.cancelRideButton).toBeEnabled();
   });
 
   // ── E. API Payload Verification ──────────────────────────────────────

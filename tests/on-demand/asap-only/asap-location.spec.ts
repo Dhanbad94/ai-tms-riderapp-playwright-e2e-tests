@@ -109,7 +109,7 @@ test.describe(`ASAP Only — Location Selection ${RIDER_TAGS.ASAP} ${RIDER_TAGS.
     if (isVisible) {
       await sameInDropoff.first().click({ force: true });
       const toast = page.locator('.Toastify__toast');
-      await expect(toast).toBeVisible({ timeout: 3000 });
+      await expect(toast).toBeVisible({ timeout: RIDER_TIMEOUTS.STOP_LIST });
     } else {
       expect(isVisible).toBe(false); // Filtered out — valid
     }

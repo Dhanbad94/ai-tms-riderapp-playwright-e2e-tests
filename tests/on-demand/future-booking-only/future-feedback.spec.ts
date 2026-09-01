@@ -133,7 +133,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
     await openFeedbackOnSharedRide(page);
     await feedbackModal.waitForFeedbackVisible();
     await expect(feedbackModal.shareFeedbackButton).toBeVisible();
-    expect(await feedbackModal.isSubmitDisabled()).toBe(true);
+    await expect(feedbackModal.shareFeedbackButton).toBeDisabled();
   });
 
   // ── Rating 1 — Sad ────────────────────────────────────────────
@@ -143,7 +143,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
     await openFeedbackOnSharedRide(page);
     await feedbackModal.waitForFeedbackVisible();
     await feedbackModal.selectSad();
-    expect(await feedbackModal.isSubmitDisabled()).toBe(false);
+    await expect(feedbackModal.shareFeedbackButton).toBeEnabled();
   });
 
   /** Verify that submitting feedback with a Sad rating and text succeeds. */
@@ -160,7 +160,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
     await openFeedbackOnSharedRide(page);
     await feedbackModal.waitForFeedbackVisible();
     await feedbackModal.selectNeutral();
-    expect(await feedbackModal.isSubmitDisabled()).toBe(false);
+    await expect(feedbackModal.shareFeedbackButton).toBeEnabled();
   });
 
   /** Verify that submitting feedback with a Neutral rating and text succeeds. */
@@ -177,7 +177,7 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
     await openFeedbackOnSharedRide(page);
     await feedbackModal.waitForFeedbackVisible();
     await feedbackModal.selectHappy();
-    expect(await feedbackModal.isSubmitDisabled()).toBe(false);
+    await expect(feedbackModal.shareFeedbackButton).toBeEnabled();
   });
 
   /** Verify that submitting feedback with a Happy rating and no text still succeeds. */
@@ -202,9 +202,9 @@ test.describe(`Future Booking — Feedback After Cancel ${RIDER_TAGS.FUTURE} ${R
   test('FFB_013: Verify that selecting any rating enables the submit button', async ({ page, feedbackModal }) => {
     await openFeedbackOnSharedRide(page);
     await feedbackModal.waitForFeedbackVisible();
-    expect(await feedbackModal.isSubmitDisabled()).toBe(true);
+    await expect(feedbackModal.shareFeedbackButton).toBeDisabled();
     await feedbackModal.selectNeutral();
-    expect(await feedbackModal.isSubmitDisabled()).toBe(false);
+    await expect(feedbackModal.shareFeedbackButton).toBeEnabled();
   });
 
   /** Verify that the feedback textarea sanitizes script/URL-like input. */
