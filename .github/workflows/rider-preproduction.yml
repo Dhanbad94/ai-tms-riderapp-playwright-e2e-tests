@@ -129,6 +129,13 @@ jobs:
 
       - name: Publish report to GitHub Pages
         id: pages
+        # A push race on the SHARED gh-pages branch — another env/PR workflow
+        # pushing concurrently causes a non-fast-forward rejection here — must
+        # NOT fail the whole run: the report is a side artifact, not the test
+        # verdict. continue-on-error keeps the job green; steps.pages.outcome
+        # still reflects the real result, and Resolve-report-URL already falls
+        # back to the Actions run URL when it isn't 'success'.
+        continue-on-error: true
         if: always() && steps.stage.outputs.staged == 'true'
         uses: peaceiris/actions-gh-pages@v4
         with:
@@ -204,7 +211,15 @@ jobs:
           # Fallback so the CTA is always present even if report_url didn't resolve.
           [ -z "$REPORT_URL" ] && REPORT_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
-          if [ "$RESULT" == "success" ]; then
+          # Derive pass/fail from the ACTUAL failed-test count, not the job
+          # result. A non-test step (e.g. the GitHub Pages publish losing a race
+          # on the shared gh-pages branch) can fail the rider-tests job while
+          # every test passed — that must never show as ❌ in Slack. Treat the run
+          # as passed ONLY when the parsed failed-count is a real integer equal to
+          # 0 and the run wasn't cancelled. Anything else (missing results, a
+          # crash, a non-numeric value, cancellation) falls through to ❌, so a
+          # genuine problem is never hidden.
+          if [[ "$FAILED" =~ ^[0-9]+$ ]] && [ "$FAILED" -eq 0 ] && [ "$RESULT" != "cancelled" ]; then
             EMOJI="✅"; COLOR="#36a64f"; HEADER="Rider Tests Passed"
           else
             EMOJI="❌"; COLOR="#dc3545"; HEADER="Rider Tests Failed"
