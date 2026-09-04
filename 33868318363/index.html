@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TMS Rider — Test Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+    .header { background: linear-gradient(135deg, #1a73e8, #0d47a1); color: white; padding: 30px 40px; }
+    .header h1 { font-size: 24px; margin-bottom: 5px; }
+    .header .subtitle { opacity: 0.85; font-size: 14px; }
+    .summary { display: flex; gap: 20px; padding: 25px 40px; flex-wrap: wrap; }
+    .card { background: white; border-radius: 12px; padding: 20px 25px; min-width: 150px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); text-align: center; }
+    .card .number { font-size: 36px; font-weight: 700; }
+    .card .label { font-size: 12px; text-transform: uppercase; color: #666; margin-top: 4px; }
+    .card.total .number { color: #1a73e8; }
+    .card.passed .number { color: #0d9e0d; }
+    .card.failed .number { color: #d93025; }
+    .card.skipped .number { color: #f9a825; }
+    .card.retried .number { color: #ff6d00; }
+    .card.duration .number { color: #5f6368; font-size: 24px; }
+    .card.rate .number { color: #0d9e0d; }
+    .progress-bar { height: 6px; background: #e0e0e0; border-radius: 3px; margin: 20px 40px; overflow: hidden; }
+    .progress-bar .fill { height: 100%; background: #0d9e0d; border-radius: 3px; transition: width 0.3s; }
+    /* Filter cards are clickable; show which one is active. */
+    .card.clickable { cursor: pointer; border: 2px solid transparent; transition: border-color 0.15s, box-shadow 0.15s; }
+    .card.clickable:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.14); }
+    .card.clickable.active { border-color: #1a73e8; box-shadow: 0 4px 14px rgba(26,115,232,0.25); }
+    /* Controls: search box + filter chips. */
+    .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 0 40px 4px; }
+    .controls input[type="search"] { flex: 1 1 240px; min-width: 200px; padding: 10px 14px; font-size: 14px; border: 1px solid #d0d5dd; border-radius: 8px; outline: none; }
+    .controls input[type="search"]:focus { border-color: #1a73e8; box-shadow: 0 0 0 3px rgba(26,115,232,0.15); }
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip { cursor: pointer; user-select: none; padding: 8px 14px; font-size: 13px; font-weight: 600; border-radius: 20px; border: 1px solid #d0d5dd; background: white; color: #555; transition: all 0.15s; }
+    .chip:hover { border-color: #1a73e8; color: #1a73e8; }
+    .chip.active { background: #1a73e8; border-color: #1a73e8; color: white; }
+    .chip .cnt { opacity: 0.75; font-weight: 500; margin-left: 4px; }
+    .visible-count { padding: 6px 40px 0; font-size: 12px; color: #888; }
+    tr.no-match-row td { text-align: center; color: #999; padding: 24px; font-style: italic; }
+    table { width: calc(100% - 80px); margin: 10px 40px 40px; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    th { background: #f8f9fa; padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: #666; border-bottom: 2px solid #e0e0e0; }
+    td { padding: 10px 16px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+    tr:hover { background: #fafbfc; }
+    tr.file-header { background: #f0f4ff; }
+    tr.file-header td { padding: 8px 16px; font-size: 13px; }
+    .file-stats { float: right; font-size: 12px; color: #666; font-weight: normal; }
+    .status-cell { font-weight: 600; font-size: 11px; border-radius: 4px; padding: 3px 8px; display: inline-block; }
+    .status-cell.passed { background: #e6f4ea; color: #137333; }
+    .status-cell.failed { background: #fce8e6; color: #c5221f; }
+    .status-cell.skipped { background: #fef7e0; color: #b06000; }
+    .status-cell.flaky { background: #fff3e0; color: #e65100; }
+    .error-row td { padding: 4px 16px 10px; }
+    .error-msg { font-family: monospace; font-size: 11px; color: #c5221f; background: #fce8e6; padding: 6px 10px; border-radius: 4px; word-break: break-all; }
+    .footer { text-align: center; padding: 20px; color: #999; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🚐 TMS Rider — Test Dashboard</h1>
+    <div class="subtitle">Run: Sep 4, 2026, 11:38 AM | Environment: preproduction | Duration: 15m 47s</div>
+  </div>
+
+  <div class="summary">
+    <div class="card total clickable active" data-filter="all"><div class="number">157</div><div class="label">Total Tests</div></div>
+    <div class="card passed clickable" data-filter="passed"><div class="number">146</div><div class="label">Passed</div></div>
+    <div class="card failed clickable" data-filter="failed"><div class="number">0</div><div class="label">Failed</div></div>
+    <div class="card skipped clickable" data-filter="skipped"><div class="number">9</div><div class="label">Skipped</div></div>
+    <div class="card retried clickable" data-filter="retried"><div class="number">2</div><div class="label">Retried</div></div>
+    <div class="card rate"><div class="number">100%</div><div class="label">Pass Rate</div></div>
+    <div class="card duration"><div class="number">15m 47s</div><div class="label">Duration</div></div>
+  </div>
+
+  <div class="progress-bar"><div class="fill" style="width: 100%"></div></div>
+
+  <div class="controls">
+    <input type="search" id="searchBox" placeholder="🔍 Search test name…" aria-label="Search test name">
+    <div class="chips" id="filterChips">
+      <span class="chip active" data-filter="all">All<span class="cnt">157</span></span>
+      <span class="chip" data-filter="passed">✅ Passed<span class="cnt">146</span></span>
+      <span class="chip" data-filter="failed">❌ Failed<span class="cnt">0</span></span>
+      <span class="chip" data-filter="skipped">⏭️ Skipped<span class="cnt">9</span></span>
+      <span class="chip" data-filter="flaky">⚠️ Flaky<span class="cnt">2</span></span>
+      <span class="chip" data-filter="retried">🔄 Retried<span class="cnt">2</span></span>
+    </div>
+  </div>
+  <div class="visible-count" id="visibleCount"></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th width="30"></th>
+        <th>Test Name</th>
+        <th width="80">Status</th>
+        <th width="80">Duration</th>
+        <th width="60">Retry</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+      <tr class="file-header" data-file="asap-form-spec-ts-0">
+        <td colspan="5">
+          <strong>📄 asap-form.spec.ts</strong>
+          <span class="file-stats">
+            21P / 0F / 5S — 8m 7s
+          </span>
+        </td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-form-spec-ts-0" data-row="test" data-status="passed" data-retried="0" data-search="@smoke @sanity @prod asap_009: verify that the ride details form opens with the &quot;enter ride details&quot; heading passed">
+        <td>✅</td>
+        <td>@smoke @sanity @prod ASAP_009: Verify that the ride details form opens with the "Enter Ride Details" heading</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>23.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-form-spec-ts-0" data-row="test" data-status="passed" data-retried="0" data-search="asap_011: verify that the special assistance checkbox is visible on the ride details form passed">
+        <td>✅</td>
+        <td>ASAP_011: Verify that the Special Assistance checkbox is visible on the ride details form</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>20.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-form-spec-ts-0" data-row="test" data-status="passed" data-retried="0" data-search="asap_012: verify that the accessibility option is labelled &quot;special assistance&quot; passed">
+        <td>✅</td>
+        <td>ASAP_012: Verify that the accessibility option is labelled "Special Assistance"</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>21.6s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-form-spec-ts-0" data-row="test" data-status="passed" data-retried="0" data-search="asap_013: verify that the notes field is visible on the ride details form passed">
+        <td>✅</td>
+        <td>ASAP_013: Verify that the notes field is visible on the ride details form</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>23.4s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-form-spec-ts-0" data-row="test" data-status="passed" data-retried="0" data-search="asap_014: verify that the notes field shows the &quot;note to driver&quot; placeholder passed">
+        <td>✅</td>
+        <td>ASAP_014: Verify that the notes field shows the "Note to Driver" placeholder</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>23.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row skipped" data-file="asap-form-spec-ts-0" data-row="test" data-status="skipped" data-retried="0" data-search="@smoke asap_015: verify that the flight number field is shown on the ride details form skipped">
+        <td>⏭️</td>
+        <td>@smoke ASAP_015: Verify that the Flight Number field is shown on the ride details form</td>
+        <td class="status-cell skipped">SKIPPED</td>
+        <td>0ms</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row skipped" data-file="asap-form-spec-ts-0" data-row="test" data-status="skipped" data-retried="0" data-search="asap_016: verify that the room number field is shown on the ride details form skipped">
+        <td>⏭️</td>
+        <td>ASAP_016: Verify that the Room Number field is shown on the ride details form</td>
+        <td class="status-cell skipped">SKIPPED</td>
+        <td>0ms</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row skipped" data-file="asap-form-spec-ts-0" data-row="test" data-status="skipped" data-retried="0" data-search="asap_015a: verify that the flight number field accepts input and limits it to 10 characters skipped">
+        <td>⏭️</td>
+        <td>ASAP_015a: Verify that the Flight Number field accepts input and limits it to 10 characters</td>
+        <td class="status-cell skipped">SKIPPED</td>
+        <td>0ms</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row skipped" data-file="asap-form-spec-ts-0" data-row="test" data-status="skipped" data-retried="0" data-search="asap_016a: verify that the room number field accepts input and limits it to 10 characters skipped">
+        <td>⏭️</td>
+        <td>ASAP_016a: Verify that the Room Number field accepts input and limits it to 10 characters</td>
+        <td class="status-cell skipped">SKIPPED</td>
+        <td>0ms</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-form-spec-ts-0" data-row="test" data-status="passed" data-retried="0" data-search="asap_017: verify that rider type options are hidden on the ride details form passed">
+        <td>✅</td>
+        <td>ASAP_017: Verify that rider type options are hidden on the ride details form</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>20.7s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-form-spec-ts-0" data-row="test" data-status="passed" data-retried="0" data-search="asap_010: verify that the rider count selection is handled before the ride details form opens passed">
+        <td>✅</td>
+        <td>ASAP_010: Verify that the rider count selection is handled before the ride details form opens</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>21.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-form-spec-ts-0" data-row="test" data-status="passed" data-retried="0" data-search="asap_018: verify that the notes field enforces a maximum character limit passed">
+        <td>✅</td>
+        <td>ASAP_018: Verify that the notes field enforces a maximum character limit</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>23.8s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-form-spec-ts-0" data-row="test" data-status="passed" data-retried="0" data-search="verify that the name field accepts typed text passed">
+        <td>✅</td>
+        <td>Verify that the name field accepts typed text</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>25.9s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-form-spec-ts-0" data-row="test" data-status="passed" data-retried="0" data-search="verify that the phone number field accepts numeric input passed">
+        <td>✅</td>
+        <td>Verify that the phone number field accepts numeric input</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>23.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-form-spec-ts-0" data-row="test" data-status="passed" data-retried="0" data-search="verify that the special assistance checkbox can be toggled on and off passed">
+        <td>✅</td>
+        <td>Verify that the Special Assistance checkbox can be toggled on and off</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>26.2s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-form-spec-ts-0" data-row="test" data-status="passed" data-retried="0" data-search="verify that the notes field accepts text only up to its maximum character limit passed">
+        <td>✅</td>
+        <td>Verify that the notes field accepts text only up to its maximum character limit</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>25.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-form-spec-ts-0" data-row="test" data-status="passed" data-retried="0" data-search="verify that the phone country code selector opens with a search box passed">
+        <td>✅</td>
+        <td>Verify that the phone country code selector opens with a search box</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>21.6s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-form-spec-ts-0" data-row="test" data-status="passed" data-retried="0" data-search="verify that the country code list can be filtered by search passed">
+        <td>✅</td>
+        <td>Verify that the country code list can be filtered by search</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>25.4s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-form-spec-ts-0" data-row="test" data-status="passed" data-retried="0" data-search="verify that the back button shows a confirmation dialog warning entered details will be lost passed">
+        <td>✅</td>
+        <td>Verify that the Back button shows a confirmation dialog warning entered details will be lost</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>29.3s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-form-spec-ts-0" data-row="test" data-status="passed" data-retried="0" data-search="verify that choosing cancel in the back dialog keeps the rider on the ride details form passed">
+        <td>✅</td>
+        <td>Verify that choosing Cancel in the Back dialog keeps the rider on the ride details form</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>28.7s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-form-spec-ts-0" data-row="test" data-status="passed" data-retried="0" data-search="verify that choosing go back in the back dialog returns the rider to the location page passed">
+        <td>✅</td>
+        <td>Verify that choosing Go Back in the Back dialog returns the rider to the location page</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>27.8s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-form-spec-ts-0" data-row="test" data-status="passed" data-retried="0" data-search="@smoke @prod verify that the &quot;request ride&quot; button is visible on the ride details form passed">
+        <td>✅</td>
+        <td>@smoke @prod Verify that the "Request Ride" button is visible on the ride details form</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>21.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-form-spec-ts-0" data-row="test" data-status="passed" data-retried="0" data-search="verify that the terms of service link is visible on the ride details form passed">
+        <td>✅</td>
+        <td>Verify that the Terms of Service link is visible on the ride details form</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>19.1s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-form-spec-ts-0" data-row="test" data-status="passed" data-retried="0" data-search="verify that the privacy policy link is visible on the ride details form passed">
+        <td>✅</td>
+        <td>Verify that the Privacy Policy link is visible on the ride details form</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>17.8s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-form-spec-ts-0" data-row="test" data-status="passed" data-retried="0" data-search="verify that the ride details form is ready to submit with the rider count pre-selected passed">
+        <td>✅</td>
+        <td>Verify that the ride details form is ready to submit with the rider count pre-selected</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>17.7s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row skipped" data-file="asap-form-spec-ts-0" data-row="test" data-status="skipped" data-retried="0" data-search="asap_042: verify that the entered rider details are saved so they persist across the booking skipped">
+        <td>⏭️</td>
+        <td>ASAP_042: Verify that the entered rider details are saved so they persist across the booking</td>
+        <td class="status-cell skipped">SKIPPED</td>
+        <td>0ms</td>
+        <td>—</td>
+      </tr>
+      <tr class="file-header" data-file="asap-location-advanced-spec-ts-1">
+        <td colspan="5">
+          <strong>📄 asap-location-advanced.spec.ts</strong>
+          <span class="file-stats">
+            17P / 0F / 0S / 1⚠️ — 2m 44s
+          </span>
+        </td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-advanced-spec-ts-1" data-row="test" data-status="passed" data-retried="0" data-search="@smoke search_001: verify that pickup stops can be found by typing part of a stop name passed">
+        <td>✅</td>
+        <td>@smoke SEARCH_001: Verify that pickup stops can be found by typing part of a stop name</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>6.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-advanced-spec-ts-1" data-row="test" data-status="passed" data-retried="0" data-search="search_002: verify that dropoff stops can be found by typing part of a stop name passed">
+        <td>✅</td>
+        <td>SEARCH_002: Verify that dropoff stops can be found by typing part of a stop name</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row flaky" data-file="asap-location-advanced-spec-ts-1" data-row="test" data-status="flaky" data-retried="1" data-search="search_003: verify that a stop search with no matches shows an empty-state message flaky">
+        <td>⚠️</td>
+        <td>SEARCH_003: Verify that a stop search with no matches shows an empty-state message</td>
+        <td class="status-cell flaky">FLAKY</td>
+        <td>31.0s</td>
+        <td>🔄 1</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-advanced-spec-ts-1" data-row="test" data-status="passed" data-retried="0" data-search="search_004: verify that clearing the search restores the full list of stops passed">
+        <td>✅</td>
+        <td>SEARCH_004: Verify that clearing the search restores the full list of stops</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>7.6s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-advanced-spec-ts-1" data-row="test" data-status="passed" data-retried="0" data-search="search_005: verify that stop search returns the same results regardless of upper or lower case passed">
+        <td>✅</td>
+        <td>SEARCH_005: Verify that stop search returns the same results regardless of upper or lower case</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>6.7s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-advanced-spec-ts-1" data-row="test" data-status="passed" data-retried="0" data-search="search_006: verify that a stop can be selected directly from the search results passed">
+        <td>✅</td>
+        <td>SEARCH_006: Verify that a stop can be selected directly from the search results</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>7.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-advanced-spec-ts-1" data-row="test" data-status="passed" data-retried="0" data-search="search_007: verify that searching stops by a single character returns matching results passed">
+        <td>✅</td>
+        <td>SEARCH_007: Verify that searching stops by a single character returns matching results</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.4s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-advanced-spec-ts-1" data-row="test" data-status="passed" data-retried="0" data-search="@smoke map_001: verify that the map and list view toggle is visible and clickable passed">
+        <td>✅</td>
+        <td>@smoke MAP_001: Verify that the map and list view toggle is visible and clickable</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>3.3s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-advanced-spec-ts-1" data-row="test" data-status="passed" data-retried="0" data-search="map_002: verify that switching from map view to list view shows the stop list and flips the toggle label passed">
+        <td>✅</td>
+        <td>MAP_002: Verify that switching from map view to list view shows the stop list and flips the toggle label</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>9.1s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-advanced-spec-ts-1" data-row="test" data-status="passed" data-retried="0" data-search="map_003: verify that both stop selections are preserved when the map view loads after choosing both stops passed">
+        <td>✅</td>
+        <td>MAP_003: Verify that both stop selections are preserved when the map view loads after choosing both stops</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>8.9s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-advanced-spec-ts-1" data-row="test" data-status="passed" data-retried="0" data-search="map_004: verify that the interactive map loads and is displayed on the location screen passed">
+        <td>✅</td>
+        <td>MAP_004: Verify that the interactive map loads and is displayed on the location screen</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>6.6s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-advanced-spec-ts-1" data-row="test" data-status="passed" data-retried="0" data-search="@smoke loc_001: verify that the use current location button is visible on the location screen passed">
+        <td>✅</td>
+        <td>@smoke LOC_001: Verify that the Use Current Location button is visible on the location screen</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>8.6s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-advanced-spec-ts-1" data-row="test" data-status="passed" data-retried="0" data-search="loc_002: verify that tapping use current location prompts for permission or fills the pickup from the rider location passed">
+        <td>✅</td>
+        <td>LOC_002: Verify that tapping Use Current Location prompts for permission or fills the pickup from the rider location</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>8.1s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-advanced-spec-ts-1" data-row="test" data-status="passed" data-retried="0" data-search="loc_003: verify that the location permission dialog offers allow and not now options passed">
+        <td>✅</td>
+        <td>LOC_003: Verify that the location permission dialog offers Allow and Not Now options</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>8.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-advanced-spec-ts-1" data-row="test" data-status="passed" data-retried="0" data-search="loc_004: verify that choosing not now dismisses the location permission dialog passed">
+        <td>✅</td>
+        <td>LOC_004: Verify that choosing Not Now dismisses the location permission dialog</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>10.9s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-advanced-spec-ts-1" data-row="test" data-status="passed" data-retried="0" data-search="loc_005: verify that allowing location access auto-selects the nearest stop as pickup passed">
+        <td>✅</td>
+        <td>LOC_005: Verify that allowing location access auto-selects the nearest stop as pickup</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>11.8s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-advanced-spec-ts-1" data-row="test" data-status="passed" data-retried="0" data-search="loc_006: verify that denying location access shows the location-denied message passed">
+        <td>✅</td>
+        <td>LOC_006: Verify that denying location access shows the location-denied message</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>12.4s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-advanced-spec-ts-1" data-row="test" data-status="passed" data-retried="0" data-search="loc_007: verify that the use current location button is not offered while the dropoff field is focused passed">
+        <td>✅</td>
+        <td>LOC_007: Verify that the Use Current Location button is not offered while the dropoff field is focused</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.8s</td>
+        <td>—</td>
+      </tr>
+      <tr class="file-header" data-file="asap-location-spec-ts-2">
+        <td colspan="5">
+          <strong>📄 asap-location.spec.ts</strong>
+          <span class="file-stats">
+            22P / 0F / 0S — 2m 30s
+          </span>
+        </td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-spec-ts-2" data-row="test" data-status="passed" data-retried="0" data-search="@smoke @sanity @prod asap_001: verify that no date or time picker is shown in the asap booking flow passed">
+        <td>✅</td>
+        <td>@smoke @sanity @prod ASAP_001: Verify that no date or time picker is shown in the ASAP booking flow</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>2.4s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-spec-ts-2" data-row="test" data-status="passed" data-retried="0" data-search="asap_005: verify that the header reads select location before any stops are chosen passed">
+        <td>✅</td>
+        <td>ASAP_005: Verify that the header reads Select Location before any stops are chosen</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>3.4s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-spec-ts-2" data-row="test" data-status="passed" data-retried="0" data-search="asap_006: verify that the header reads confirm location after both stops are selected passed">
+        <td>✅</td>
+        <td>ASAP_006: Verify that the header reads Confirm Location after both stops are selected</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>9.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-spec-ts-2" data-row="test" data-status="passed" data-retried="0" data-search="@smoke asap_002: verify that the action button reads confirm location and not next passed">
+        <td>✅</td>
+        <td>@smoke ASAP_002: Verify that the action button reads Confirm Location and not Next</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>8.8s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-spec-ts-2" data-row="test" data-status="passed" data-retried="0" data-search="asap_003: verify that the confirm location button is enabled once both stops are chosen without needing a time passed">
+        <td>✅</td>
+        <td>ASAP_003: Verify that the Confirm Location button is enabled once both stops are chosen without needing a time</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>15.9s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-spec-ts-2" data-row="test" data-status="passed" data-retried="0" data-search="@smoke asap_004: verify that the use current location button is visible on the location screen passed">
+        <td>✅</td>
+        <td>@smoke ASAP_004: Verify that the Use Current Location button is visible on the location screen</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>9.6s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-spec-ts-2" data-row="test" data-status="passed" data-retried="0" data-search="asap_007: verify that no available-dates lookup is triggered during asap stop selection passed">
+        <td>✅</td>
+        <td>ASAP_007: Verify that no available-dates lookup is triggered during ASAP stop selection</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>6.9s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-spec-ts-2" data-row="test" data-status="passed" data-retried="0" data-search="asap_008: verify that no available-time-slots lookup is triggered during asap stop selection passed">
+        <td>✅</td>
+        <td>ASAP_008: Verify that no available-time-slots lookup is triggered during ASAP stop selection</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>4.8s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-spec-ts-2" data-row="test" data-status="passed" data-retried="0" data-search="verify that a riders selection dropdown is available somewhere in the booking flow passed">
+        <td>✅</td>
+        <td>Verify that a riders selection dropdown is available somewhere in the booking flow</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>6.8s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-spec-ts-2" data-row="test" data-status="passed" data-retried="0" data-search="@smoke verify that the stop list loads and displays available stops passed">
+        <td>✅</td>
+        <td>@smoke Verify that the stop list loads and displays available stops</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>8.6s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-spec-ts-2" data-row="test" data-status="passed" data-retried="0" data-search="@smoke @sanity verify that selecting a pickup stop fills the pickup field with that stop passed">
+        <td>✅</td>
+        <td>@smoke @sanity Verify that selecting a pickup stop fills the pickup field with that stop</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>7.8s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-spec-ts-2" data-row="test" data-status="passed" data-retried="0" data-search="verify that selecting a dropoff stop fills the dropoff field with that stop passed">
+        <td>✅</td>
+        <td>Verify that selecting a dropoff stop fills the dropoff field with that stop</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>7.7s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-spec-ts-2" data-row="test" data-status="passed" data-retried="0" data-search="verify that the same stop cannot be used for both pickup and dropoff passed">
+        <td>✅</td>
+        <td>Verify that the same stop cannot be used for both pickup and dropoff</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>4.9s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-spec-ts-2" data-row="test" data-status="passed" data-retried="0" data-search="verify that typing in the stop search narrows the list to matching stops passed">
+        <td>✅</td>
+        <td>Verify that typing in the stop search narrows the list to matching stops</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.3s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-spec-ts-2" data-row="test" data-status="passed" data-retried="0" data-search="verify that a stop search with no matches shows a not-found message passed">
+        <td>✅</td>
+        <td>Verify that a stop search with no matches shows a not-found message</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>10.4s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-spec-ts-2" data-row="test" data-status="passed" data-retried="0" data-search="verify that clearing the pickup field resets the pickup selection passed">
+        <td>✅</td>
+        <td>Verify that clearing the pickup field resets the pickup selection</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>7.6s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-spec-ts-2" data-row="test" data-status="passed" data-retried="0" data-search="verify that the map and list view toggle is visible on the location screen passed">
+        <td>✅</td>
+        <td>Verify that the map and list view toggle is visible on the location screen</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.6s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-spec-ts-2" data-row="test" data-status="passed" data-retried="0" data-search="verify that pressing back after selecting a stop opens a confirmation dialog passed">
+        <td>✅</td>
+        <td>Verify that pressing back after selecting a stop opens a confirmation dialog</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-spec-ts-2" data-row="test" data-status="passed" data-retried="0" data-search="verify that cancelling the back confirmation dialog keeps the rider on the location screen passed">
+        <td>✅</td>
+        <td>Verify that cancelling the back confirmation dialog keeps the rider on the location screen</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>8.9s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-spec-ts-2" data-row="test" data-status="passed" data-retried="0" data-search="@negative neg_nav_001: verify that visiting an unknown app route shows a 404 page-not-found screen passed">
+        <td>✅</td>
+        <td>@negative NEG_NAV_001: Verify that visiting an unknown app route shows a 404 page-not-found screen</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>392ms</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-spec-ts-2" data-row="test" data-status="passed" data-retried="0" data-search="@negative neg_nav_002: verify that opening a nonexistent booking id shows a 404 page-not-found screen passed">
+        <td>✅</td>
+        <td>@negative NEG_NAV_002: Verify that opening a nonexistent booking id shows a 404 page-not-found screen</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>393ms</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-location-spec-ts-2" data-row="test" data-status="passed" data-retried="0" data-search="@negative neg_nav_003: verify that an invalid ride code does not display a working ride status page passed">
+        <td>✅</td>
+        <td>@negative NEG_NAV_003: Verify that an invalid ride code does not display a working ride status page</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>9.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="file-header" data-file="asap-validation-spec-ts-3">
+        <td colspan="5">
+          <strong>📄 asap-validation.spec.ts</strong>
+          <span class="file-stats">
+            14P / 0F / 0S — 6m 1s
+          </span>
+        </td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-validation-spec-ts-3" data-row="test" data-status="passed" data-retried="0" data-search="@smoke @sanity asap_019: verify that submitting an empty booking form is blocked and shows a validation error on the name field passed">
+        <td>✅</td>
+        <td>@smoke @sanity ASAP_019: Verify that submitting an empty booking form is blocked and shows a validation error on the name field</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>24.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-validation-spec-ts-3" data-row="test" data-status="passed" data-retried="0" data-search="asap_020: verify that the name field shows a validation error when left empty on submit passed">
+        <td>✅</td>
+        <td>ASAP_020: Verify that the name field shows a validation error when left empty on submit</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>29.2s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-validation-spec-ts-3" data-row="test" data-status="passed" data-retried="0" data-search="asap_021: verify that the phone field shows an error when the phone number is too short passed">
+        <td>✅</td>
+        <td>ASAP_021: Verify that the phone field shows an error when the phone number is too short</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>27.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-validation-spec-ts-3" data-row="test" data-status="passed" data-retried="0" data-search="verify that the phone field accepts a valid phone number of 10 to 16 digits without error passed">
+        <td>✅</td>
+        <td>Verify that the phone field accepts a valid phone number of 10 to 16 digits without error</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>35.6s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-validation-spec-ts-3" data-row="test" data-status="passed" data-retried="0" data-search="verify that an overly long phone number is truncated to at most 16 digits passed">
+        <td>✅</td>
+        <td>Verify that an overly long phone number is truncated to at most 16 digits</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>22.9s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-validation-spec-ts-3" data-row="test" data-status="passed" data-retried="0" data-search="asap_022: verify that the booking form is displayed after stops and riders are selected passed">
+        <td>✅</td>
+        <td>ASAP_022: Verify that the booking form is displayed after stops and riders are selected</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>19.4s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-validation-spec-ts-3" data-row="test" data-status="passed" data-retried="0" data-search="asap_023: verify that no time-related validation error is shown on the booking form passed">
+        <td>✅</td>
+        <td>ASAP_023: Verify that no time-related validation error is shown on the booking form</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>19.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-validation-spec-ts-3" data-row="test" data-status="passed" data-retried="0" data-search="@smoke asap_024: verify that script content typed into the name field is stripped out for safety passed">
+        <td>✅</td>
+        <td>@smoke ASAP_024: Verify that script content typed into the name field is stripped out for safety</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>24.9s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-validation-spec-ts-3" data-row="test" data-status="passed" data-retried="0" data-search="asap_025: verify that unsafe script content typed into the notes field is stripped out for safety passed">
+        <td>✅</td>
+        <td>ASAP_025: Verify that unsafe script content typed into the notes field is stripped out for safety</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>21.1s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-validation-spec-ts-3" data-row="test" data-status="passed" data-retried="0" data-search="asap_026: verify that submitting an invalid form scrolls to and reveals the first field in error passed">
+        <td>✅</td>
+        <td>ASAP_026: Verify that submitting an invalid form scrolls to and reveals the first field in error</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>20.8s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-validation-spec-ts-3" data-row="test" data-status="passed" data-retried="0" data-search="verify that entering a valid name clears the previously shown name validation error passed">
+        <td>✅</td>
+        <td>Verify that entering a valid name clears the previously shown name validation error</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>31.9s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-validation-spec-ts-3" data-row="test" data-status="passed" data-retried="0" data-search="verify that entering a valid phone number clears the previously shown phone validation error passed">
+        <td>✅</td>
+        <td>Verify that entering a valid phone number clears the previously shown phone validation error</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>42.4s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-validation-spec-ts-3" data-row="test" data-status="passed" data-retried="0" data-search="verify that the booking form and request ride button are available when riders are already selected passed">
+        <td>✅</td>
+        <td>Verify that the booking form and Request Ride button are available when riders are already selected</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>20.4s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-validation-spec-ts-3" data-row="test" data-status="passed" data-retried="0" data-search="verify that the notes field prevents entering more than its maximum allowed characters passed">
+        <td>✅</td>
+        <td>Verify that the notes field prevents entering more than its maximum allowed characters</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>21.1s</td>
+        <td>—</td>
+      </tr>
+      <tr class="file-header" data-file="future-date-picker-spec-ts-4">
+        <td colspan="5">
+          <strong>📄 future-date-picker.spec.ts</strong>
+          <span class="file-stats">
+            5P / 0F / 0S — 1m 13s
+          </span>
+        </td>
+      </tr>
+      <tr class="test-row passed" data-file="future-date-picker-spec-ts-4" data-row="test" data-status="passed" data-retried="0" data-search="@smoke fb_dt_001: verify that the pick-up date field is displayed and pre-filled with a default date on load passed">
+        <td>✅</td>
+        <td>@smoke FB_DT_001: Verify that the pick-up date field is displayed and pre-filled with a default date on load</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>8.6s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-date-picker-spec-ts-4" data-row="test" data-status="passed" data-retried="0" data-search="fb_dt_002: verify that clicking the pick-up date field opens the calendar date picker passed">
+        <td>✅</td>
+        <td>FB_DT_002: Verify that clicking the pick-up date field opens the calendar date picker</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>12.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-date-picker-spec-ts-4" data-row="test" data-status="passed" data-retried="0" data-search="fb_dt_003: verify that the pick-up date field is read-only and does not accept typed input passed">
+        <td>✅</td>
+        <td>FB_DT_003: Verify that the pick-up date field is read-only and does not accept typed input</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>10.7s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-date-picker-spec-ts-4" data-row="test" data-status="passed" data-retried="0" data-search="fb_dt_004: verify that selecting a different date clears the previously chosen pick-up time and disables next passed">
+        <td>✅</td>
+        <td>FB_DT_004: Verify that selecting a different date clears the previously chosen pick-up time and disables Next</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>23.9s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-date-picker-spec-ts-4" data-row="test" data-status="passed" data-retried="0" data-search="fb_dt_005: verify that only the organization available dates can be selected and other dates are disabled passed">
+        <td>✅</td>
+        <td>FB_DT_005: Verify that only the organization available dates can be selected and other dates are disabled</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>17.6s</td>
+        <td>—</td>
+      </tr>
+      <tr class="file-header" data-file="future-form-spec-ts-5">
+        <td colspan="5">
+          <strong>📄 future-form.spec.ts</strong>
+          <span class="file-stats">
+            11P / 0F / 1S — 5m 31s
+          </span>
+        </td>
+      </tr>
+      <tr class="test-row passed" data-file="future-form-spec-ts-5" data-row="test" data-status="passed" data-retried="0" data-search="@smoke @sanity fb_008: verify that the ride details form opens with the &quot;enter ride details&quot; heading passed">
+        <td>✅</td>
+        <td>@smoke @sanity FB_008: Verify that the ride details form opens with the "Enter Ride Details" heading</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>27.9s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-form-spec-ts-5" data-row="test" data-status="passed" data-retried="0" data-search="fb_009: verify that the rider count dropdown is shown on the ride details form passed">
+        <td>✅</td>
+        <td>FB_009: Verify that the rider count dropdown is shown on the ride details form</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>24.8s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row skipped" data-file="future-form-spec-ts-5" data-row="test" data-status="skipped" data-retried="0" data-search="fb_010: verify that the rider type options are shown when the organization configures them skipped">
+        <td>⏭️</td>
+        <td>FB_010: Verify that the rider type options are shown when the organization configures them</td>
+        <td class="status-cell skipped">SKIPPED</td>
+        <td>27.4s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-form-spec-ts-5" data-row="test" data-status="passed" data-retried="0" data-search="fb_011: verify that the name field accepts and displays typed text passed">
+        <td>✅</td>
+        <td>FB_011: Verify that the Name field accepts and displays typed text</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>29.4s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-form-spec-ts-5" data-row="test" data-status="passed" data-retried="0" data-search="fb_012: verify that the phone field accepts numeric input passed">
+        <td>✅</td>
+        <td>FB_012: Verify that the Phone field accepts numeric input</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>26.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-form-spec-ts-5" data-row="test" data-status="passed" data-retried="0" data-search="fb_013: verify that the special assistance checkbox is shown when the organization enables it passed">
+        <td>✅</td>
+        <td>FB_013: Verify that the Special Assistance checkbox is shown when the organization enables it</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>21.3s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-form-spec-ts-5" data-row="test" data-status="passed" data-retried="0" data-search="fb_014: verify that the notes text area is shown when the organization enables it passed">
+        <td>✅</td>
+        <td>FB_014: Verify that the Notes text area is shown when the organization enables it</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>33.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-form-spec-ts-5" data-row="test" data-status="passed" data-retried="0" data-search="fb_015: verify that the flight number field is shown when the organization enables it passed">
+        <td>✅</td>
+        <td>FB_015: Verify that the Flight Number field is shown when the organization enables it</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>26.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-form-spec-ts-5" data-row="test" data-status="passed" data-retried="0" data-search="fb_016: verify that the room number field is shown when the organization enables it passed">
+        <td>✅</td>
+        <td>FB_016: Verify that the Room Number field is shown when the organization enables it</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>29.2s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-form-spec-ts-5" data-row="test" data-status="passed" data-retried="0" data-search="fb_017: verify that the &quot;request ride&quot; button is shown with the correct label passed">
+        <td>✅</td>
+        <td>FB_017: Verify that the "Request Ride" button is shown with the correct label</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>22.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-form-spec-ts-5" data-row="test" data-status="passed" data-retried="0" data-search="verify that clicking back shows a &quot;go back?&quot; warning that entered details will be lost passed">
+        <td>✅</td>
+        <td>Verify that clicking Back shows a "Go Back?" warning that entered details will be lost</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>33.6s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-form-spec-ts-5" data-row="test" data-status="passed" data-retried="0" data-search="verify that the terms of service and privacy policy links are shown on the ride details form passed">
+        <td>✅</td>
+        <td>Verify that the Terms of Service and Privacy Policy links are shown on the ride details form</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>29.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="file-header" data-file="future-have-a-booking-landing-spec-ts-6">
+        <td colspan="5">
+          <strong>📄 future-have-a-booking-landing.spec.ts</strong>
+          <span class="file-stats">
+            7P / 0F / 1S — 21.5s
+          </span>
+        </td>
+      </tr>
+      <tr class="test-row passed" data-file="future-have-a-booking-landing-spec-ts-6" data-row="test" data-status="passed" data-retried="0" data-search="@smoke hb_001: verify that the have a booking link on the landing page opens the sign-in page passed">
+        <td>✅</td>
+        <td>@smoke HB_001: Verify that the Have a Booking link on the landing page opens the sign-in page</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>4.6s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-have-a-booking-landing-spec-ts-6" data-row="test" data-status="passed" data-retried="0" data-search="hb_002: verify that no phone or flight tabs appear on the plain sign-in page passed">
+        <td>✅</td>
+        <td>HB_002: Verify that no phone or flight tabs appear on the plain sign-in page</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>1.6s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-have-a-booking-landing-spec-ts-6" data-row="test" data-status="passed" data-retried="0" data-search="@smoke hb_003: verify that the next button is disabled while the phone number field is empty passed">
+        <td>✅</td>
+        <td>@smoke HB_003: Verify that the Next button is disabled while the phone number field is empty</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>1.7s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-have-a-booking-landing-spec-ts-6" data-row="test" data-status="passed" data-retried="0" data-search="@negative hb_004: verify that entering invalid characters in the phone field shows a validation error passed">
+        <td>✅</td>
+        <td>@negative HB_004: Verify that entering invalid characters in the phone field shows a validation error</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>1.7s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-have-a-booking-landing-spec-ts-6" data-row="test" data-status="passed" data-retried="0" data-search="@negative hb_005: verify that a phone number that is too long shows the digit-count validation error passed">
+        <td>✅</td>
+        <td>@negative HB_005: Verify that a phone number that is too long shows the digit-count validation error</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>1.8s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-have-a-booking-landing-spec-ts-6" data-row="test" data-status="passed" data-retried="0" data-search="@negative hb_006: verify that an unregistered phone number shows a no-active-booking message with a create option passed">
+        <td>✅</td>
+        <td>@negative HB_006: Verify that an unregistered phone number shows a no-active-booking message with a create option</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>3.9s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-have-a-booking-landing-spec-ts-6" data-row="test" data-status="passed" data-retried="0" data-search="hb_016: verify that the create a booking link opens the tracking-code landing page passed">
+        <td>✅</td>
+        <td>HB_016: Verify that the Create a booking link opens the tracking-code landing page</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>4.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row skipped" data-file="future-have-a-booking-landing-spec-ts-6" data-row="test" data-status="skipped" data-retried="0" data-search="@sanity hb_007: verify that a registered phone number sends a one-time passcode and opens the otp page skipped">
+        <td>⏭️</td>
+        <td>@sanity HB_007: Verify that a registered phone number sends a one-time passcode and opens the OTP page</td>
+        <td class="status-cell skipped">SKIPPED</td>
+        <td>1.7s</td>
+        <td>—</td>
+      </tr>
+      <tr class="file-header" data-file="future-location-advanced-spec-ts-7">
+        <td colspan="5">
+          <strong>📄 future-location-advanced.spec.ts</strong>
+          <span class="file-stats">
+            22P / 0F / 0S / 1⚠️ — 9m 28s
+          </span>
+        </td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-advanced-spec-ts-7" data-row="test" data-status="passed" data-retried="0" data-search="@smoke search_001: verify that searching pickup stops by a partial name returns matching results passed">
+        <td>✅</td>
+        <td>@smoke SEARCH_001: Verify that searching pickup stops by a partial name returns matching results</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>7.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-advanced-spec-ts-7" data-row="test" data-status="passed" data-retried="0" data-search="search_002: verify that searching drop-off stops by a partial name returns matching results passed">
+        <td>✅</td>
+        <td>SEARCH_002: Verify that searching drop-off stops by a partial name returns matching results</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>7.1s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-advanced-spec-ts-7" data-row="test" data-status="passed" data-retried="0" data-search="@negative search_003: verify that a search with no matches shows the location not found message passed">
+        <td>✅</td>
+        <td>@negative SEARCH_003: Verify that a search with no matches shows the location not found message</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>13.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-advanced-spec-ts-7" data-row="test" data-status="passed" data-retried="0" data-search="search_004: verify that clearing the search box restores the full stop list passed">
+        <td>✅</td>
+        <td>SEARCH_004: Verify that clearing the search box restores the full stop list</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>8.8s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-advanced-spec-ts-7" data-row="test" data-status="passed" data-retried="0" data-search="search_005: verify that stop search returns the same results regardless of letter case passed">
+        <td>✅</td>
+        <td>SEARCH_005: Verify that stop search returns the same results regardless of letter case</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>7.8s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-advanced-spec-ts-7" data-row="test" data-status="passed" data-retried="0" data-search="@sanity search_006: verify that a random result from a filtered search can be selected as the pickup stop passed">
+        <td>✅</td>
+        <td>@sanity SEARCH_006: Verify that a random result from a filtered search can be selected as the pickup stop</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>3.8s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-advanced-spec-ts-7" data-row="test" data-status="passed" data-retried="0" data-search="search_007: verify that searching by a single character still returns results passed">
+        <td>✅</td>
+        <td>SEARCH_007: Verify that searching by a single character still returns results</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>7.8s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-advanced-spec-ts-7" data-row="test" data-status="passed" data-retried="0" data-search="@smoke random_001: verify that random pickup and drop-off stops can be selected from the listing and are never the same stop passed">
+        <td>✅</td>
+        <td>@smoke RANDOM_001: Verify that random pickup and drop-off stops can be selected from the listing and are never the same stop</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>11.2s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-advanced-spec-ts-7" data-row="test" data-status="passed" data-retried="0" data-search="random_002: verify that repeated random selections vary rather than always picking the same pair passed">
+        <td>✅</td>
+        <td>RANDOM_002: Verify that repeated random selections vary rather than always picking the same pair</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>27.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-advanced-spec-ts-7" data-row="test" data-status="passed" data-retried="0" data-search="random_003: verify that the full stop listing is available when choosing a pickup passed">
+        <td>✅</td>
+        <td>RANDOM_003: Verify that the full stop listing is available when choosing a pickup</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>6.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-advanced-spec-ts-7" data-row="test" data-status="passed" data-retried="0" data-search="random_004: verify that the chosen pickup stop is removed from the drop-off list passed">
+        <td>✅</td>
+        <td>RANDOM_004: Verify that the chosen pickup stop is removed from the drop-off list</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>6.4s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row flaky" data-file="future-location-advanced-spec-ts-7" data-row="test" data-status="flaky" data-retried="1" data-search="@sanity random_005: verify that random pickup and drop-off stops can be selected using their map markers flaky">
+        <td>⚠️</td>
+        <td>@sanity RANDOM_005: Verify that random pickup and drop-off stops can be selected using their map markers</td>
+        <td class="status-cell flaky">FLAKY</td>
+        <td>5m 28s</td>
+        <td>🔄 2</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-advanced-spec-ts-7" data-row="test" data-status="passed" data-retried="0" data-search="@smoke mappin_001: verify that clicking a stop map marker opens a card offering to set it as pickup or drop-off passed">
+        <td>✅</td>
+        <td>@smoke MAPPIN_001: Verify that clicking a stop map marker opens a card offering to set it as pickup or drop-off</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>15.4s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-advanced-spec-ts-7" data-row="test" data-status="passed" data-retried="0" data-search="@sanity mappin_002: verify that selecting a stop via its map marker sets it as the pickup location passed">
+        <td>✅</td>
+        <td>@sanity MAPPIN_002: Verify that selecting a stop via its map marker sets it as the pickup location</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>8.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-advanced-spec-ts-7" data-row="test" data-status="passed" data-retried="0" data-search="mappin_003: verify that selecting a stop via its map marker sets it as the drop-off after pickup is chosen passed">
+        <td>✅</td>
+        <td>MAPPIN_003: Verify that selecting a stop via its map marker sets it as the drop-off after pickup is chosen</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>10.7s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-advanced-spec-ts-7" data-row="test" data-status="passed" data-retried="0" data-search="@smoke theme_001: verify that the map theme dialog opens with classic, silver, and satellite options passed">
+        <td>✅</td>
+        <td>@smoke THEME_001: Verify that the Map Theme dialog opens with Classic, Silver, and Satellite options</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>15.2s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-advanced-spec-ts-7" data-row="test" data-status="passed" data-retried="0" data-search="@sanity theme_002: verify that selecting the silver map theme saves it as the persisted map theme preference passed">
+        <td>✅</td>
+        <td>@sanity THEME_002: Verify that selecting the Silver map theme saves it as the persisted map theme preference</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>18.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-advanced-spec-ts-7" data-row="test" data-status="passed" data-retried="0" data-search="theme_003: verify that selecting the satellite map theme saves it as the persisted map theme preference passed">
+        <td>✅</td>
+        <td>THEME_003: Verify that selecting the Satellite map theme saves it as the persisted map theme preference</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>13.3s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-advanced-spec-ts-7" data-row="test" data-status="passed" data-retried="0" data-search="theme_004: verify that selecting the classic map theme saves it as the persisted map theme preference passed">
+        <td>✅</td>
+        <td>THEME_004: Verify that selecting the Classic map theme saves it as the persisted map theme preference</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>15.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-advanced-spec-ts-7" data-row="test" data-status="passed" data-retried="0" data-search="theme_005: verify that closing the map theme dialog dismisses it passed">
+        <td>✅</td>
+        <td>THEME_005: Verify that closing the Map Theme dialog dismisses it</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>14.7s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-advanced-spec-ts-7" data-row="test" data-status="passed" data-retried="0" data-search="@smoke goback_001: verify that the &quot;go back?&quot; alert shows the correct heading and warning message passed">
+        <td>✅</td>
+        <td>@smoke GOBACK_001: Verify that the "Go Back?" alert shows the correct heading and warning message</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.1s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-advanced-spec-ts-7" data-row="test" data-status="passed" data-retried="0" data-search="goback_002: verify that choosing cancel on the &quot;go back?&quot; alert dismisses it and keeps the current selection passed">
+        <td>✅</td>
+        <td>GOBACK_002: Verify that choosing Cancel on the "Go Back?" alert dismisses it and keeps the current selection</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>8.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-advanced-spec-ts-7" data-row="test" data-status="passed" data-retried="0" data-search="@sanity goback_003: verify that confirming go back leaves the location page and discards the in-progress selection passed">
+        <td>✅</td>
+        <td>@sanity GOBACK_003: Verify that confirming Go Back leaves the location page and discards the in-progress selection</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>9.3s</td>
+        <td>—</td>
+      </tr>
+      <tr class="file-header" data-file="future-location-spec-ts-8">
+        <td colspan="5">
+          <strong>📄 future-location.spec.ts</strong>
+          <span class="file-stats">
+            11P / 0F / 0S — 1m 22s
+          </span>
+        </td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-spec-ts-8" data-row="test" data-status="passed" data-retried="0" data-search="@smoke fb_001: verify that the pickup date and time picker appears only after both pickup and drop-off stops are chosen passed">
+        <td>✅</td>
+        <td>@smoke FB_001: Verify that the pickup date and time picker appears only after both pickup and drop-off stops are chosen</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>10.1s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-spec-ts-8" data-row="test" data-status="passed" data-retried="0" data-search="fb_002: verify that the header reads &quot;select location&quot; without &quot;time&quot; before any stop is chosen passed">
+        <td>✅</td>
+        <td>FB_002: Verify that the header reads "Select Location" without "Time" before any stop is chosen</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-spec-ts-8" data-row="test" data-status="passed" data-retried="0" data-search="fb_003: verify that the header updates to &quot;confirm location &amp; time&quot; after both stops are selected passed">
+        <td>✅</td>
+        <td>FB_003: Verify that the header updates to "Confirm Location &amp; Time" after both stops are selected</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>8.6s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-spec-ts-8" data-row="test" data-status="passed" data-retried="0" data-search="@smoke fb_004: verify that the action button reads &quot;next&quot; and not &quot;confirm location&quot; after both stops are selected passed">
+        <td>✅</td>
+        <td>@smoke FB_004: Verify that the action button reads "Next" and not "Confirm Location" after both stops are selected</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>10.3s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-spec-ts-8" data-row="test" data-status="passed" data-retried="0" data-search="fb_005: verify that the &quot;use current location&quot; quick action is visible on the future booking org passed">
+        <td>✅</td>
+        <td>FB_005: Verify that the "Use Current Location" quick action is visible on the Future Booking org</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.2s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-spec-ts-8" data-row="test" data-status="passed" data-retried="0" data-search="fb_006: verify that the available dates request is sent once both stops are chosen passed">
+        <td>✅</td>
+        <td>FB_006: Verify that the available dates request is sent once both stops are chosen</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>7.4s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-spec-ts-8" data-row="test" data-status="passed" data-retried="0" data-search="fb_007: verify that the available slots request is sent after a date is auto-selected passed">
+        <td>✅</td>
+        <td>FB_007: Verify that the available slots request is sent after a date is auto-selected</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>10.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-spec-ts-8" data-row="test" data-status="passed" data-retried="0" data-search="@smoke verify that the pickup stop list loads and shows at least one available stop passed">
+        <td>✅</td>
+        <td>@smoke Verify that the pickup stop list loads and shows at least one available stop</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>5.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-spec-ts-8" data-row="test" data-status="passed" data-retried="0" data-search="verify that selecting a pickup stop fills in the pickup field passed">
+        <td>✅</td>
+        <td>Verify that selecting a pickup stop fills in the pickup field</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>7.7s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-spec-ts-8" data-row="test" data-status="passed" data-retried="0" data-search="verify that the same stop cannot be selected for both pickup and drop-off passed">
+        <td>✅</td>
+        <td>Verify that the same stop cannot be selected for both pickup and drop-off</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>6.3s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-location-spec-ts-8" data-row="test" data-status="passed" data-retried="0" data-search="verify that clicking back opens the &quot;go back?&quot; confirmation dialog passed">
+        <td>✅</td>
+        <td>Verify that clicking Back opens the "Go Back?" confirmation dialog</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>6.1s</td>
+        <td>—</td>
+      </tr>
+      <tr class="file-header" data-file="future-time-picker-spec-ts-9">
+        <td colspan="5">
+          <strong>📄 future-time-picker.spec.ts</strong>
+          <span class="file-stats">
+            9P / 0F / 0S — 2m 34s
+          </span>
+        </td>
+      </tr>
+      <tr class="test-row passed" data-file="future-time-picker-spec-ts-9" data-row="test" data-status="passed" data-retried="0" data-search="@smoke fb_tp_001: verify that clicking the pick-up time field opens the select time modal passed">
+        <td>✅</td>
+        <td>@smoke FB_TP_001: Verify that clicking the pick-up time field opens the Select Time modal</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>17.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-time-picker-spec-ts-9" data-row="test" data-status="passed" data-retried="0" data-search="fb_tp_002: verify that the hour, minute, and period columns show selectable time values passed">
+        <td>✅</td>
+        <td>FB_TP_002: Verify that the hour, minute, and period columns show selectable time values</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>9.2s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-time-picker-spec-ts-9" data-row="test" data-status="passed" data-retried="0" data-search="@smoke fb_tp_003: verify that confirming a time closes the modal and next enables only after a time and rider count are set passed">
+        <td>✅</td>
+        <td>@smoke FB_TP_003: Verify that confirming a time closes the modal and Next enables only after a time and rider count are set</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>13.9s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-time-picker-spec-ts-9" data-row="test" data-status="passed" data-retried="0" data-search="fb_tp_004: verify that the close button dismisses the time modal without setting a pick-up time passed">
+        <td>✅</td>
+        <td>FB_TP_004: Verify that the close button dismisses the time modal without setting a pick-up time</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>12.6s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-time-picker-spec-ts-9" data-row="test" data-status="passed" data-retried="0" data-search="fb_tp_005: verify that the next button stays disabled until a pick-up time is confirmed passed">
+        <td>✅</td>
+        <td>FB_TP_005: Verify that the Next button stays disabled until a pick-up time is confirmed</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>9.4s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-time-picker-spec-ts-9" data-row="test" data-status="passed" data-retried="0" data-search="@smoke fb_tp_006: verify that list view is the default and switching to grid view shows selectable time-slot chips passed">
+        <td>✅</td>
+        <td>@smoke FB_TP_006: Verify that List View is the default and switching to Grid View shows selectable time-slot chips</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>16.1s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-time-picker-spec-ts-9" data-row="test" data-status="passed" data-retried="0" data-search="fb_tp_007: verify that selecting and confirming a time slot in grid view sets the pick-up time field passed">
+        <td>✅</td>
+        <td>FB_TP_007: Verify that selecting and confirming a time slot in Grid View sets the pick-up time field</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>26.3s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-time-picker-spec-ts-9" data-row="test" data-status="passed" data-retried="0" data-search="fb_tp_008: verify that switching from grid view back to list view restores the scroll-wheel time columns passed">
+        <td>✅</td>
+        <td>FB_TP_008: Verify that switching from Grid View back to List View restores the scroll-wheel time columns</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>30.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-time-picker-spec-ts-9" data-row="test" data-status="passed" data-retried="0" data-search="fb_tp_009: verify that a random time slot picked in grid view is shown correctly in the pick-up time field passed">
+        <td>✅</td>
+        <td>FB_TP_009: Verify that a random time slot picked in Grid View is shown correctly in the pick-up time field</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>19.3s</td>
+        <td>—</td>
+      </tr>
+      <tr class="file-header" data-file="future-validation-spec-ts-10">
+        <td colspan="5">
+          <strong>📄 future-validation.spec.ts</strong>
+          <span class="file-stats">
+            6P / 0F / 2S — 5m 39s
+          </span>
+        </td>
+      </tr>
+      <tr class="test-row passed" data-file="future-validation-spec-ts-10" data-row="test" data-status="passed" data-retried="0" data-search="@smoke @sanity fb_018: verify that submitting an empty future-booking form is blocked and shows a validation error on the name field passed">
+        <td>✅</td>
+        <td>@smoke @sanity FB_018: Verify that submitting an empty future-booking form is blocked and shows a validation error on the name field</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>30.3s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-validation-spec-ts-10" data-row="test" data-status="passed" data-retried="0" data-search="fb_019: verify that entering a phone number shorter than the required length shows a phone validation error passed">
+        <td>✅</td>
+        <td>FB_019: Verify that entering a phone number shorter than the required length shows a phone validation error</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>44.7s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-validation-spec-ts-10" data-row="test" data-status="passed" data-retried="0" data-search="fb_020: verify that entering a valid phone number of 10 to 16 digits shows no validation error passed">
+        <td>✅</td>
+        <td>FB_020: Verify that entering a valid phone number of 10 to 16 digits shows no validation error</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>56.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-validation-spec-ts-10" data-row="test" data-status="passed" data-retried="0" data-search="@smoke fb_021: verify that script or html entered in the name field is sanitized and not kept as executable content passed">
+        <td>✅</td>
+        <td>@smoke FB_021: Verify that script or HTML entered in the name field is sanitized and not kept as executable content</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>35.1s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row skipped" data-file="future-validation-spec-ts-10" data-row="test" data-status="skipped" data-retried="0" data-search="fb_022: verify that submitting without choosing a rider type shows the required rider type error when configured skipped">
+        <td>⏭️</td>
+        <td>FB_022: Verify that submitting without choosing a rider type shows the required rider type error when configured</td>
+        <td class="status-cell skipped">SKIPPED</td>
+        <td>32.7s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row skipped" data-file="future-validation-spec-ts-10" data-row="test" data-status="skipped" data-retried="0" data-search="fb_023: verify that the rider type validation error clears once an option is selected skipped">
+        <td>⏭️</td>
+        <td>FB_023: Verify that the rider type validation error clears once an option is selected</td>
+        <td class="status-cell skipped">SKIPPED</td>
+        <td>33.0s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-validation-spec-ts-10" data-row="test" data-status="passed" data-retried="0" data-search="fb_024: verify that submitting with an empty room number shows a validation error when room number is required passed">
+        <td>✅</td>
+        <td>FB_024: Verify that submitting with an empty room number shows a validation error when room number is required</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>55.9s</td>
+        <td>—</td>
+      </tr>
+      <tr class="test-row passed" data-file="future-validation-spec-ts-10" data-row="test" data-status="passed" data-retried="0" data-search="verify that correcting the name field after a validation error clears the error passed">
+        <td>✅</td>
+        <td>Verify that correcting the name field after a validation error clears the error</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>50.7s</td>
+        <td>—</td>
+      </tr>
+      <tr class="file-header" data-file="asap-cancellation-spec-ts-11">
+        <td colspan="5">
+          <strong>📄 asap-cancellation.spec.ts</strong>
+          <span class="file-stats">
+            1P / 0F / 0S — 34.5s
+          </span>
+        </td>
+      </tr>
+      <tr class="test-row passed" data-file="asap-cancellation-spec-ts-11" data-row="test" data-status="passed" data-retried="0" data-search="@prod prod_cancel_001: verify that a newly created ride can be immediately canceled successfully passed">
+        <td>✅</td>
+        <td>@prod PROD_CANCEL_001: Verify that a newly created ride can be immediately canceled successfully</td>
+        <td class="status-cell passed">PASSED</td>
+        <td>34.5s</td>
+        <td>—</td>
+      </tr>
+      <tr class="no-match-row" id="noMatchRow" style="display:none"><td colspan="5">No tests match the current filter.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="footer">Generated by TMS Rider E2E Test Framework</div>
+
+  <script>
+    (function () {
+      var searchBox = document.getElementById('searchBox');
+      var noMatchRow = document.getElementById('noMatchRow');
+      var visibleCount = document.getElementById('visibleCount');
+      var testRows = Array.prototype.slice.call(document.querySelectorAll('tr[data-row="test"]'));
+      var errorRows = Array.prototype.slice.call(document.querySelectorAll('tr[data-row="error"]'));
+      var fileHeaders = Array.prototype.slice.call(document.querySelectorAll('tr.file-header'));
+      var chips = Array.prototype.slice.call(document.querySelectorAll('#filterChips .chip'));
+      var cards = Array.prototype.slice.call(document.querySelectorAll('.card.clickable'));
+
+      var activeFilter = 'all';
+      var query = '';
+
+      // A row passes the status filter if the chosen bucket matches. 'retried'
+      // keys off the data-retried flag; 'all' matches everything.
+      function statusMatch(row) {
+        if (activeFilter === 'all') return true;
+        if (activeFilter === 'retried') return row.getAttribute('data-retried') === '1';
+        return row.getAttribute('data-status') === activeFilter;
+      }
+      function searchMatch(row) {
+        return !query || row.getAttribute('data-search').indexOf(query) !== -1;
+      }
+
+      function apply() {
+        var visible = 0;
+        // Track which file groups still have at least one visible test row.
+        var filesWithVisible = {};
+        testRows.forEach(function (row) {
+          var show = statusMatch(row) && searchMatch(row);
+          row.style.display = show ? '' : 'none';
+          if (show) { visible++; filesWithVisible[row.getAttribute('data-file')] = true; }
+        });
+        // Error detail rows follow their test row's visibility.
+        errorRows.forEach(function (row) {
+          var show = statusMatch(row) && searchMatch(row);
+          row.style.display = show ? '' : 'none';
+        });
+        // Hide a file header when none of its tests are visible.
+        fileHeaders.forEach(function (h) {
+          h.style.display = filesWithVisible[h.getAttribute('data-file')] ? '' : 'none';
+        });
+        noMatchRow.style.display = visible === 0 ? '' : 'none';
+        visibleCount.textContent = 'Showing ' + visible + ' of ' + testRows.length + ' tests';
+      }
+
+      function setFilter(f) {
+        activeFilter = f;
+        chips.forEach(function (c) { c.classList.toggle('active', c.getAttribute('data-filter') === f); });
+        cards.forEach(function (c) { c.classList.toggle('active', c.getAttribute('data-filter') === f); });
+        apply();
+      }
+
+      chips.forEach(function (c) {
+        c.addEventListener('click', function () { setFilter(c.getAttribute('data-filter')); });
+      });
+      cards.forEach(function (c) {
+        c.addEventListener('click', function () { setFilter(c.getAttribute('data-filter')); });
+      });
+      searchBox.addEventListener('input', function () {
+        query = searchBox.value.trim().toLowerCase();
+        apply();
+      });
+
+      apply();
+    })();
+  </script>
+</body>
+</html>
