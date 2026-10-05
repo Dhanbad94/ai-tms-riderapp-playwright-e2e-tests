@@ -42,9 +42,12 @@ export class SelectLocationPage {
     // "View on map" once the stop list shows. viewOnMapBtn is the list→map
     // control; viewStopListBtn is the map→list control; mapListToggle matches
     // whichever is currently rendered (state-agnostic presence check).
-    this.viewOnMapBtn = page.getByText('View on map');
-    this.viewStopListBtn = page.getByText('View Stop List');
-    this.mapListToggle = page.getByText(/View Stop List|View on map/);
+    // Matchers are case-INSENSITIVE: the Oct-2026 UI retitled the control to
+    // "View On Map" (capital O/M), which the old exact-case text/regex missed.
+    // A case-insensitive regex matches both the old and new labels.
+    this.viewOnMapBtn = page.getByText(/view on map/i);
+    this.viewStopListBtn = page.getByText(/view stop list/i);
+    this.mapListToggle = page.getByText(/view stop list|view on map/i);
     this.backButton = page.locator('button').filter({ has: page.locator('img[alt="back"]') }).first();
     this.pageHeader = page.getByRole('heading', { level: 2 });
     // NOTE: the literal "Pick-up Date & Time" heading text does not exist
