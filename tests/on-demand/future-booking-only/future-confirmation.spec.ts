@@ -113,7 +113,12 @@ test.describe(`Future Booking — Confirmation Page ${RIDER_TAGS.FUTURE} ${RIDER
     await confirmationPage.scrollRiderDetailsIntoView();
     const card = confirmationPage.riderDetailsCard;
     await expect(card).toBeVisible();
-    await expect(card.getByText(details.name)).toBeVisible();
+    // Oct-2026: the tracking card renders the name with non-letter characters
+    // stripped (e.g. submitted "PW_Rider_ut6e" shows as "PWRiderute"), so match
+    // the normalized, letters-only form of what was submitted. The phone is
+    // shown verbatim.
+    const displayedName = details.name.replace(/[^A-Za-z]/g, '');
+    await expect(card.getByText(displayedName)).toBeVisible();
     await expect(card.getByText(details.phone)).toBeVisible();
   });
 

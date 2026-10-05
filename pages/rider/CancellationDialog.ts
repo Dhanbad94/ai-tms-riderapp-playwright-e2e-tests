@@ -58,12 +58,15 @@ export class CancellationDialog {
     this.allRadios = page.locator('input[type="radio"]');
     this.reasonLabels = page.locator('label');
     this.detailsTextarea = page.getByPlaceholder(/share|details|reason/i);
-    // A plain name:'Back' role match is ambiguous on Future Booking's tracking
-    // screen: it also has a post-cancel "Back to Home" button whose accessible
-    // name is "Back Back to Home" (still matches a loose 'Back' filter) —
-    // confirmed live via a 3-way strict-mode violation. Scope to the dialog's
-    // own exact-text "Back" button instead.
-    this.backButton = page.getByRole('button', { name: 'Back', exact: true });
+    // A page-wide name:'Back' match is ambiguous: the tracking screen has its
+    // own top-nav "Back" button whose accessible name is ALSO exactly "Back",
+    // so once the cancellation dialog is open an exact 'Back' match resolves to
+    // 2 elements (confirmed live Oct-2026 — a strict-mode violation in FB_032).
+    // Scope to the dialog modal's content so only the dialog's own Back matches
+    // (live-verified: the nav Back sits outside [class*="modalContent"]).
+    this.backButton = page.locator('[class*="modalContent"]')
+      .getByRole('button', { name: 'Back', exact: true })
+      .first();
     this.cancelRideButton = page.getByRole('button', { name: /Cancel Ride/i }).last();
   }
 

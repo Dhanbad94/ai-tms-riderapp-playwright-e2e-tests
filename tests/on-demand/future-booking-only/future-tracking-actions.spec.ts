@@ -118,8 +118,9 @@ test.describe(`Future Booking — Tracking Actions ${RIDER_TAGS.FUTURE} ${RIDER_
   /** Verify that "Create New Request" links to the same org's request-a-ride page. */
   test('TRACK_005: Verify that "Create New Request" links to the same organisation request-a-ride page', async ({ confirmationPage }) => {
     await expect(confirmationPage.createNewRequestLink).toBeVisible({ timeout: RIDER_TIMEOUTS.CONFIRMATION });
+    // Oct-2026: the request-a-ride route changed from /a/<org> to /c/<org>/1.
     await expect(confirmationPage.createNewRequestLink).toHaveAttribute(
-      'href', new RegExp(`/a/${org.trackingId}$`, 'i')
+      'href', new RegExp(`/c/${org.trackingId}/1$`, 'i')
     );
   });
 
@@ -127,6 +128,8 @@ test.describe(`Future Booking — Tracking Actions ${RIDER_TAGS.FUTURE} ${RIDER_
   test('@sanity TRACK_006: Verify that clicking "Create New Request" opens the organisation Welcome screen', async ({ page, confirmationPage }) => {
     await expect(confirmationPage.createNewRequestLink).toBeVisible({ timeout: RIDER_TIMEOUTS.CONFIRMATION });
     await confirmationPage.clickCreateNewRequest();
+    // The link href is /c/<org>/1 (Oct-2026), which REDIRECTS to the org
+    // Welcome screen at /a/<org> — assert the final landed URL, not the href.
     await expect(page).toHaveURL(new RegExp(`/a/${org.trackingId}$`, 'i'), { timeout: 15_000 });
   });
 
