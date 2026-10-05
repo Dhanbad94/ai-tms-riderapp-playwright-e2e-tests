@@ -46,12 +46,15 @@ export class DateTimePicker {
   readonly seatsAvailableText: Locator;
   readonly setPickupTimeButton: Locator;
 
-  // List/Grid view toggle — two buttons in the modal header. "List View" (the
-  // scroll-wheel hour/minute/period columns above) is the default; the second,
-  // icon-only button switches to a flat grid of full-time chips instead
-  // (confirmed live on staging/ODFB — see gridSlotChips below).
-  readonly listViewToggleButton: Locator;
-  readonly gridViewToggleButton: Locator;
+  // List/Grid view toggle — two buttons in the modal header. Post Oct-2026 the
+  // DEFAULT view flipped to GRID (a flat grid of full-time chips, e.g. "9:00 AM");
+  // the scroll-wheel hour/minute/period List columns still exist in the DOM but
+  // are hidden until toggled to. The ACTIVE toggle carries `viewToggleBtnActive`
+  // and shows the current view's text label; the inactive one is icon-only.
+  // Switching views = clicking whichever button is NOT currently active, so the
+  // switch helpers below are driven by the active class + content visibility
+  // rather than a fixed button position (which the overhaul also changed).
+  readonly viewToggleWrapper: Locator;
   readonly gridSlotChips: Locator;
 
   // Shared "Next" CTA at the bottom of the card (same element SelectLocationPage
@@ -92,14 +95,11 @@ export class DateTimePicker {
     this.seatsAvailableText = page.getByText(/seats available/i).first();
     this.setPickupTimeButton = page.getByRole('button', { name: 'Set Pick-up Time' }).first();
 
-    // The toggle pair only shows its active button's text label ("List View"
-    // / "Grid View") — the inactive one renders icon-only with no accessible
-    // name (confirmed live) — so these are targeted positionally within the
-    // toggle wrapper rather than by name, scoped to the first (of the
-    // duplicated) modal copies via .first() on the wrapper itself.
-    const viewToggleWrapper = page.locator('[class*="viewToggleWrapper"]').first();
-    this.listViewToggleButton = viewToggleWrapper.locator('button').nth(0);
-    this.gridViewToggleButton = viewToggleWrapper.locator('button').nth(1);
+    // Scope the toggle to the first (of possibly duplicated) modal copies. The
+    // active button carries `viewToggleBtnActive`; switchTo*View() clicks the
+    // non-active one. Targeting by active state (not position) is resilient to
+    // the Oct-2026 reorder that made button[0] the active "Grid View".
+    this.viewToggleWrapper = page.locator('[class*="viewToggleWrapper"]').first();
     this.gridSlotChips = page.locator('[class*="gridSlotChip"]');
 
     // Anchored regex — an unanchored 'Next' also matches the calendar's own
@@ -269,15 +269,34 @@ export class DateTimePicker {
     await this.setPickupTimeButton.click();
   }
 
-  /** Switch the open time modal to the scroll-wheel "List View" (the default). */
-  async switchToListView() {
-    await this.listViewToggleButton.click();
-    await expect(this.hourColumn.locator('[class*="picker_item"]').first()).toBeVisible({ timeout: RIDER_TIMEOUTS.MUI_DROPDOWN * 4 });
+  /** Click whichever view-toggle button is not currently active, flipping the view. */
+  private async clickInactiveViewToggle() {
+    await this.viewToggleWrapper
+      .locator('button:not([class*="viewToggleBtnActive"])')
+      .first()
+      .click();
   }
 
-  /** Switch the open time modal to "Grid View" — a flat grid of full-time chips (e.g. "9:00 AM"). */
+  /**
+   * Ensure the scroll-wheel "List View" (hour/minute/period columns) is showing.
+   * Idempotent: a no-op when the columns are already visible. Post Oct-2026 List
+   * is NO LONGER the default (Grid is), so reaching it requires a toggle.
+   */
+  async switchToListView() {
+    const listItem = this.hourColumn.locator('[class*="picker_item"]').first();
+    if (await listItem.isVisible().catch(() => false)) return;
+    await this.clickInactiveViewToggle();
+    await expect(listItem).toBeVisible({ timeout: RIDER_TIMEOUTS.MUI_DROPDOWN * 4 });
+  }
+
+  /**
+   * Ensure "Grid View" — the flat grid of full-time chips (e.g. "9:00 AM"), the
+   * Oct-2026 DEFAULT — is showing. Idempotent: a no-op when the chips are already
+   * visible, so callers that open the modal (grid-default) don't toggle it away.
+   */
   async switchToGridView() {
-    await this.gridViewToggleButton.click();
+    if (await this.gridSlotChips.first().isVisible().catch(() => false)) return;
+    await this.clickInactiveViewToggle();
     await expect(this.gridSlotChips.first()).toBeVisible({ timeout: RIDER_TIMEOUTS.MUI_DROPDOWN * 4 });
   }
 
