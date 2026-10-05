@@ -56,11 +56,15 @@ test.describe(`Have a Booking — Landing Page (Phone) ${RIDER_TAGS.UI_ONLY} ${R
       await expect(signInPage.nextButton).toBeDisabled();
     });
 
-    /** Verify that entering invalid/script-like characters shows "Please enter a valid phone number." */
-    test('@negative HB_004: Verify that entering invalid characters in the phone field shows a validation error', async ({ signInPage }) => {
-      await signInPage.fillPhone('8676913831');
+    /** Verify that non-numeric characters are rejected by the phone field (digits-only input). */
+    test('@negative HB_004: Verify that non-numeric characters are rejected from the phone field', async ({ signInPage }) => {
+      // Post Oct-2026 the phone field is digits-only: non-numeric input is
+      // stripped on entry rather than surfacing a "Please enter a valid phone
+      // number." message (the old behavior). So typing script-like characters
+      // leaves no letters/symbols in the field and the Next CTA stays disabled.
       await signInPage.fillPhone('<script>');
-      await expect.poll(() => signInPage.getPhoneErrorText()).toBe('Please enter a valid phone number.');
+      await expect(signInPage.phoneInput).not.toHaveValue(/[^0-9]/);
+      await expect(signInPage.nextButton).toBeDisabled();
     });
 
     /** Verify that a phone number longer than the country's expected length shows "Phone must be {N} digits". */
