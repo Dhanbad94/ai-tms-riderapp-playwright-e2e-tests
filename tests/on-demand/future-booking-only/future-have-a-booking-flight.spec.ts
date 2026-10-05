@@ -72,13 +72,12 @@ test.describe(`Have a Booking — Org-Scoped Tabs (Phone/Flight) ${RIDER_TAGS.FU
   test.describe('Tab presence & switching (no ride required)', () => {
     test.beforeEach(async ({ signInPage }) => {
       test.skip(!isOrgEnabled('futureBookingOnly'), 'Future Booking org not configured for this environment — set trackingId/stops in rider-config.ts');
+      // "Have a booking?" (org-scoped ?showFlight) must ALWAYS offer BOTH the
+      // Phone and Flight lookup tabs. Production renders both; staging and
+      // preproduction currently render a phone-only form — that is a UI BUG in
+      // the new build, so these tests are expected to FAIL there until it is
+      // fixed (they exist to catch exactly this regression — do NOT skip them).
       await signInPage.goto({ showFlight: true, orgCode: org.trackingId.toLowerCase() });
-      // The Oct-2026 overhaul removed the Phone/Flight tab UI from the sign-in
-      // page — even with ?showFlight it now renders a phone-only form, so the
-      // flight-lookup tab no longer exists. Feature-detect and skip rather than
-      // delete, so these specs auto-run again if the tab is ever restored.
-      test.skip(!(await signInPage.flightTabLabel.isVisible({ timeout: 3_000 }).catch(() => false)),
-        'Flight-lookup tab removed from the sign-in page in the Oct-2026 overhaul (phone-only now).');
     });
 
     /** Verify that both "Find by Phone No." and "Find by Flight No." tabs render when reached via the org-scoped link. */
@@ -141,16 +140,9 @@ test.describe(`Have a Booking — Org-Scoped Tabs (Phone/Flight) ${RIDER_TAGS.FU
   });
 
   test.describe('Flight lookup — real booking', () => {
-    test.beforeEach(async ({ page }) => {
+    test.beforeEach(async () => {
       test.skip(!isOrgEnabled('futureBookingOnly'), 'Future Booking org not configured for this environment — set trackingId/stops in rider-config.ts');
       test.skip(!canCreateRides(), 'Ride creation disabled on this environment');
-      // Same feature-detect as the tab-presence group: the flight-lookup tab was
-      // removed in the Oct-2026 overhaul, so there is nothing to look a booking
-      // up against. Skip (reversibly) rather than create a ride for a gone flow.
-      const sp = new SignInPage(page);
-      await sp.goto({ showFlight: true, orgCode: org.trackingId.toLowerCase() });
-      test.skip(!(await sp.flightTabLabel.isVisible({ timeout: 3_000 }).catch(() => false)),
-        'Flight-lookup tab removed from the sign-in page in the Oct-2026 overhaul (phone-only now).');
     });
 
     test.afterEach(async ({ page }) => {
