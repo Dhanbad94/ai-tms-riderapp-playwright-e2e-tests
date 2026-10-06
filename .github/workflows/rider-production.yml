@@ -198,6 +198,20 @@ jobs:
           REPORT_URL="${{ needs.rider-tests.outputs.report_url }}"
           # Fallback so the CTA is always present even if report_url didn't resolve.
           [ -z "$REPORT_URL" ] && REPORT_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          # The dashboard lives on GitHub Pages (gh-pages), whose build can lag
+          # minutes behind the publish — during which the per-run URL 404s. Poll
+          # it briefly; if it isn't live yet, link the Actions run page (always
+          # up) so the Slack CTA never dead-links.
+          if [[ "$REPORT_URL" == https://*.github.io/* ]]; then
+            RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            live=""
+            for i in $(seq 1 18); do
+              code=$(curl -s -o /dev/null -w "%{http_code}" "$REPORT_URL" || echo 000)
+              [ "$code" = "200" ] && { live=1; break; }
+              sleep 10
+            done
+            [ -z "$live" ] && REPORT_URL="$RUN_URL"
+          fi
 
           # Derive pass/fail from the ACTUAL failed-test count, not the job
           # result. A non-test step (e.g. the GitHub Pages publish losing a race
