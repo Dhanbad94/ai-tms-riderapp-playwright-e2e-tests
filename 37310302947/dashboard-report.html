@@ -58,30 +58,30 @@
 <body>
   <div class="header">
     <h1>🚐 TMS Rider — Test Dashboard</h1>
-    <div class="subtitle">Run: Oct 5, 2026, 12:33 PM | Environment: staging | Duration: 7m 35s</div>
+    <div class="subtitle">Run: Oct 6, 2026, 7:16 AM | Environment: staging | Duration: 4m 38s</div>
   </div>
 
   <div class="summary">
     <div class="card total clickable active" data-filter="all"><div class="number">38</div><div class="label">Total Tests</div></div>
-    <div class="card passed clickable" data-filter="passed"><div class="number">36</div><div class="label">Passed</div></div>
-    <div class="card failed clickable" data-filter="failed"><div class="number">1</div><div class="label">Failed</div></div>
+    <div class="card passed clickable" data-filter="passed"><div class="number">37</div><div class="label">Passed</div></div>
+    <div class="card failed clickable" data-filter="failed"><div class="number">0</div><div class="label">Failed</div></div>
     <div class="card skipped clickable" data-filter="skipped"><div class="number">1</div><div class="label">Skipped</div></div>
-    <div class="card retried clickable" data-filter="retried"><div class="number">1</div><div class="label">Retried</div></div>
-    <div class="card rate"><div class="number">97%</div><div class="label">Pass Rate</div></div>
-    <div class="card duration"><div class="number">7m 35s</div><div class="label">Duration</div></div>
+    <div class="card retried clickable" data-filter="retried"><div class="number">0</div><div class="label">Retried</div></div>
+    <div class="card rate"><div class="number">100%</div><div class="label">Pass Rate</div></div>
+    <div class="card duration"><div class="number">4m 38s</div><div class="label">Duration</div></div>
   </div>
 
-  <div class="progress-bar"><div class="fill" style="width: 97%"></div></div>
+  <div class="progress-bar"><div class="fill" style="width: 100%"></div></div>
 
   <div class="controls">
     <input type="search" id="searchBox" placeholder="🔍 Search test name…" aria-label="Search test name">
     <div class="chips" id="filterChips">
       <span class="chip active" data-filter="all">All<span class="cnt">38</span></span>
-      <span class="chip" data-filter="passed">✅ Passed<span class="cnt">36</span></span>
-      <span class="chip" data-filter="failed">❌ Failed<span class="cnt">1</span></span>
+      <span class="chip" data-filter="passed">✅ Passed<span class="cnt">37</span></span>
+      <span class="chip" data-filter="failed">❌ Failed<span class="cnt">0</span></span>
       <span class="chip" data-filter="skipped">⏭️ Skipped<span class="cnt">1</span></span>
       <span class="chip" data-filter="flaky">⚠️ Flaky<span class="cnt">0</span></span>
-      <span class="chip" data-filter="retried">🔄 Retried<span class="cnt">1</span></span>
+      <span class="chip" data-filter="retried">🔄 Retried<span class="cnt">0</span></span>
     </div>
   </div>
   <div class="visible-count" id="visibleCount"></div>
@@ -102,7 +102,7 @@
         <td colspan="5">
           <strong>📄 asap-api-payload.spec.ts</strong>
           <span class="file-stats">
-            2P / 0F / 0S — 10.9s
+            2P / 0F / 0S — 13.3s
           </span>
         </td>
       </tr>
@@ -110,21 +110,21 @@
         <td>✅</td>
         <td>@smoke @sanity ASAP_027: Verify that the on-demand booking request contains no scheduled-booking object</td>
         <td class="status-cell passed">PASSED</td>
-        <td>5.4s</td>
+        <td>5.6s</td>
         <td>—</td>
       </tr>
       <tr class="test-row passed" data-file="asap-api-payload-spec-ts-0" data-row="test" data-status="passed" data-retried="0" data-search="@smoke asap_030: verify that the booking request is sent to the current rider api endpoint and not the legacy one passed">
         <td>✅</td>
         <td>@smoke ASAP_030: Verify that the booking request is sent to the current rider API endpoint and not the legacy one</td>
         <td class="status-cell passed">PASSED</td>
-        <td>5.6s</td>
+        <td>7.7s</td>
         <td>—</td>
       </tr>
       <tr class="file-header" data-file="asap-form-spec-ts-1">
         <td colspan="5">
           <strong>📄 asap-form.spec.ts</strong>
           <span class="file-stats">
-            2P / 0F / 1S — 8.0s
+            2P / 0F / 1S — 7.4s
           </span>
         </td>
       </tr>
@@ -132,7 +132,7 @@
         <td>✅</td>
         <td>@smoke @sanity @prod ASAP_009: Verify that the ride details form opens with the "Enter Ride Details" heading</td>
         <td class="status-cell passed">PASSED</td>
-        <td>3.7s</td>
+        <td>4.0s</td>
         <td>—</td>
       </tr>
       <tr class="test-row skipped" data-file="asap-form-spec-ts-1" data-row="test" data-status="skipped" data-retried="0" data-search="@smoke asap_015: verify that the flight number field is shown on the ride details form skipped">
@@ -146,14 +146,14 @@
         <td>✅</td>
         <td>@smoke @prod Verify that the "Request Ride" button is visible on the ride details form</td>
         <td class="status-cell passed">PASSED</td>
-        <td>4.2s</td>
+        <td>3.4s</td>
         <td>—</td>
       </tr>
       <tr class="file-header" data-file="asap-location-advanced-spec-ts-2">
         <td colspan="5">
           <strong>📄 asap-location-advanced.spec.ts</strong>
           <span class="file-stats">
-            4P / 0F / 0S — 7.4s
+            4P / 0F / 0S — 9.1s
           </span>
         </td>
       </tr>
@@ -161,7 +161,7 @@
         <td>✅</td>
         <td>@smoke SEARCH_001: Verify that pickup stops can be found by typing part of a stop name</td>
         <td class="status-cell passed">PASSED</td>
-        <td>1.7s</td>
+        <td>2.3s</td>
         <td>—</td>
       </tr>
       <tr class="test-row passed" data-file="asap-location-advanced-spec-ts-2" data-row="test" data-status="passed" data-retried="0" data-search="@smoke random_001: verify that randomly selected pickup and dropoff stops are different and populate both fields passed">
@@ -175,21 +175,21 @@
         <td>✅</td>
         <td>@smoke MAP_001: Verify that the map and list view toggle is visible and clickable</td>
         <td class="status-cell passed">PASSED</td>
-        <td>1.6s</td>
+        <td>2.2s</td>
         <td>—</td>
       </tr>
       <tr class="test-row passed" data-file="asap-location-advanced-spec-ts-2" data-row="test" data-status="passed" data-retried="0" data-search="@smoke loc_001: verify that the use current location button is visible on the location screen passed">
         <td>✅</td>
         <td>@smoke LOC_001: Verify that the Use Current Location button is visible on the location screen</td>
         <td class="status-cell passed">PASSED</td>
-        <td>1.8s</td>
+        <td>2.3s</td>
         <td>—</td>
       </tr>
       <tr class="file-header" data-file="asap-location-spec-ts-3">
         <td colspan="5">
           <strong>📄 asap-location.spec.ts</strong>
           <span class="file-stats">
-            5P / 0F / 0S — 8.9s
+            5P / 0F / 0S — 10.0s
           </span>
         </td>
       </tr>
@@ -197,35 +197,35 @@
         <td>✅</td>
         <td>@smoke @sanity @prod ASAP_001: Verify that no date or time picker is shown in the ASAP booking flow</td>
         <td class="status-cell passed">PASSED</td>
-        <td>2.2s</td>
+        <td>1.8s</td>
         <td>—</td>
       </tr>
       <tr class="test-row passed" data-file="asap-location-spec-ts-3" data-row="test" data-status="passed" data-retried="0" data-search="@smoke asap_002: verify that the action button reads confirm location and not next passed">
         <td>✅</td>
         <td>@smoke ASAP_002: Verify that the action button reads Confirm Location and not Next</td>
         <td class="status-cell passed">PASSED</td>
-        <td>1.9s</td>
+        <td>2.2s</td>
         <td>—</td>
       </tr>
       <tr class="test-row passed" data-file="asap-location-spec-ts-3" data-row="test" data-status="passed" data-retried="0" data-search="@smoke asap_004: verify that the use current location button is visible on the location screen passed">
         <td>✅</td>
         <td>@smoke ASAP_004: Verify that the Use Current Location button is visible on the location screen</td>
         <td class="status-cell passed">PASSED</td>
-        <td>1.4s</td>
+        <td>2.2s</td>
         <td>—</td>
       </tr>
       <tr class="test-row passed" data-file="asap-location-spec-ts-3" data-row="test" data-status="passed" data-retried="0" data-search="@smoke verify that the stop list loads and displays available stops passed">
         <td>✅</td>
         <td>@smoke Verify that the stop list loads and displays available stops</td>
         <td class="status-cell passed">PASSED</td>
-        <td>1.6s</td>
+        <td>1.9s</td>
         <td>—</td>
       </tr>
       <tr class="test-row passed" data-file="asap-location-spec-ts-3" data-row="test" data-status="passed" data-retried="0" data-search="@smoke @sanity verify that selecting a pickup stop fills the pickup field with that stop passed">
         <td>✅</td>
         <td>@smoke @sanity Verify that selecting a pickup stop fills the pickup field with that stop</td>
         <td class="status-cell passed">PASSED</td>
-        <td>1.8s</td>
+        <td>1.9s</td>
         <td>—</td>
       </tr>
       <tr class="file-header" data-file="asap-validation-spec-ts-4">
@@ -240,21 +240,21 @@
         <td>✅</td>
         <td>@smoke @sanity ASAP_019: Verify that submitting an empty booking form is blocked and shows a validation error on the name field</td>
         <td class="status-cell passed">PASSED</td>
-        <td>3.9s</td>
+        <td>3.8s</td>
         <td>—</td>
       </tr>
       <tr class="test-row passed" data-file="asap-validation-spec-ts-4" data-row="test" data-status="passed" data-retried="0" data-search="@smoke asap_024: verify that script content typed into the name field is stripped out for safety passed">
         <td>✅</td>
         <td>@smoke ASAP_024: Verify that script content typed into the name field is stripped out for safety</td>
         <td class="status-cell passed">PASSED</td>
-        <td>3.4s</td>
+        <td>3.5s</td>
         <td>—</td>
       </tr>
       <tr class="file-header" data-file="future-api-payload-spec-ts-5">
         <td colspan="5">
           <strong>📄 future-api-payload.spec.ts</strong>
           <span class="file-stats">
-            2P / 0F / 0S — 1m 15s
+            2P / 0F / 0S — 51.8s
           </span>
         </td>
       </tr>
@@ -262,21 +262,21 @@
         <td>✅</td>
         <td>@smoke @sanity FB_033: Verify that the booking request includes a booking object carrying the pickup time and pickup date</td>
         <td class="status-cell passed">PASSED</td>
-        <td>37.3s</td>
+        <td>26.8s</td>
         <td>—</td>
       </tr>
       <tr class="test-row passed" data-file="future-api-payload-spec-ts-5" data-row="test" data-status="passed" data-retried="0" data-search="@smoke fb_034: verify that the booking request is sent to the future booking type-suffixed endpoint and not the asap request endpoint passed">
         <td>✅</td>
         <td>@smoke FB_034: Verify that the booking request is sent to the Future Booking type-suffixed endpoint and not the ASAP request endpoint</td>
         <td class="status-cell passed">PASSED</td>
-        <td>37.8s</td>
+        <td>25.0s</td>
         <td>—</td>
       </tr>
       <tr class="file-header" data-file="future-date-picker-spec-ts-6">
         <td colspan="5">
           <strong>📄 future-date-picker.spec.ts</strong>
           <span class="file-stats">
-            1P / 0F / 0S — 3.2s
+            1P / 0F / 0S — 3.5s
           </span>
         </td>
       </tr>
@@ -284,14 +284,14 @@
         <td>✅</td>
         <td>@smoke FB_DT_001: Verify that the pick-up date field is displayed and pre-filled with a default date on load</td>
         <td class="status-cell passed">PASSED</td>
-        <td>3.2s</td>
+        <td>3.5s</td>
         <td>—</td>
       </tr>
       <tr class="file-header" data-file="future-form-spec-ts-7">
         <td colspan="5">
           <strong>📄 future-form.spec.ts</strong>
           <span class="file-stats">
-            1P / 0F / 0S — 24.6s
+            1P / 0F / 0S — 12.7s
           </span>
         </td>
       </tr>
@@ -299,14 +299,14 @@
         <td>✅</td>
         <td>@smoke @sanity FB_008: Verify that the ride details form opens with the "Enter Ride Details" heading</td>
         <td class="status-cell passed">PASSED</td>
-        <td>24.6s</td>
+        <td>12.7s</td>
         <td>—</td>
       </tr>
       <tr class="file-header" data-file="future-have-a-booking-landing-spec-ts-8">
         <td colspan="5">
           <strong>📄 future-have-a-booking-landing.spec.ts</strong>
           <span class="file-stats">
-            2P / 0F / 0S — 5.9s
+            2P / 0F / 0S — 6.5s
           </span>
         </td>
       </tr>
@@ -314,21 +314,21 @@
         <td>✅</td>
         <td>@smoke HB_001: Verify that the Have a Booking link on the landing page opens the sign-in page</td>
         <td class="status-cell passed">PASSED</td>
-        <td>4.7s</td>
+        <td>4.9s</td>
         <td>—</td>
       </tr>
       <tr class="test-row passed" data-file="future-have-a-booking-landing-spec-ts-8" data-row="test" data-status="passed" data-retried="0" data-search="@smoke hb_003: verify that the next button is disabled while the phone number field is empty passed">
         <td>✅</td>
         <td>@smoke HB_003: Verify that the Next button is disabled while the phone number field is empty</td>
         <td class="status-cell passed">PASSED</td>
-        <td>1.2s</td>
+        <td>1.6s</td>
         <td>—</td>
       </tr>
       <tr class="file-header" data-file="future-location-advanced-spec-ts-9">
         <td colspan="5">
           <strong>📄 future-location-advanced.spec.ts</strong>
           <span class="file-stats">
-            5P / 0F / 0S — 18.3s
+            5P / 0F / 0S — 22.3s
           </span>
         </td>
       </tr>
@@ -336,42 +336,42 @@
         <td>✅</td>
         <td>@smoke SEARCH_001: Verify that searching pickup stops by a partial name returns matching results</td>
         <td class="status-cell passed">PASSED</td>
-        <td>1.9s</td>
+        <td>2.8s</td>
         <td>—</td>
       </tr>
       <tr class="test-row passed" data-file="future-location-advanced-spec-ts-9" data-row="test" data-status="passed" data-retried="0" data-search="@smoke random_001: verify that random pickup and drop-off stops can be selected from the listing and are never the same stop passed">
         <td>✅</td>
         <td>@smoke RANDOM_001: Verify that random pickup and drop-off stops can be selected from the listing and are never the same stop</td>
         <td class="status-cell passed">PASSED</td>
-        <td>3.5s</td>
+        <td>5.6s</td>
         <td>—</td>
       </tr>
       <tr class="test-row passed" data-file="future-location-advanced-spec-ts-9" data-row="test" data-status="passed" data-retried="0" data-search="@smoke mappin_001: verify that clicking a stop map marker opens a card offering to set it as pickup or drop-off passed">
         <td>✅</td>
         <td>@smoke MAPPIN_001: Verify that clicking a stop map marker opens a card offering to set it as pickup or drop-off</td>
         <td class="status-cell passed">PASSED</td>
-        <td>6.3s</td>
+        <td>6.1s</td>
         <td>—</td>
       </tr>
       <tr class="test-row passed" data-file="future-location-advanced-spec-ts-9" data-row="test" data-status="passed" data-retried="0" data-search="@smoke theme_001: verify that the map theme dialog opens with classic, silver, and satellite options passed">
         <td>✅</td>
         <td>@smoke THEME_001: Verify that the Map Theme dialog opens with Classic, Silver, and Satellite options</td>
         <td class="status-cell passed">PASSED</td>
-        <td>4.9s</td>
+        <td>5.4s</td>
         <td>—</td>
       </tr>
       <tr class="test-row passed" data-file="future-location-advanced-spec-ts-9" data-row="test" data-status="passed" data-retried="0" data-search="@smoke goback_001: verify that the &quot;go back?&quot; alert shows the correct heading and warning message passed">
         <td>✅</td>
         <td>@smoke GOBACK_001: Verify that the "Go Back?" alert shows the correct heading and warning message</td>
         <td class="status-cell passed">PASSED</td>
-        <td>1.7s</td>
+        <td>2.4s</td>
         <td>—</td>
       </tr>
       <tr class="file-header" data-file="future-location-spec-ts-10">
         <td colspan="5">
           <strong>📄 future-location.spec.ts</strong>
           <span class="file-stats">
-            3P / 0F / 0S — 7.3s
+            3P / 0F / 0S — 7.7s
           </span>
         </td>
       </tr>
@@ -379,7 +379,7 @@
         <td>✅</td>
         <td>@smoke FB_001: Verify that the pickup date and time picker appears only after both pickup and drop-off stops are chosen</td>
         <td class="status-cell passed">PASSED</td>
-        <td>2.6s</td>
+        <td>3.1s</td>
         <td>—</td>
       </tr>
       <tr class="test-row passed" data-file="future-location-spec-ts-10" data-row="test" data-status="passed" data-retried="0" data-search="@smoke fb_004: verify that the action button reads &quot;next&quot; and not &quot;confirm location&quot; after both stops are selected passed">
@@ -400,7 +400,7 @@
         <td colspan="5">
           <strong>📄 future-time-picker.spec.ts</strong>
           <span class="file-stats">
-            3P / 0F / 0S — 1m 18s
+            3P / 0F / 0S — 24.2s
           </span>
         </td>
       </tr>
@@ -408,28 +408,28 @@
         <td>✅</td>
         <td>@smoke FB_TP_001: Verify that clicking the pick-up time field opens the Select Time modal</td>
         <td class="status-cell passed">PASSED</td>
-        <td>18.5s</td>
+        <td>5.0s</td>
         <td>—</td>
       </tr>
       <tr class="test-row passed" data-file="future-time-picker-spec-ts-11" data-row="test" data-status="passed" data-retried="0" data-search="@smoke fb_tp_003: verify that confirming a time closes the modal and next enables only after a time and rider count are set passed">
         <td>✅</td>
         <td>@smoke FB_TP_003: Verify that confirming a time closes the modal and Next enables only after a time and rider count are set</td>
         <td class="status-cell passed">PASSED</td>
-        <td>25.6s</td>
+        <td>11.4s</td>
         <td>—</td>
       </tr>
       <tr class="test-row passed" data-file="future-time-picker-spec-ts-11" data-row="test" data-status="passed" data-retried="0" data-search="@smoke fb_tp_006: verify that both grid view (slot chips) and list view (scroll-wheel columns) are available passed">
         <td>✅</td>
         <td>@smoke FB_TP_006: Verify that both Grid View (slot chips) and List View (scroll-wheel columns) are available</td>
         <td class="status-cell passed">PASSED</td>
-        <td>33.8s</td>
+        <td>7.9s</td>
         <td>—</td>
       </tr>
       <tr class="file-header" data-file="future-validation-spec-ts-12">
         <td colspan="5">
           <strong>📄 future-validation.spec.ts</strong>
           <span class="file-stats">
-            2P / 0F / 0S — 1m 6s
+            2P / 0F / 0S — 27.8s
           </span>
         </td>
       </tr>
@@ -437,21 +437,21 @@
         <td>✅</td>
         <td>@smoke @sanity FB_018: Verify that submitting an empty future-booking form is blocked and shows a validation error on the name field</td>
         <td class="status-cell passed">PASSED</td>
-        <td>39.6s</td>
+        <td>13.2s</td>
         <td>—</td>
       </tr>
       <tr class="test-row passed" data-file="future-validation-spec-ts-12" data-row="test" data-status="passed" data-retried="0" data-search="@smoke fb_021: verify that script or html entered in the name field is sanitized and not kept as executable content passed">
         <td>✅</td>
         <td>@smoke FB_021: Verify that script or HTML entered in the name field is sanitized and not kept as executable content</td>
         <td class="status-cell passed">PASSED</td>
-        <td>26.6s</td>
+        <td>14.6s</td>
         <td>—</td>
       </tr>
       <tr class="file-header" data-file="future-feedback-spec-ts-13">
         <td colspan="5">
           <strong>📄 future-feedback.spec.ts</strong>
           <span class="file-stats">
-            1P / 0F / 0S — 5.2s
+            1P / 0F / 0S — 6.4s
           </span>
         </td>
       </tr>
@@ -459,35 +459,29 @@
         <td>✅</td>
         <td>@smoke FFB_001: Verify that the feedback modal opens with the How Was Your Experience heading after a cancellation</td>
         <td class="status-cell passed">PASSED</td>
-        <td>5.2s</td>
+        <td>6.4s</td>
         <td>—</td>
       </tr>
       <tr class="file-header" data-file="future-have-a-booking-flight-spec-ts-14">
         <td colspan="5">
           <strong>📄 future-have-a-booking-flight.spec.ts</strong>
           <span class="file-stats">
-            0P / 1F / 0S — 34.4s
+            1P / 0F / 0S — 1.5s
           </span>
         </td>
       </tr>
-      <tr class="test-row failed" data-file="future-have-a-booking-flight-spec-ts-14" data-row="test" data-status="failed" data-retried="1" data-search="@smoke hb_008: verify that both the phone and flight lookup tabs appear when opened from the booking link failed">
-        <td>❌</td>
+      <tr class="test-row passed" data-file="future-have-a-booking-flight-spec-ts-14" data-row="test" data-status="passed" data-retried="0" data-search="@smoke hb_008: verify that both the phone and flight lookup tabs appear when opened from the booking link passed">
+        <td>✅</td>
         <td>@smoke HB_008: Verify that both the phone and flight lookup tabs appear when opened from the booking link</td>
-        <td class="status-cell failed">FAILED</td>
-        <td>34.4s</td>
-        <td>🔄 2</td>
-      </tr>
-      <tr class="error-row" data-file="future-have-a-booking-flight-spec-ts-14" data-row="error" data-status="failed" data-retried="1" data-search="@smoke hb_008: verify that both the phone and flight lookup tabs appear when opened from the booking link failed">
-        <td></td>
-        <td colspan="4" class="error-msg">Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
-
-Locator: locator('label').filter({ hasText: 'Find by Phone </td>
+        <td class="status-cell passed">PASSED</td>
+        <td>1.5s</td>
+        <td>—</td>
       </tr>
       <tr class="file-header" data-file="future-tracking-actions-spec-ts-15">
         <td colspan="5">
           <strong>📄 future-tracking-actions.spec.ts</strong>
           <span class="file-stats">
-            1P / 0F / 0S — 2.1s
+            1P / 0F / 0S — 2.4s
           </span>
         </td>
       </tr>
@@ -495,7 +489,7 @@ Locator: locator('label').filter({ hasText: 'Find by Phone </td>
         <td>✅</td>
         <td>@smoke TRACK_001: Verify that the tracking screen bottom-sheet drag handle is visible after a ride is created</td>
         <td class="status-cell passed">PASSED</td>
-        <td>2.1s</td>
+        <td>2.4s</td>
         <td>—</td>
       </tr>
       <tr class="no-match-row" id="noMatchRow" style="display:none"><td colspan="5">No tests match the current filter.</td></tr>
