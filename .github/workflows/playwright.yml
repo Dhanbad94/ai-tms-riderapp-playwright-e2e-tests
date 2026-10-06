@@ -86,14 +86,16 @@ jobs:
           ENV: ${{ steps.config.outputs.env }}
         run: |
           TYPE="${{ steps.config.outputs.type }}"
-          # Regression and "all" runs include @creates-ride tests which submit real rides.
-          # Run them serially (workers=1) so concurrent submissions don't trip staging's rate limiter.
+          # Run ALL types serially (workers=1). Regression/all include @creates-ride
+          # tests that submit real rides, but smoke/sanity/safe also saturate staging's
+          # ASAP stop-list API under the CI default of 3 concurrent workers: the list
+          # starts returning empty partway through a run ("Stop list never rendered" /
+          # "Need at least 2 stops, found 0"), cascading into stop-dependent failures.
+          # Serializing keeps one stop-list fetch in flight at a time and holds the run green.
           if [ "$TYPE" == "all" ]; then
             ./run-tests -e $ENV -u all --bc --workers 1
-          elif [ "$TYPE" == "regression" ]; then
-            ./run-tests -e $ENV --tag @${TYPE} --bc --workers 1
           else
-            ./run-tests -e $ENV --tag @${TYPE} --bc
+            ./run-tests -e $ENV --tag @${TYPE} --bc --workers 1
           fi
 
       - name: Generate dashboard report

@@ -56,9 +56,10 @@ export class ConfirmationPage {
     this.dragHandle = page.locator('[class*="dragHandle"]').first();
     // Both CTAs sit near the top of the card content, right after the status
     // heading — live-verified they render on load, not gated behind a drag.
-    // "Create New Request" is a plain <a href="{WEB_URL}/a/{orgCode}">, i.e.
-    // restart a request for the SAME org; "Back to Home" is a <button> with
-    // no href (JS navigation) that goes to the bare landing page instead.
+    // "Create New Request" is a plain <a href="/c/{orgCode}/1"> (Oct-2026 route;
+    // was /a/{orgCode}), i.e. restart a request for the SAME org; "Back to Home"
+    // is a <button> with no href (JS navigation) that goes to the bare landing
+    // page instead.
     this.createNewRequestLink = page.getByRole('link', { name: 'Create New Request' });
     this.backToHomeButton = page.getByRole('button', { name: 'Back to Home' });
 

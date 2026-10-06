@@ -137,7 +137,11 @@ const STAGING: RiderEnvironmentConfig = {
   canCreateRides: true,
   allowCancelSmoke: true,
   orgs: {
-    asapOnly: { ...ODASAP_ORG },
+    // Staging's ODASAP pickup stop was relabeled "Automated OD ASAP QA" in the
+    // Oct-2026 data change (staging is the QA env). Preproduction/production keep
+    // the ODASAP_ORG default "Automated OD ASAP" (verified live: those two share
+    // a different stop set entirely), so the override is staging-scoped only.
+    asapOnly: { ...ODASAP_ORG, stops: { ...ODASAP_ORG.stops, pickup: 'Automated OD ASAP QA' } },
     futureBookingOnly: { ...ODFB_ORG },
     asapAndFuture: { ...PLACEHOLDER_ORG },
     fixedRoute: { ...PLACEHOLDER_ORG },

@@ -38,6 +38,9 @@ test.describe(`Future Booking — Time Picker ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.
   /** Verify that the Hour, Minute, and Period columns render selectable time values inside the time picker. */
   test('FB_TP_002: Verify that the hour, minute, and period columns show selectable time values', async ({ dateTimePicker }) => {
     await dateTimePicker.openTimeModal();
+    // Grid is the default view post Oct-2026; the scroll-wheel columns are now
+    // the toggled-to view, so switch to List before asserting the columns.
+    await dateTimePicker.switchToListView();
     await expect(dateTimePicker.hourColumn.locator('[class*="picker_item"]').first()).toBeVisible();
     await expect(dateTimePicker.minuteColumn.locator('[class*="picker_item"]').first()).toBeVisible();
     await expect(dateTimePicker.periodColumn.locator('[class*="picker_item"]').first()).toBeVisible();
@@ -46,9 +49,13 @@ test.describe(`Future Booking — Time Picker ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.
   /** Verify that confirming a time slot closes the modal, and that "Next" enables only after both a time is confirmed and the rider count is selected. */
   test('@smoke FB_TP_003: Verify that confirming a time closes the modal and Next enables only after a time and rider count are set', async ({ dateTimePicker, selectLocationPage }) => {
     await dateTimePicker.openTimeModal();
-    // The first item in each column reflects an auto-populated valid slot
-    // (guestForm.js seeds pickerValue from the first returned slot) — confirm
-    // it directly rather than guessing a specific hour/minute combination.
+    // Ensure Grid View (idempotent — no-op on the new grid-default build, a
+    // toggle on the old list-default build still live on production), then pick
+    // the first offered slot explicitly so a time is committed, and confirm —
+    // the modal should close and the Pick-up Time field be populated.
+    await dateTimePicker.switchToGridView();
+    const labels = await dateTimePicker.getGridSlotLabels();
+    await dateTimePicker.selectGridSlot(labels[0]!);
     await dateTimePicker.clickSetPickupTime();
     await expect(dateTimePicker.timeModalHeading).not.toBeVisible({ timeout: 5_000 });
     await expect(dateTimePicker.timeInput).not.toHaveValue('');
@@ -82,18 +89,23 @@ test.describe(`Future Booking — Time Picker ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.
     await expect(dateTimePicker.nextButton).toBeDisabled();
   });
 
-  /** Verify that List View is the default time-selection view, and that switching to Grid View displays selectable time-slot chips. */
-  test('@smoke FB_TP_006: Verify that List View is the default and switching to Grid View shows selectable time-slot chips', async ({ dateTimePicker }) => {
+  /** Verify that both the Grid View (time-slot chips) and the List View (scroll-wheel columns) are reachable and each shows its own content. */
+  test('@smoke FB_TP_006: Verify that both Grid View (slot chips) and List View (scroll-wheel columns) are available', async ({ dateTimePicker }) => {
+    // Build-agnostic: the DEFAULT view differs across builds (grid on the new
+    // staging/preprod build, list on the old production build), so assert that
+    // EACH view is reachable and shows its own content rather than which one is
+    // default. The switch helpers are idempotent on both builds.
     await dateTimePicker.openTimeModal();
-    // Default view is the scroll-wheel columns.
-    await expect(dateTimePicker.hourColumn.locator('[class*="picker_item"]').first()).toBeVisible();
-    await expect(dateTimePicker.gridSlotChips.first()).not.toBeVisible();
 
     await dateTimePicker.switchToGridView();
     await expect(dateTimePicker.gridSlotChips.first()).toBeVisible();
     const labels = await dateTimePicker.getGridSlotLabels();
     expect(labels.length).toBeGreaterThan(0);
     expect(labels[0]).toMatch(/^\d{1,2}:\d{2}\s?(AM|PM)$/i);
+
+    await dateTimePicker.switchToListView();
+    await expect(dateTimePicker.hourColumn.locator('[class*="picker_item"]').first()).toBeVisible();
+    await expect(dateTimePicker.gridSlotChips.first()).not.toBeVisible();
   });
 
   /** Verify that selecting a time slot in Grid View and confirming it correctly sets the Pick-up Time field. */
@@ -111,17 +123,19 @@ test.describe(`Future Booking — Time Picker ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.
     await expect(dateTimePicker.timeInput).toHaveValue(label);
   });
 
-  /** Verify that switching from Grid View back to List View restores the scroll-wheel time columns and time selection still works. */
-  test('FB_TP_008: Verify that switching from Grid View back to List View restores the scroll-wheel time columns', async ({ dateTimePicker }) => {
+  /** Verify that the view can switch from the default Grid View to List View and back, and that a time can still be confirmed. */
+  test('FB_TP_008: Verify that switching between Grid and List views works and a time can still be confirmed', async ({ dateTimePicker }) => {
     await dateTimePicker.openTimeModal();
-    await dateTimePicker.switchToGridView();
-    await expect(dateTimePicker.gridSlotChips.first()).toBeVisible();
-
+    // Default is Grid; switch to List and confirm the columns appear…
     await dateTimePicker.switchToListView();
     await expect(dateTimePicker.hourColumn.locator('[class*="picker_item"]').first()).toBeVisible();
     await expect(dateTimePicker.gridSlotChips.first()).not.toBeVisible();
 
-    // Confirming from List View after switching back should still work.
+    // …then back to Grid, pick a slot explicitly, and confirm it commits.
+    await dateTimePicker.switchToGridView();
+    await expect(dateTimePicker.gridSlotChips.first()).toBeVisible();
+    const labels = await dateTimePicker.getGridSlotLabels();
+    await dateTimePicker.selectGridSlot(labels[0]!);
     await dateTimePicker.clickSetPickupTime();
     await expect(dateTimePicker.timeModalHeading).not.toBeVisible({ timeout: 5_000 });
     await expect(dateTimePicker.timeInput).not.toHaveValue('');

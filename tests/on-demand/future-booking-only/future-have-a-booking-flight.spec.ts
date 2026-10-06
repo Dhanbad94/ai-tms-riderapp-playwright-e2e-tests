@@ -72,6 +72,11 @@ test.describe(`Have a Booking — Org-Scoped Tabs (Phone/Flight) ${RIDER_TAGS.FU
   test.describe('Tab presence & switching (no ride required)', () => {
     test.beforeEach(async ({ signInPage }) => {
       test.skip(!isOrgEnabled('futureBookingOnly'), 'Future Booking org not configured for this environment — set trackingId/stops in rider-config.ts');
+      // "Have a booking?" (org-scoped ?showFlight) must ALWAYS offer BOTH the
+      // Phone and Flight lookup tabs. Production renders both; staging and
+      // preproduction currently render a phone-only form — that is a UI BUG in
+      // the new build, so these tests are expected to FAIL there until it is
+      // fixed (they exist to catch exactly this regression — do NOT skip them).
       await signInPage.goto({ showFlight: true, orgCode: org.trackingId.toLowerCase() });
     });
 
