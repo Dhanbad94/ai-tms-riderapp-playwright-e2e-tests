@@ -358,6 +358,37 @@ export class SelectLocationPage {
     return names;
   }
 
+  /**
+   * Open the pickup stop list and return its stop names, resiliently.
+   *
+   * The stop list is API-driven: under the parallel load of a full scheduled
+   * run its fetch can return empty or lag (observed on preproduction, where the
+   * default-3-workers run saturates the stop-list API partway through). Reading
+   * h4 immediately after a single click then yields 0 and fails. A stalled fetch
+   * also does NOT recover on a re-click — only a reload re-fires the request
+   * (same recovery openStopListAndSelect() relies on). So: click, poll for stops
+   * for up to STOP_LIST; if none render, reload (re-firing the fetch) and retry
+   * a few times before returning whatever is there.
+   */
+  async getPickupStopNamesResilient(): Promise<string[]> {
+    const MAX_ATTEMPTS = 3;
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+      await this.pickupInput.click().catch(() => {});
+      try {
+        await expect
+          .poll(() => this.page.locator('h4:visible').count(), { timeout: RIDER_TIMEOUTS.STOP_LIST })
+          .toBeGreaterThan(0);
+        return await this.getVisibleStopNames();
+      } catch {
+        if (attempt < MAX_ATTEMPTS - 1) {
+          await this.page.reload({ waitUntil: 'domcontentloaded' }).catch(() => {});
+          await this.pickupInput.waitFor({ state: 'visible', timeout: RIDER_TIMEOUTS.FORM_LOAD }).catch(() => {});
+        }
+      }
+    }
+    return await this.getVisibleStopNames();
+  }
+
   /** Search stops by typing in the pickup input */
   async searchPickupStops(query: string) {
     await this.pickupInput.click();

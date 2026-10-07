@@ -95,8 +95,10 @@ test.describe(`Future Booking — Location Selection ${RIDER_TAGS.FUTURE} ${RIDE
     // ODFB's location page loads directly into the map view (unlike ODASAP,
     // which loads straight into the stop list) — the pickup field must be
     // clicked to open the stop-list panel before any h4 stop headings render.
-    await selectLocationPage.pickupInput.click();
-    const names = await selectLocationPage.getVisibleStopNames();
+    // Use the resilient read: the stop-list fetch is API-driven and returns
+    // empty under the preproduction run's parallel load, so poll + reload-recover
+    // rather than reading h4 once immediately (which fails with 0 stops).
+    const names = await selectLocationPage.getPickupStopNamesResilient();
     expect(names.length).toBeGreaterThan(0);
   });
 
