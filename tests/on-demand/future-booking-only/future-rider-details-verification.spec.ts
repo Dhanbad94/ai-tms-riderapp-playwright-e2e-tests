@@ -54,6 +54,12 @@ test.describe(`Future Booking — Rider Details Verification ${RIDER_TAGS.FUTURE
 
     await futureGuestFormSection.selectCountryCode(cfg.phone.countryCode);
     await futureGuestFormSection.fillName(name);
+    // The Name field accepts letters, spaces and hyphens only — it strips digits
+    // and punctuation on input (live-confirmed: "PW Verify a9eh" -> "PW Verify aeh").
+    // The generated name's base36 suffix can contain digits, so the tracking card
+    // shows the STORED (accepted) name, not the raw string. Assert against what the
+    // field actually accepted rather than the typed value.
+    const storedName = await futureGuestFormSection.nameInput.inputValue();
     await futureGuestFormSection.fillPhone(phone);
     // Prefer 2 guests to exercise the multi-guest display, but fall back to what
     // the auto-selected slot actually offers: a near-full slot may have only 1
@@ -74,8 +80,8 @@ test.describe(`Future Booking — Rider Details Verification ${RIDER_TAGS.FUTURE
 
     // Booking ID present in the expected format.
     expect(cardText).toMatch(/Booking: #TMS-\d+/);
-    // Name + guest count.
-    expect(cardText).toContain(`${name} (${riders} Guests)`);
+    // Name + guest count — the card shows the field-accepted (stored) name.
+    expect(cardText).toContain(`${storedName} (${riders} Guests)`);
     // Phone, prefixed with the dial code.
     expect(cardText).toContain(`+91 ${phone}`);
     // Special Assistance — correctly spelled on this screen (unlike the
