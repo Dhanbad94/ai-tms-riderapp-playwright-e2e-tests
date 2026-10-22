@@ -155,7 +155,7 @@ const STAGING: RiderEnvironmentConfig = {
 const PREPRODUCTION: RiderEnvironmentConfig = {
   name: 'preproduction',
   urls: {
-    base: 'https://preproduction.trackmyshuttle.com',
+    base: 'https://php-preprod.trackmyshuttle.com',
     ride: 'https://ride-preprod.trackmyshuttle.com',
     api: 'https://riderapp-preprod.trackmyshuttle.com',
   },
