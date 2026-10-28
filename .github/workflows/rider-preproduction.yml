@@ -1,12 +1,16 @@
 name: Rider Tests — Preproduction
 
 on:
-  # Preproduction shares production's database, so it runs the SAME ride-safe set
-  # as production (@ui-only + the single self-cancelling @prod smoke). Mon-Fri 6:30
-  # AM UTC — staggered ahead of production's 7:00 AM run so the one transient ride
-  # never collides.
-  schedule:
-    - cron: '30 6 * * 1-5'
+  # Scheduled runs are PAUSED — preproduction is currently unstable, so the daily
+  # cron is disabled to stop noisy failures. Re-enable by uncommenting the
+  # schedule below once preproduction is stable again. The workflow can still be
+  # run on demand via workflow_dispatch in the meantime.
+  #
+  # Previous schedule (preprod shares production's DB, ran the same ride-safe set
+  # as production — @ui-only + the single self-cancelling @prod smoke — Mon-Fri
+  # 6:30 AM UTC, staggered ahead of production's 7:00 AM run):
+  # schedule:
+  #   - cron: '30 6 * * 1-5'
 
   # Manual trigger. NOTE: regression/all/creates-ride create REAL rides in the
   # shared prod DB — use only deliberately. Ride-creating tests are blocked by

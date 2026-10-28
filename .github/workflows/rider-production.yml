@@ -1,10 +1,12 @@
 name: Rider Tests — Production
 
 on:
-  # Scheduled runs — Mon-Fri 7 AM UTC. Production runs the ride-free @ui-only UI
-  # suite (canCreateRides is false, so any @creates-ride test auto-skips anyway).
+  # Scheduled runs — 3 days/week (Mon/Wed/Fri) 7 AM UTC. Reduced from daily while
+  # preproduction is paused (see rider-preproduction.yml). Production runs the
+  # ride-free @ui-only UI suite (canCreateRides is false, so any @creates-ride
+  # test auto-skips anyway).
   schedule:
-    - cron: '0 7 * * 1-5'
+    - cron: '0 7 * * 1,3,5'
 
   # Manual trigger
   workflow_dispatch:
