@@ -63,7 +63,29 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+        shell: bash
+        # Resilient install. A transient DNS/mirror blip on the GitHub runner
+        # ("Temporary failure resolving archive.ubuntu.com") used to fail
+        # `install --with-deps` outright (apt exits 100), aborting the job before
+        # a single test ran — every test then reported as "skipped" and the run
+        # went red on an infra hiccup, not a real regression. Fix: retry with
+        # backoff, and split the browser BINARY (Playwright CDN — required, still
+        # hard-fails after retries) from the OS DEPS (apt — on ubuntu-latest these
+        # are supplementary fonts; the core browser libs ship in the runner image,
+        # so if the mirror is unreachable we warn and continue instead of reddening
+        # the whole scheduled run on a font download).
+        run: |
+          retry() {
+            local n=1 max=3 delay=20
+            until "$@"; do
+              if [ "$n" -ge "$max" ]; then return 1; fi
+              echo "::warning::'$*' failed (attempt $n/$max); retrying in ${delay}s"
+              sleep "$delay"; n=$((n+1)); delay=$((delay*2))
+            done
+          }
+          retry npx playwright install chromium
+          retry npx playwright install-deps chromium \
+            || echo "::warning::Playwright system deps could not be installed after retries; continuing (core browser libs are preinstalled on the runner image)"
 
       - name: Determine test config
         id: config
