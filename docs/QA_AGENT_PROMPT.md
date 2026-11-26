@@ -9,6 +9,12 @@
 > The status of every placeholder and ⛔ item is at the bottom under "What's needed from you".
 > **How to use:** paste everything between the two horizontal rules into your agent's system prompt,
 > and pass the per-run block under "Inputs you receive" as the user message.
+>
+> **In this repo it runs as `.github/workflows/qa-agent.yml`** (v1, report-only): Actions → "QA Agent
+> (report-only)" → Run workflow (staging or preproduction, optional commit range). It extracts the
+> section between the two rules automatically, adds a report-only override (no PRs/issues/edits),
+> posts the Slack summary and uploads `agent-runs/<timestamp>.json` as a run artifact.
+> Needs repo secrets `ANTHROPIC_API_KEY` and `RIDER_WEB_READ_TOKEN`.
 
 ---
 

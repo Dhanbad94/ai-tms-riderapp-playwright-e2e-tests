@@ -1,7 +1,9 @@
 # agent-runs/
 
 Machine-readable output from the AI QA Agent (see `docs/QA_AGENT_PROMPT.md`,
-Step 6). Each run writes one `agent-runs/<timestamp>.json`.
+Step 6). Each run writes one `agent-runs/<timestamp>.json`. When the agent runs
+in CI (`.github/workflows/qa-agent.yml`), these files — plus the raw transcript
+`<timestamp>.md` — are uploaded as that run's artifact rather than committed.
 
 The per-run `*.json` files are **git-ignored** (they're run artifacts, not source);
 this `README.md` and `.gitkeep` keep the directory in the repo. If you want a run's
