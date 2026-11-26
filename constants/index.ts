@@ -70,6 +70,9 @@ export const RIDER_TIMEOUTS = {
   MUI_DROPDOWN: 500,
   /** Stop selection settle time */
   STOP_SELECT: 1_000,
+  /** Per-attempt wait for a clicked stop to fill its input before re-clicking
+   *  (a click landing mid re-render can be dropped). The last attempt uses STOP_LIST. */
+  STOP_SELECT_ATTEMPT: 4_000,
   /** Wait for the MUI date-picker calendar popper to open (Future Booking).
    *  12s rather than a tighter value — the ensureBookableSlot()/random-date
    *  retry loop reopens this calendar repeatedly per attempt, which is

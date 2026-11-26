@@ -164,13 +164,33 @@ export class SelectLocationPage {
       throw new Error(`Stop list never rendered for "${stopName}" (canReload=${!!opts.canReload})`);
     }
 
-    // Re-query the heading right before clicking to avoid acting on a stale node
-    // from a list re-render.
-    const heading = this.page.getByRole('heading', { level: 4, name: stopName }).first();
-    await heading.waitFor({ timeout: RIDER_TIMEOUTS.STOP_LIST });
-    // Click heading with force to bypass the parent container issue.
-    await heading.click({ force: true });
-    await expect(input).not.toHaveValue('', { timeout: RIDER_TIMEOUTS.STOP_LIST });
+    // The click itself can be dropped when it lands mid re-render: the list is
+    // fully shown but the input stays empty (seen on staging 2026-11-26). So
+    // re-query and re-click a bounded number of times, stopping as soon as the
+    // input has a value, and re-opening the panel if it closed without one.
+    const attempts = 3;
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+      if ((await input.inputValue()) !== '') return;
+
+      // Re-query right before clicking to avoid acting on a stale node.
+      const heading = this.page.getByRole('heading', { level: 4, name: stopName }).first();
+      if (!(await heading.isVisible().catch(() => false))) {
+        await this.tryOpenStopList(input);
+      }
+      await heading.waitFor({ timeout: RIDER_TIMEOUTS.STOP_LIST });
+      // Click heading with force to bypass the parent container issue.
+      await heading.click({ force: true });
+
+      const isLast = attempt === attempts;
+      try {
+        await expect(input).not.toHaveValue('', {
+          timeout: isLast ? RIDER_TIMEOUTS.STOP_LIST : RIDER_TIMEOUTS.STOP_SELECT_ATTEMPT,
+        });
+        return;
+      } catch (err) {
+        if (isLast) throw err;
+      }
+    }
   }
 
   /** Select a pickup stop — clicks the stop container, waits for input value */
