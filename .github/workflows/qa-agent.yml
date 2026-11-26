@@ -49,6 +49,12 @@ jobs:
     # Agent budget is 30 min (QA_AGENT_PROMPT.md hard rule 8); the extra time
     # covers checkout, npm ci and the browser install.
     timeout-minutes: 45
+    # An explicit `shell: bash` runs steps with `-eo pipefail`. Without it GitHub
+    # uses plain `bash -e`, and `claude ... | tee` reported tee's success even
+    # when the agent failed (first real run, 2026-11-26).
+    defaults:
+      run:
+        shell: bash
     env:
       CI: true
       ENV: ${{ inputs.environment }}
@@ -63,6 +69,9 @@ jobs:
             echo "::error::Missing required secret CLAUDE_CODE_OAUTH_TOKEN (create it with: claude setup-token). Add it under Settings -> Secrets and variables -> Actions."
             exit 1
           fi
+          case "$CLAUDE_CODE_OAUTH_TOKEN" in
+            *[[:space:]]*) echo "::warning::CLAUDE_CODE_OAUTH_TOKEN contains whitespace or a line break (likely a wrapped copy/paste). It is stripped before use; re-save the secret as a single line to silence this." ;;
+          esac
           # Secrets can't be used in step `if:` conditions, so expose a flag instead.
           if [ -n "$RIDER_WEB_READ_TOKEN" ]; then
             echo "has_rider_web=true" >> "$GITHUB_OUTPUT"
@@ -157,6 +166,11 @@ jobs:
           SPEC: ${{ inputs.spec }}
           HAS_RIDER_WEB: ${{ steps.secrets.outputs.has_rider_web }}
         run: |
+          # Tokens never contain whitespace; strip any that a wrapped copy/paste
+          # added (a line break here made the first real run fail auth).
+          CLAUDE_CODE_OAUTH_TOKEN="$(printf '%s' "$CLAUDE_CODE_OAUTH_TOKEN" | tr -d '[:space:]')"
+          export CLAUDE_CODE_OAUTH_TOKEN
+
           mkdir -p agent-runs
           TS=$(date -u +%Y%m%dT%H%M%SZ)
           echo "TS=$TS" >> "$GITHUB_ENV"
@@ -263,3 +277,16 @@ jobs:
             playwright-report/
           retention-days: 14
           if-no-files-found: ignore
+
+      # Last, so the Slack post and artifact upload above still happen: a run in
+      # which the agent produced no result must show red, not green.
+      - name: Fail if the agent produced no result
+        if: always()
+        run: |
+          f="agent-runs/${TS:-missing}.json"
+          if [ ! -f "$f" ] || python3 -c 'import json,sys; sys.exit(0 if "error" in json.load(open(sys.argv[1])) else 1)' "$f"; then
+            echo "::error::The agent did not produce a result. First lines of its output:"
+            head -5 "agent-runs/${TS:-missing}.md" 2>/dev/null || echo "(no transcript)"
+            exit 1
+          fi
+          echo "Agent produced a result."
