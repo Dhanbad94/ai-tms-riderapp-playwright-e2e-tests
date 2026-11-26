@@ -1,9 +1,22 @@
 import { test, expect } from '../../../fixtures/test-fixtures';
-import { getOrgConfig } from '../../../utils/rider-config';
+import { getOrgConfig, getRiderConfig } from '../../../utils/rider-config';
 import { RIDER_TAGS } from '../../../constants';
 
 const org = getOrgConfig('asapOnly');
 const { stops, phone } = org;
+const rc = getRiderConfig();
+
+/** Flight Number can't be enabled for ODASAP: the option is missing from the
+ *  operator panel's Rider App settings on staging (Room Number is present).
+ *  Raised with the app owners: TMS Roadmap Bug Room card "Operator panel
+ *  (staging): Flight Number option missing from ASAP rider settings — Room
+ *  Number is present" (id c44332f0-5013-4ada-b4e1-46b2b9abfeb0). Remove the
+ *  fixme once the setting is back and enabled for ODASAP. */
+const FLIGHT_SETTING_MISSING =
+  'Flight Number option missing from operator Rider App settings (Bug Room card c44332f0-5013-4ada-b4e1-46b2b9abfeb0)';
+
+/** Room Number is enabled for ODASAP on staging; preproduction/production not verified. */
+const ROOM_STAGING_ONLY = 'Room Number is enabled for ODASAP on staging only; preproduction/production not verified';
 
 test.describe(`ASAP Only — Form Fields & Behavior ${RIDER_TAGS.ASAP} ${RIDER_TAGS.UI_ONLY} ${RIDER_TAGS.REGRESSION} ${RIDER_TAGS.SAFE}`, () => {
   test.beforeEach(async ({ selectLocationPage, guestFormSection }) => {
@@ -36,17 +49,20 @@ test.describe(`ASAP Only — Form Fields & Behavior ${RIDER_TAGS.ASAP} ${RIDER_T
     expect(placeholder).toBe('Note to Driver');
   });
 
-  test.skip('@smoke ASAP_015: Verify that the Flight Number field is shown on the ride details form', async ({ guestFormSection }) => {
+  // Declared fixme (not test.fixme() in the body) so the beforeEach booking
+  // flow doesn't run for a test that can't pass yet.
+  test.fixme('@smoke ASAP_015: Verify that the Flight Number field is shown on the ride details form', { annotation: { type: 'issue', description: FLIGHT_SETTING_MISSING } }, async ({ guestFormSection }) => {
     await expect(guestFormSection.flightInput).toBeVisible();
     await expect(guestFormSection.flightInput).toHaveAttribute('placeholder', 'Flight Number');
   });
 
-  test.skip('ASAP_016: Verify that the Room Number field is shown on the ride details form', async ({ guestFormSection }) => {
+  test('ASAP_016: Verify that the Room Number field is shown on the ride details form', async ({ guestFormSection }) => {
+    test.skip(rc.name !== 'staging', ROOM_STAGING_ONLY);
     await expect(guestFormSection.roomInput).toBeVisible();
     await expect(guestFormSection.roomInput).toHaveAttribute('placeholder', 'Room Number');
   });
 
-  test.skip('ASAP_015a: Verify that the Flight Number field accepts input and limits it to 10 characters', async ({ guestFormSection }) => {
+  test.fixme('ASAP_015a: Verify that the Flight Number field accepts input and limits it to 10 characters', { annotation: { type: 'issue', description: FLIGHT_SETTING_MISSING } }, async ({ guestFormSection }) => {
     await expect(guestFormSection.flightInput).toHaveAttribute('maxlength', '10');
     // Over-length input is truncated to 10; value is preserved as typed
     // (the uppercase appearance is CSS text-transform only, not the value).
@@ -54,7 +70,8 @@ test.describe(`ASAP Only — Form Fields & Behavior ${RIDER_TAGS.ASAP} ${RIDER_T
     await expect(guestFormSection.flightInput).toHaveValue('ab12345678');
   });
 
-  test.skip('ASAP_016a: Verify that the Room Number field accepts input and limits it to 10 characters', async ({ guestFormSection }) => {
+  test('ASAP_016a: Verify that the Room Number field accepts input and limits it to 10 characters', async ({ guestFormSection }) => {
+    test.skip(rc.name !== 'staging', ROOM_STAGING_ONLY);
     await expect(guestFormSection.roomInput).toHaveAttribute('maxlength', '10');
     await guestFormSection.fillRoom('1234567890EXTRA');
     await expect(guestFormSection.roomInput).toHaveValue('1234567890');
