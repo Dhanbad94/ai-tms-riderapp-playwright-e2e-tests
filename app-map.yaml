@@ -1,0 +1,278 @@
+# app-map.yaml — feature → URLs → app code → tests → tags
+#
+# Purpose: connect a change in the rider APP repo to the tests that cover it.
+# Read this first during an impact run (see docs/QA_AGENT_PROMPT.md, Step 1).
+#
+# Scope: the on-demand Rider web app only (ASAP + Future Booking). Operator,
+# Driver and Live Display are out of scope for this suite.
+#
+# NOTE on `app_code`: paths are into the app repo TrackMyShuttle/Rider-Web
+# (Next.js, `tms-rider-webapp-next`) and are best-effort against its `main`
+# branch as of 2026-11-26. Rider-Web is branch-sensitive — some features ship
+# only on the `staging` branch (e.g. the sign-in/"Have a Booking" flow) — so
+# confirm the path on the branch you're diffing. Lines flagged `# verify` are
+# the least certain.
+#
+# Keep in sync: any PR that adds or moves a test must update this file
+# (QA_AGENT_PROMPT.md, Step 4.7).
+
+meta:
+  test_repo: Dhanbad94/ai-tms-riderapp-playwright-e2e-tests
+  app_repo: https://github.com/TrackMyShuttle/Rider-Web
+  app_stack: Next.js (tms-rider-webapp-next)
+  last_updated: 2026-11-26
+  environments:
+    staging:        { ride: https://rider-staging.trackmyshuttle.com, api: https://riderapi-staging.trackmyshuttle.com, creates_rides: true }
+    preproduction:  { ride: https://ride-preprod.trackmyshuttle.com,  api: https://riderapp-preprod.trackmyshuttle.com, creates_rides: false } # shares prod DB
+    production:     { ride: https://ride.trackmyshuttle.com,          api: https://api.trackmyshuttle.com,              creates_rides: false } # off-limits to the agent
+  orgs:
+    ODASAP: { mode: asap,   note: "ASAP-only org; staging pickup stop relabeled 'Automated OD ASAP QA'" }
+    ODFB:   { mode: future, note: "Future-Booking org" }
+  route_patterns:
+    org_landing:  "/a/<trackingId>/location"   # booking entry for an org
+    ride_status:  "/j/<rideCode>/s"            # confirmation + live tracking
+    booking_code: "/b/<code>"
+    have_booking: ["/sign-in", "/otp"]          # phone lookup (staging branch)
+    account:      ["/bookings", "/past-trip", "/profile", "/edit-profile", "/feedbackform"]
+
+# ---------------------------------------------------------------------------
+# Shared page objects (pages/rider/) — which app areas they drive
+# ---------------------------------------------------------------------------
+page_objects:
+  SelectLocationPage:     src/components/web/selectLocation, src/components/web/locationModal, src/components/web/map
+  BookingFormPage:        src/components/web/guestForm, src/components/web/guestFormFullPage
+  GuestFormSection:       src/components/web/guestForm
+  FutureGuestFormSection: src/components/web/guestForm           # future-booking variant
+  DateTimePicker:         src/components/common/calendarIcon     # verify (date/time picker component)
+  ConfirmationPage:       src/components/web/thankYou, src/components/web/myTrip
+  CancellationDialog:     src/components/common/cancelation
+  FeedbackModal:          src/components/web/feedback
+  SignInPage:             src/components/web/signIn, src/components/web/otp   # staging branch
+
+# ---------------------------------------------------------------------------
+# Features
+# ---------------------------------------------------------------------------
+features:
+
+  # ===== ASAP (org ODASAP) =====
+  - id: asap-location-select
+    title: ASAP — pickup/dropoff location selection
+    mode: asap
+    org: ODASAP
+    urls: ["/a/ODASAP/location"]
+    app_code: [src/components/web/selectLocation, src/components/web/locationModal, src/components/web/map]
+    page_objects: [SelectLocationPage]
+    tests:
+      - tests/on-demand/asap-only/asap-location.spec.ts
+      - tests/on-demand/asap-only/asap-location-advanced.spec.ts
+    tags: ["@asap", "@smoke", "@sanity", "@negative", "@ui-only", "@prod"]
+
+  - id: asap-booking-form
+    title: ASAP — rider/guest booking form
+    mode: asap
+    org: ODASAP
+    urls: ["/a/ODASAP/location"]
+    app_code: [src/components/web/guestForm, src/components/web/guestFormFullPage]
+    page_objects: [BookingFormPage, GuestFormSection]
+    tests: [tests/on-demand/asap-only/asap-form.spec.ts]
+    tags: ["@asap", "@smoke", "@sanity", "@prod"]
+
+  - id: asap-form-validation
+    title: ASAP — form validation / negative input
+    mode: asap
+    org: ODASAP
+    app_code: [src/components/web/guestForm, src/components/common/custonInputs]
+    page_objects: [GuestFormSection]
+    tests: [tests/on-demand/asap-only/asap-validation.spec.ts]
+    tags: ["@asap", "@negative", "@sanity", "@smoke", "@ui-only"]
+
+  - id: asap-api-payload
+    title: ASAP — request API payload contract
+    mode: asap
+    org: ODASAP
+    app_code: [lib/api.js]            # request/submit endpoint; tests intercept urls.api
+    page_objects: [SelectLocationPage, GuestFormSection]
+    tests: [tests/on-demand/asap-only/asap-api-payload.spec.ts]
+    tags: ["@asap", "@negative", "@playwright", "@sanity", "@smoke"]
+
+  - id: asap-confirmation
+    title: ASAP — confirmation / ride-submitted page
+    mode: asap
+    org: ODASAP
+    urls: ["/j/<rideCode>/s"]
+    app_code: [src/components/web/thankYou, src/components/web/myTrip]
+    page_objects: [ConfirmationPage]
+    tests: [tests/on-demand/asap-only/asap-confirmation.spec.ts]
+    tags: ["@asap", "@playwright", "@sanity", "@creates-ride"]
+
+  - id: asap-e2e
+    title: ASAP — full booking happy path
+    mode: asap
+    org: ODASAP
+    urls: ["/a/ODASAP/location", "/j/<rideCode>/s"]
+    app_code: [src/components/web/selectLocation, src/components/web/guestForm, src/components/web/thankYou, src/components/web/myTrip]
+    page_objects: [SelectLocationPage, GuestFormSection, ConfirmationPage]
+    tests: [tests/on-demand/asap-only/asap-e2e.spec.ts]
+    tags: ["@asap", "@sanity", "@creates-ride"]
+
+  - id: asap-cancellation
+    title: ASAP — ride cancellation
+    mode: asap
+    org: ODASAP
+    app_code: [src/components/common/cancelation, src/components/web/myTrip]
+    page_objects: [CancellationDialog, ConfirmationPage]
+    tests: [tests/on-demand/asap-only/asap-cancellation.spec.ts]
+    tags: ["@asap", "@creates-ride", "@playwright", "@prod", "@sanity"]
+
+  - id: asap-feedback
+    title: ASAP — post-ride feedback
+    mode: asap
+    org: ODASAP
+    urls: ["/feedbackform"]
+    app_code: [src/components/web/feedback]
+    page_objects: [FeedbackModal]
+    tests: [tests/on-demand/asap-only/asap-feedback.spec.ts]
+    tags: ["@asap", "@creates-ride", "@playwright", "@sanity"]
+
+  - id: asap-dispatch-lifecycle
+    title: ASAP — dispatch lifecycle (UI create → Driver API assign/complete/cancel)
+    mode: asap
+    org: ODASAP
+    app_code: [src/components/web/myTrip, src/components/web/driverCard]   # + Driver API (driverapp*/driver/api/v1)
+    page_objects: [SelectLocationPage, GuestFormSection, ConfirmationPage]
+    tests: [tests/on-demand/asap-only/asap-dispatch-lifecycle.spec.ts]
+    tags: ["@asap", "@dispatch-lifecycle", "@negative", "@playwright"]
+    note: Uses the Driver API (PREPROD_DRIVER_BASIC_USER/PASS). Runs on preprod/prod only.
+
+  # ===== Future Booking (org ODFB) =====
+  - id: future-location-select
+    title: Future Booking — location selection (incl. Google Maps)
+    mode: future
+    org: ODFB
+    urls: ["/a/ODFB/location"]
+    app_code: [src/components/web/selectLocation, src/components/web/locationModal, src/components/web/map]
+    page_objects: [SelectLocationPage]
+    tests:
+      - tests/on-demand/future-booking-only/future-location.spec.ts
+      - tests/on-demand/future-booking-only/future-location-advanced.spec.ts
+    tags: ["@future", "@smoke", "@sanity", "@negative", "@react-google-maps"]
+
+  - id: future-booking-form
+    title: Future Booking — rider/guest booking form
+    mode: future
+    org: ODFB
+    app_code: [src/components/web/guestForm, src/components/web/guestFormFullPage]
+    page_objects: [BookingFormPage, FutureGuestFormSection]
+    tests: [tests/on-demand/future-booking-only/future-form.spec.ts]
+    tags: ["@future", "@sanity", "@smoke"]
+
+  - id: future-form-validation
+    title: Future Booking — form validation / negative input
+    mode: future
+    org: ODFB
+    app_code: [src/components/web/guestForm, src/components/common/custonInputs]
+    page_objects: [FutureGuestFormSection]
+    tests: [tests/on-demand/future-booking-only/future-validation.spec.ts]
+    tags: ["@future", "@sanity", "@smoke"]
+
+  - id: future-datetime-picker
+    title: Future Booking — date & time picker
+    mode: future
+    org: ODFB
+    app_code: [src/components/common/calendarIcon]   # verify (date/time picker component)
+    page_objects: [DateTimePicker]
+    tests:
+      - tests/on-demand/future-booking-only/future-date-picker.spec.ts
+      - tests/on-demand/future-booking-only/future-time-picker.spec.ts
+    tags: ["@future", "@smoke"]
+
+  - id: future-api-payload
+    title: Future Booking — request API payload contract
+    mode: future
+    org: ODFB
+    app_code: [lib/api.js]
+    page_objects: [SelectLocationPage, FutureGuestFormSection]
+    tests: [tests/on-demand/future-booking-only/future-api-payload.spec.ts]
+    tags: ["@future", "@negative", "@playwright", "@sanity", "@smoke"]
+
+  - id: future-confirmation
+    title: Future Booking — confirmation / booking-submitted page
+    mode: future
+    org: ODFB
+    urls: ["/j/<rideCode>/s"]
+    app_code: [src/components/web/thankYou, src/components/web/myTrip]
+    page_objects: [ConfirmationPage]
+    tests: [tests/on-demand/future-booking-only/future-confirmation.spec.ts]
+    tags: ["@future", "@playwright", "@sanity"]
+
+  - id: future-e2e
+    title: Future Booking — full booking happy path
+    mode: future
+    org: ODFB
+    urls: ["/a/ODFB/location", "/j/<rideCode>/s"]
+    app_code: [src/components/web/selectLocation, src/components/web/guestForm, src/components/web/thankYou]
+    page_objects: [SelectLocationPage, FutureGuestFormSection, ConfirmationPage]
+    tests: [tests/on-demand/future-booking-only/future-e2e.spec.ts]
+    tags: ["@future", "@sanity"]
+
+  - id: future-cancellation
+    title: Future Booking — booking cancellation
+    mode: future
+    org: ODFB
+    app_code: [src/components/common/cancelation, src/components/web/myTrip]
+    page_objects: [CancellationDialog, ConfirmationPage]
+    tests: [tests/on-demand/future-booking-only/future-cancellation.spec.ts]
+    tags: ["@future", "@playwright", "@sanity"]
+
+  - id: future-feedback
+    title: Future Booking — post-ride feedback
+    mode: future
+    org: ODFB
+    urls: ["/feedback", "/feedbackform"]
+    app_code: [src/components/web/feedback]
+    page_objects: [FeedbackModal]
+    tests: [tests/on-demand/future-booking-only/future-feedback.spec.ts]
+    tags: ["@future", "@playwright", "@sanity", "@smoke"]
+
+  - id: future-tracking
+    title: Future Booking — live tracking actions (driver card, call operator, map)
+    mode: future
+    org: ODFB
+    urls: ["/j/<rideCode>/s"]
+    app_code: [src/components/web/myTrip, src/components/web/driverCard, src/components/web/callOperator, src/components/web/map]
+    page_objects: [ConfirmationPage]
+    tests: [tests/on-demand/future-booking-only/future-tracking-actions.spec.ts]
+    tags: ["@future", "@playwright", "@sanity", "@smoke"]
+
+  - id: future-rider-details
+    title: Future Booking — rider details verification
+    mode: future
+    org: ODFB
+    app_code: [src/components/web/guestForm, src/components/web/myTrip]
+    page_objects: [FutureGuestFormSection, SelectLocationPage, ConfirmationPage]
+    tests: [tests/on-demand/future-booking-only/future-rider-details-verification.spec.ts]
+    tags: ["@future", "@sanity"]
+
+  # ===== Cross-cutting =====
+  - id: have-a-booking
+    title: Have a Booking — phone lookup / sign-in + flight entry
+    mode: both
+    org: ODFB
+    urls: ["/sign-in", "/otp"]
+    app_code: [src/components/web/signIn, src/components/web/otp]   # staging branch only (not on main)
+    page_objects: [SignInPage]
+    tests:
+      - tests/on-demand/future-booking-only/future-have-a-booking-landing.spec.ts
+      - tests/on-demand/future-booking-only/future-have-a-booking-flight.spec.ts
+    tags: ["@negative", "@playwright", "@sanity", "@smoke"]
+    note: General-purpose rider feature exercised via ODFB. Sign-in lives on the Rider-Web `staging` branch.
+
+  - id: platform-env-config
+    title: Platform — environment config-drift guard
+    mode: platform
+    org: n/a
+    app_code: [config.js, next.config.js, .env, .env.production]   # Rider-Web build/runtime config
+    page_objects: []
+    tests: [tests/on-demand/platform/env-config-guard.spec.ts]
+    tags: ["@ui-only", "@safe", "@sanity", "@regression", "@prod", "@smoke"]
+    note: Read-only guard asserting each env's live runtimeConfig matches it. See the Bug Room card for the underlying .env issue.
