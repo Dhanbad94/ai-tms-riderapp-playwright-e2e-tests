@@ -54,7 +54,9 @@ export default defineConfig({
   // under @smoke/@regression). To intentionally run the parked set, set the env
   // var so the exclusion is lifted, then select it:
   //   RUN_QUARANTINE=1 npx playwright test --grep @quarantine
-  grepInvert: process.env.RUN_QUARANTINE ? undefined : /@quarantine/,
+  // Spread so grepInvert is simply ABSENT when RUN_QUARANTINE is set — assigning
+  // `undefined` is rejected by its RegExp | RegExp[] type.
+  ...(process.env.RUN_QUARANTINE ? {} : { grepInvert: /@quarantine/ }),
 
   fullyParallel: true,
   forbidOnly: isCI,
