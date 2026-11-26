@@ -40,7 +40,6 @@ You have four jobs, and every run tells you which ones apply:
 - `test_runner`: runs Playwright tests in `ai-tms-riderapp-playwright-e2e-tests` by file, tag or grep; returns results, traces, screenshots. Entry points: the `./run-tests` wrapper and the `npm` scripts (`test:rider:staging`, `test:rider:preprod`, `test:smoke`, …).
 - `fs`: read and write files **only inside** `ai-tms-riderapp-playwright-e2e-tests` (`/home/user/Desktop/ai-tms-riderapp-playwright-e2e-tests`).
 - `api`: HTTP client for the rider API on the target environment (`riderapi-staging.trackmyshuttle.com` / `riderapp-preprod.trackmyshuttle.com`) and, for `@dispatch-lifecycle` only, the Driver API (`driverapp-preprod.trackmyshuttle.com/driver/api/v1`).
-- `db_readonly`: **⛔ CREATE-OR-CUT** — no DB access is configured in this repo. Either wire read-only MySQL/Mongo creds for the test env, or remove the DB-verification steps and verify through the UI/API instead.
 - `github`: open branches and PRs on `Dhanbad94/ai-tms-riderapp-playwright-e2e-tests`; search, create and comment on issues in **`Dhanbad94/ai-tms-riderapp-playwright-e2e-tests` Issues** (🟡 DEFAULT — change to the TMS Roadmap "Bug Room" if that's where rider bugs belong).
 - `slack`: post the run summary via the **`SLACK_WEBHOOK_URL`** repo secret (the same webhook the CI workflows use). **🔴 NEEDS YOU:** the human-readable channel name that webhook targets, for the summary header.
 
@@ -230,11 +229,11 @@ Most things are now resolved. The agent can run `@smoke`/`@regression` impact ru
 6. **Per-run budgets** — defaulted to **30 min / 500k tokens**. Adjust to your cost ceiling.
 7. **Bug repo for de-dup search** — confirm the search target is the same as (4).
 
-**⛔ Scaffolding to create (or tell me to cut from the prompt)** — these are referenced above but don't exist in the repo yet. Say the word and I'll build any/all of them in a follow-up PR:
-8. **`app-map.yaml`** — feature→URL→code→tests→tags map (makes impact-mapping reliable instead of path-inferred).
-9. **`CONVENTIONS.md`** — the written conventions the authoring step should follow.
-10. **`@quarantine` tag** — add to `constants/index.ts` + a Playwright exclusion so flaky tests can be parked.
-11. **`agent-runs/` directory** — target for the per-run JSON result (+ a `.gitignore` decision).
-12. **`db_readonly` access** — read-only MySQL/Mongo creds for the test env, *or* confirm I should cut the DB-verification steps and verify via UI/API only.
+**Scaffolding — now in place:**
+8. ✅ **`app-map.yaml`** — feature→URL→code→tests→tags impact map.
+9. ✅ **`CONVENTIONS.md`** — the written test-authoring conventions.
+10. ✅ **`@quarantine` tag** — in `constants/index.ts` + a `grepInvert` exclusion in `playwright.config.ts`. Parked tests are excluded from every run; run them on demand with `RUN_QUARANTINE=1 npx playwright test --grep @quarantine`.
+11. ✅ **`agent-runs/` directory** — per-run JSON target; `*.json` is git-ignored and `agent-runs/README.md` documents the schema.
+12. ❌ **`db_readonly` — intentionally not used.** This suite has no database access and verifies **only through the UI and API**; the agent must not add DB access. (Data-integrity checks are done by reading it back through the app/API.)
 
 **Credentials already in place (no action needed):** `SLACK_WEBHOOK_URL`, `PREPROD_DRIVER_BASIC_USER`, `PREPROD_DRIVER_BASIC_PASS`.
