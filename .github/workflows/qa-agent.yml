@@ -192,6 +192,7 @@ jobs:
           This run is REPORT-ONLY. These rules override anything above:
           - Do NOT edit or create files, open branches or pull requests, or create or comment on issues. Skip Step 4 (test authoring) and the PR/issue parts of Steps 3 and 6.
           - Still classify every failure (APP_BUG / TEST_OUTDATED / LOCATOR_BROKEN / FLAKY / ENV_ISSUE / NEEDS_HUMAN) and state the action you WOULD take.
+          - build_version was already read from the deployed page by the workflow. Use it as given; fetching pages yourself isn't permitted here, so don't try. Your own transcript file in agent-runs/ is being written as you work; it is not a previous run.
           EOF
           )
           OVERRIDE_TAIL=$(cat <<'EOF'
@@ -210,7 +211,8 @@ jobs:
           $DIFF_NOTE
           $OVERRIDE_TAIL"
 
-          RUN_BLOCK=$(printf 'trigger: manual\nenvironment: %s\nbase_url: %s\ncommit_range: %s\nbuild_version: %s (Next.js buildId)\nspec: %s\njobs: [impact_run, triage]\n' \
+          # CI runners keep no history between runs, so there is no previous buildId.
+          RUN_BLOCK=$(printf 'trigger: manual\nenvironment: %s\nbase_url: %s\ncommit_range: %s\nbuild_version: %s (Next.js buildId, read from the deployed page by this workflow)\nprevious_build_version: none (CI runs keep no history)\nspec: %s\njobs: [impact_run, triage]\n' \
             "$ENV" "$BASE_URL" "$RANGE_DESC" "$BUILD_ID" "${SPEC:-none}")
 
           # Model pinned so cost and behaviour don't drift with the CLI default.
