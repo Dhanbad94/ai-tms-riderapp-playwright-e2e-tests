@@ -28,8 +28,11 @@ import { RIDER_TAGS } from '../../../constants';
  */
 const rc = getRiderConfig();
 
-/** Host (incl. port if any) of a URL, for an exact, scheme-agnostic comparison. */
-function host(url: string): string {
+/** Host (incl. port if any) of a URL, for an exact, scheme-agnostic comparison.
+ *  Accepts `string | undefined` (runtimeConfig fields are optionally present
+ *  under noUncheckedIndexedAccess) and fails loudly if a required URL is missing. */
+function host(url: string | undefined): string {
+  if (!url) throw new Error(`Expected a URL to compare hosts, but got ${JSON.stringify(url)}`);
   return new URL(url).host;
 }
 
