@@ -8,10 +8,9 @@
 #
 # NOTE on `app_code`: paths are into the app repo TrackMyShuttle/Rider-Web
 # (Next.js, `tms-rider-webapp-next`) and are best-effort against its `main`
-# branch as of 2026-11-26. Rider-Web is branch-sensitive — some features ship
-# only on the `staging` branch (e.g. the sign-in/"Have a Booking" flow) — so
-# confirm the path on the branch you're diffing. Lines flagged `# verify` are
-# the least certain.
+# branch as of 2026-11-26, and were spot-checked against the repo. Rider-Web is
+# branch-sensitive — a feature may differ between `main` and `staging` — so
+# confirm the path on the branch you're diffing.
 #
 # Keep in sync: any PR that adds or moves a test must update this file
 # (QA_AGENT_PROMPT.md, Step 4.7).
@@ -32,7 +31,7 @@ meta:
     org_landing:  "/a/<trackingId>/location"   # booking entry for an org
     ride_status:  "/j/<rideCode>/s"            # confirmation + live tracking
     booking_code: "/b/<code>"
-    have_booking: ["/sign-in", "/otp"]          # phone lookup (staging branch)
+    have_booking: ["/sign-in", "/otp"]          # phone lookup
     account:      ["/bookings", "/past-trip", "/profile", "/edit-profile", "/feedbackform"]
 
 # ---------------------------------------------------------------------------
@@ -43,11 +42,11 @@ page_objects:
   BookingFormPage:        src/components/web/guestForm, src/components/web/guestFormFullPage
   GuestFormSection:       src/components/web/guestForm
   FutureGuestFormSection: src/components/web/guestForm           # future-booking variant
-  DateTimePicker:         src/components/common/calendarIcon     # verify (date/time picker component)
+  DateTimePicker:         src/components/web/guestForm/guestForm.js, src/components/web/guestForm/customTimePicker
   ConfirmationPage:       src/components/web/thankYou, src/components/web/myTrip
   CancellationDialog:     src/components/common/cancelation
   FeedbackModal:          src/components/web/feedback
-  SignInPage:             src/components/web/signIn, src/components/web/otp   # staging branch
+  SignInPage:             src/components/web/signIn, src/components/web/otp
 
 # ---------------------------------------------------------------------------
 # Features
@@ -179,7 +178,7 @@ features:
     title: Future Booking — date & time picker
     mode: future
     org: ODFB
-    app_code: [src/components/common/calendarIcon]   # verify (date/time picker component)
+    app_code: [src/components/web/guestForm/guestForm.js, src/components/web/guestForm/customTimePicker]
     page_objects: [DateTimePicker]
     tests:
       - tests/on-demand/future-booking-only/future-date-picker.spec.ts
@@ -259,13 +258,13 @@ features:
     mode: both
     org: ODFB
     urls: ["/sign-in", "/otp"]
-    app_code: [src/components/web/signIn, src/components/web/otp]   # staging branch only (not on main)
+    app_code: [src/components/web/signIn, src/components/web/otp]
     page_objects: [SignInPage]
     tests:
       - tests/on-demand/future-booking-only/future-have-a-booking-landing.spec.ts
       - tests/on-demand/future-booking-only/future-have-a-booking-flight.spec.ts
     tags: ["@negative", "@playwright", "@sanity", "@smoke"]
-    note: General-purpose rider feature exercised via ODFB. Sign-in lives on the Rider-Web `staging` branch.
+    note: General-purpose rider feature exercised via ODFB. Sign-in/OTP are present on Rider-Web `main` (`pages/sign-in.js`, `pages/otp.js`).
 
   - id: platform-env-config
     title: Platform — environment config-drift guard
