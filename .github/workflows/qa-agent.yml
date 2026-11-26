@@ -1,0 +1,231 @@
+name: QA Agent (report-only)
+
+# v1 of the AI QA Agent described in docs/QA_AGENT_PROMPT.md, run with Claude
+# Code in headless mode. REPORT-ONLY: it reads the Rider-Web diff, runs the
+# impacted tests, triages failures, then posts a Slack summary and uploads a
+# JSON result. It cannot change anything:
+#   - the job token is read-only (permissions: contents: read);
+#   - the agent may only read files and run tests (Edit/Write/web tools denied,
+#     everything not allowlisted is auto-denied via --permission-mode dontAsk);
+#   - production is never a target (input choice + explicit deny rules).
+#
+# Required repo secrets (Settings -> Secrets and variables -> Actions):
+#   ANTHROPIC_API_KEY     Claude API key used by Claude Code
+#   RIDER_WEB_READ_TOKEN  read-only token for the private TrackMyShuttle/Rider-Web repo
+# Optional:
+#   SLACK_WEBHOOK_URL     already configured; the summary is posted when present
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to test (production is never allowed)'
+        type: choice
+        options: [staging, preproduction]
+        default: staging
+      commit_range:
+        description: 'Rider-Web commit range, e.g. abc1234..def5678 (blank = last 10 commits on main)'
+        type: string
+        required: false
+      spec:
+        description: 'Release notes / acceptance criteria for this change (optional)'
+        type: string
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qa-agent
+  cancel-in-progress: false
+
+jobs:
+  qa-agent:
+    runs-on: ubuntu-latest
+    # Agent budget is 30 min (QA_AGENT_PROMPT.md hard rule 8); the extra time
+    # covers checkout, npm ci and the browser install.
+    timeout-minutes: 45
+    env:
+      CI: true
+      ENV: ${{ inputs.environment }}
+    steps:
+      - name: Check required secrets
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          RIDER_WEB_READ_TOKEN: ${{ secrets.RIDER_WEB_READ_TOKEN }}
+        run: |
+          missing=""
+          [ -z "$ANTHROPIC_API_KEY" ] && missing="$missing ANTHROPIC_API_KEY"
+          [ -z "$RIDER_WEB_READ_TOKEN" ] && missing="$missing RIDER_WEB_READ_TOKEN"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing required secret(s):$missing. Add them under Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - name: Checkout Rider-Web (read-only)
+        uses: actions/checkout@v4
+        with:
+          repository: TrackMyShuttle/Rider-Web
+          token: ${{ secrets.RIDER_WEB_READ_TOKEN }}
+          path: rider-web
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        shell: bash
+        # Same resilient install as the test workflows: retry with backoff, and
+        # treat the apt font deps as best-effort (core libs ship in the image).
+        run: |
+          retry() {
+            local n=1 max=3 delay=20
+            until "$@"; do
+              if [ "$n" -ge "$max" ]; then return 1; fi
+              echo "::warning::'$*' failed (attempt $n/$max); retrying in ${delay}s"
+              sleep "$delay"; n=$((n+1)); delay=$((delay*2))
+            done
+          }
+          retry npx playwright install chromium
+          retry npx playwright install-deps chromium \
+            || echo "::warning::Playwright system deps could not be installed after retries; continuing"
+
+      - name: Install Claude Code
+        # Pinned so CLI flags stay stable; bump deliberately.
+        run: npm install -g @anthropic-ai/claude-code@2.1.332
+
+      - name: Resolve run inputs
+        id: inputs
+        env:
+          INPUT_RANGE: ${{ inputs.commit_range }}
+        run: |
+          case "$ENV" in
+            staging)       BASE_URL=https://rider-staging.trackmyshuttle.com ;;
+            preproduction) BASE_URL=https://ride-preprod.trackmyshuttle.com ;;
+            *) echo "::error::Refusing environment '$ENV' (only staging/preproduction)"; exit 1 ;;
+          esac
+
+          RANGE="$INPUT_RANGE"
+          if [ -z "$RANGE" ]; then
+            RANGE="$(git -C rider-web rev-parse HEAD~10)..$(git -C rider-web rev-parse HEAD)"
+          elif ! printf '%s' "$RANGE" | grep -qE '^[0-9a-fA-F]{7,40}\.\.[0-9a-fA-F]{7,40}$'; then
+            echo "::error::commit_range must look like <sha>..<sha> (7-40 hex chars each)"; exit 1
+          fi
+
+          # Deployed build fingerprint (Next.js buildId) — the deploy carries no commit.
+          BUILD_ID=$(curl -s --max-time 20 "$BASE_URL/" | grep -oE '"buildId":"[^"]+"' | head -1 | cut -d'"' -f4 || true)
+          [ -z "$BUILD_ID" ] && BUILD_ID="unknown"
+
+          {
+            echo "base_url=$BASE_URL"
+            echo "range=$RANGE"
+            echo "build_id=$BUILD_ID"
+          } >> "$GITHUB_OUTPUT"
+          echo "env=$ENV base_url=$BASE_URL range=$RANGE build_id=$BUILD_ID"
+
+      - name: Run QA agent (report-only)
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          BASE_URL: ${{ steps.inputs.outputs.base_url }}
+          RANGE: ${{ steps.inputs.outputs.range }}
+          BUILD_ID: ${{ steps.inputs.outputs.build_id }}
+          SPEC: ${{ inputs.spec }}
+        run: |
+          mkdir -p agent-runs
+          TS=$(date -u +%Y%m%dT%H%M%SZ)
+          echo "TS=$TS" >> "$GITHUB_ENV"
+
+          # The system prompt is the section of docs/QA_AGENT_PROMPT.md between
+          # its two '---' rules, plus the report-only override below.
+          PROMPT=$(awk '/^---$/{n++; next} n==1' docs/QA_AGENT_PROMPT.md)
+          OVERRIDE=$(cat <<'EOF'
+          ## RUN MODE OVERRIDE — REPORT-ONLY (v1)
+          This run is REPORT-ONLY. These rules override anything above:
+          - Do NOT edit or create files, open branches or pull requests, or create or comment on issues. Skip Step 4 (test authoring) and the PR/issue parts of Steps 3 and 6.
+          - Still classify every failure (APP_BUG / TEST_OUTDATED / LOCATOR_BROKEN / FLAKY / ENV_ISSUE / NEEDS_HUMAN) and state the action you WOULD take.
+          - The Rider-Web source is checked out read-only at ./rider-web. Read the change with `git -C rider-web log <range>` and `git -C rider-web diff <range>`.
+          - Run tests only with ./run-tests against the given environment, never production. Use --bc. Run ride-creating tests serially (--workers 1).
+          - End your reply with exactly these two marked blocks, which the workflow extracts:
+          ===SLACK===
+          <the Step 6 Slack summary, plain text, phone-readable>
+          ===END SLACK===
+          ===JSON===
+          <the Step 6 JSON result object, valid JSON only>
+          ===END JSON===
+          EOF
+          )
+
+          RUN_BLOCK=$(printf 'trigger: manual\nenvironment: %s\nbase_url: %s\ncommit_range: %s (Rider-Web, checked out at ./rider-web)\nbuild_version: %s (Next.js buildId)\nspec: %s\njobs: [impact_run, triage]\n' \
+            "$ENV" "$BASE_URL" "$RANGE" "$BUILD_ID" "${SPEC:-none}")
+
+          claude -p "$RUN_BLOCK" \
+            --append-system-prompt "$PROMPT
+
+          $OVERRIDE" \
+            --permission-mode dontAsk \
+            --output-format text \
+            --allowedTools "Read" "Grep" "Glob" \
+              "Bash(./run-tests:*)" "Bash(npx playwright test:*)" \
+              "Bash(git -C rider-web log:*)" "Bash(git -C rider-web diff:*)" "Bash(git -C rider-web show:*)" \
+            --disallowedTools "Edit" "Write" "NotebookEdit" "WebFetch" "WebSearch" \
+              "Bash(./run-tests -e production:*)" "Bash(./run-tests --env production:*)" \
+            | tee "agent-runs/$TS.md"
+
+      - name: Extract Slack summary + JSON result
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, re
+          ts = os.environ.get("TS", "run")
+          md = pathlib.Path(f"agent-runs/{ts}.md")
+          # errors="replace": stray non-UTF-8 bytes in agent/test output must not
+          # crash extraction (that would also lose the Slack summary).
+          text = md.read_text(encoding="utf-8", errors="replace") if md.exists() else ""
+
+          def block(name):
+              m = re.search(rf"==={name}===\s*(.*?)\s*===END {name}===", text, re.S)
+              return m.group(1).strip() if m else ""
+
+          raw = block("JSON")
+          try:
+              data = json.loads(raw)
+          except Exception:
+              data = {"error": "agent did not return a valid JSON block"}
+          pathlib.Path("agent-runs").mkdir(exist_ok=True)
+          pathlib.Path(f"agent-runs/{ts}.json").write_text(json.dumps(data, indent=2))
+          pathlib.Path("agent-runs/slack.txt").write_text(block("SLACK"))
+          print("json keys:", list(data)[:12])
+          PY
+
+      - name: Post Slack summary
+        if: always()
+        continue-on-error: true
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then echo "No Slack webhook configured; skipping"; exit 0; fi
+          MSG=$(cat agent-runs/slack.txt 2>/dev/null || true)
+          [ -z "$MSG" ] && MSG="QA Agent (report-only) | $ENV | run ended without a summary block — see the run log."
+          payload=$(python3 -c 'import json,sys; print(json.dumps({"text": sys.argv[1] + "\n\n_report-only dry run_ · " + sys.argv[2]}))' "$MSG" "$RUN_URL")
+          curl -s -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL" >/dev/null
+
+      - name: Upload agent run
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-agent-${{ inputs.environment }}-${{ github.run_id }}
+          path: |
+            agent-runs/
+            playwright-report/
+          retention-days: 14
+          if-no-files-found: ignore
