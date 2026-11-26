@@ -18,7 +18,7 @@ output preserved in git, add it explicitly with `git add -f`.
   "features_changed": [],
   "features_uncovered": [],
   "tests_run": 0,
-  "results": { "passed": 0, "failed": 0, "flaky": 0 },
+  "results": { "passed": 0, "failed": 0, "flaky": 0, "skipped": 0 },
   "failures": [{ "test": "", "class": "", "evidence": "", "action": "" }],
   "bugs": [{ "title": "", "severity": "", "issue_url": "" }],
   "suggestions": [{ "screen": "", "suggestion": "" }],
