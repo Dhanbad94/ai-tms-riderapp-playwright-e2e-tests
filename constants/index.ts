@@ -105,6 +105,7 @@ export const RIDER_TAGS = {
   SAFE: '@safe',             // Safe for production (no ride creation)
   PROD: '@prod',             // Curated ride-free set run against production on a cron
   NEGATIVE: '@negative',     // Negative / error-path test cases
+  QUARANTINE: '@quarantine', // Flaky/parked — EXCLUDED from every run via grepInvert in playwright.config.ts
 } as const;
 
 // ============================================================================

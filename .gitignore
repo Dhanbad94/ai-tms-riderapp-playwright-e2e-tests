@@ -39,3 +39,6 @@ yarn-error.log*
 *.tmp
 *.temp
 dashboard-report.html
+
+# QA agent run outputs — keep the dir (README/.gitkeep), ignore per-run JSON
+/agent-runs/*.json
