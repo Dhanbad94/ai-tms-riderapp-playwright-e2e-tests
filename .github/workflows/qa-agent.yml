@@ -12,9 +12,12 @@ name: QA Agent (report-only)
 # Required repo secrets (Settings -> Secrets and variables -> Actions):
 #   CLAUDE_CODE_OAUTH_TOKEN  long-lived token from `claude setup-token` (uses the
 #                            team's Claude subscription — no per-token API billing)
-#   RIDER_WEB_READ_TOKEN  read-only token for the private TrackMyShuttle/Rider-Web repo
 # Optional:
-#   SLACK_WEBHOOK_URL     already configured; the summary is posted when present
+#   RIDER_WEB_READ_TOKEN     read-only token for the private TrackMyShuttle/Rider-Web
+#                            repo. Without it the run is in NO-DIFF mode: it can't map
+#                            code changes to features, so it runs @smoke and triages
+#                            failures only.
+#   SLACK_WEBHOOK_URL        already configured; the summary is posted when present
 
 on:
   workflow_dispatch:
@@ -50,22 +53,28 @@ jobs:
       CI: true
       ENV: ${{ inputs.environment }}
     steps:
-      - name: Check required secrets
+      - name: Check secrets
+        id: secrets
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           RIDER_WEB_READ_TOKEN: ${{ secrets.RIDER_WEB_READ_TOKEN }}
         run: |
-          missing=""
-          [ -z "$CLAUDE_CODE_OAUTH_TOKEN" ] && missing="$missing CLAUDE_CODE_OAUTH_TOKEN"
-          [ -z "$RIDER_WEB_READ_TOKEN" ] && missing="$missing RIDER_WEB_READ_TOKEN"
-          if [ -n "$missing" ]; then
-            echo "::error::Missing required secret(s):$missing. Add them under Settings -> Secrets and variables -> Actions."
+          if [ -z "$CLAUDE_CODE_OAUTH_TOKEN" ]; then
+            echo "::error::Missing required secret CLAUDE_CODE_OAUTH_TOKEN (create it with: claude setup-token). Add it under Settings -> Secrets and variables -> Actions."
             exit 1
+          fi
+          # Secrets can't be used in step `if:` conditions, so expose a flag instead.
+          if [ -n "$RIDER_WEB_READ_TOKEN" ]; then
+            echo "has_rider_web=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_rider_web=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::RIDER_WEB_READ_TOKEN not set: running in NO-DIFF mode (@smoke + triage only, no change-to-feature mapping)."
           fi
 
       - uses: actions/checkout@v4
 
       - name: Checkout Rider-Web (read-only)
+        if: steps.secrets.outputs.has_rider_web == 'true'
         uses: actions/checkout@v4
         with:
           repository: TrackMyShuttle/Rider-Web
@@ -108,6 +117,7 @@ jobs:
         id: inputs
         env:
           INPUT_RANGE: ${{ inputs.commit_range }}
+          HAS_RIDER_WEB: ${{ steps.secrets.outputs.has_rider_web }}
         run: |
           case "$ENV" in
             staging)       BASE_URL=https://rider-staging.trackmyshuttle.com ;;
@@ -116,7 +126,10 @@ jobs:
           esac
 
           RANGE="$INPUT_RANGE"
-          if [ -z "$RANGE" ]; then
+          if [ "$HAS_RIDER_WEB" != "true" ]; then
+            [ -n "$RANGE" ] && echo "::warning::commit_range ignored: Rider-Web isn't available without RIDER_WEB_READ_TOKEN."
+            RANGE="unavailable"
+          elif [ -z "$RANGE" ]; then
             RANGE="$(git -C rider-web rev-parse HEAD~10)..$(git -C rider-web rev-parse HEAD)"
           elif ! printf '%s' "$RANGE" | grep -qE '^[0-9a-fA-F]{7,40}\.\.[0-9a-fA-F]{7,40}$'; then
             echo "::error::commit_range must look like <sha>..<sha> (7-40 hex chars each)"; exit 1
@@ -142,6 +155,7 @@ jobs:
           RANGE: ${{ steps.inputs.outputs.range }}
           BUILD_ID: ${{ steps.inputs.outputs.build_id }}
           SPEC: ${{ inputs.spec }}
+          HAS_RIDER_WEB: ${{ steps.secrets.outputs.has_rider_web }}
         run: |
           mkdir -p agent-runs
           TS=$(date -u +%Y%m%dT%H%M%SZ)
@@ -150,12 +164,23 @@ jobs:
           # The system prompt is the section of docs/QA_AGENT_PROMPT.md between
           # its two '---' rules, plus the report-only override below.
           PROMPT=$(awk '/^---$/{n++; next} n==1' docs/QA_AGENT_PROMPT.md)
-          OVERRIDE=$(cat <<'EOF'
+
+          if [ "$HAS_RIDER_WEB" = "true" ]; then
+            DIFF_NOTE='- The Rider-Web source is checked out read-only at ./rider-web. Read the change with `git -C rider-web log <range>` and `git -C rider-web diff <range>`.'
+            RANGE_DESC="$RANGE (Rider-Web, checked out at ./rider-web)"
+          else
+            DIFF_NOTE='- NO-DIFF MODE: Rider-Web is not available in this run, so there is no diff to read and no ./rider-web directory. Skip the change analysis in Step 1, run @smoke (Step 2.1), triage every failure, set "features_changed" to [] and state in the Slack summary that the diff was unavailable.'
+            RANGE_DESC="unavailable (no Rider-Web access this run)"
+          fi
+
+          OVERRIDE_HEAD=$(cat <<'EOF'
           ## RUN MODE OVERRIDE — REPORT-ONLY (v1)
           This run is REPORT-ONLY. These rules override anything above:
           - Do NOT edit or create files, open branches or pull requests, or create or comment on issues. Skip Step 4 (test authoring) and the PR/issue parts of Steps 3 and 6.
           - Still classify every failure (APP_BUG / TEST_OUTDATED / LOCATOR_BROKEN / FLAKY / ENV_ISSUE / NEEDS_HUMAN) and state the action you WOULD take.
-          - The Rider-Web source is checked out read-only at ./rider-web. Read the change with `git -C rider-web log <range>` and `git -C rider-web diff <range>`.
+          EOF
+          )
+          OVERRIDE_TAIL=$(cat <<'EOF'
           - Run tests only with ./run-tests against the given environment, never production. Use --bc. Run ride-creating tests serially (--workers 1).
           - End your reply with exactly these two marked blocks, which the workflow extracts:
           ===SLACK===
@@ -167,8 +192,12 @@ jobs:
           EOF
           )
 
-          RUN_BLOCK=$(printf 'trigger: manual\nenvironment: %s\nbase_url: %s\ncommit_range: %s (Rider-Web, checked out at ./rider-web)\nbuild_version: %s (Next.js buildId)\nspec: %s\njobs: [impact_run, triage]\n' \
-            "$ENV" "$BASE_URL" "$RANGE" "$BUILD_ID" "${SPEC:-none}")
+          OVERRIDE="$OVERRIDE_HEAD
+          $DIFF_NOTE
+          $OVERRIDE_TAIL"
+
+          RUN_BLOCK=$(printf 'trigger: manual\nenvironment: %s\nbase_url: %s\ncommit_range: %s\nbuild_version: %s (Next.js buildId)\nspec: %s\njobs: [impact_run, triage]\n' \
+            "$ENV" "$BASE_URL" "$RANGE_DESC" "$BUILD_ID" "${SPEC:-none}")
 
           # Model pinned so cost and behaviour don't drift with the CLI default.
           claude -p "$RUN_BLOCK" \
