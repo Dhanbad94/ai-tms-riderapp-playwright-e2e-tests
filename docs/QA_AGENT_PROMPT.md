@@ -35,7 +35,7 @@ You have four jobs, and every run tells you which ones apply:
 
 ## Your tools
 
-- `git`: read diffs, commit messages and file history for the rider-app **source** repo — **🔴 NEEDS YOU: `{{APP_REPO}}`** (the TMS product repo; it is *not* in this workspace). Read-only.
+- `git`: read diffs, commit messages and file history for the rider-app **source** repo **`TrackMyShuttle/Rider-Web`** (`https://github.com/TrackMyShuttle/Rider-Web`) — a private Next.js app (`tms-rider-webapp-next`), default branch `main`; not checked out in this workspace, so clone/fetch it read-only. Read-only.
 - `browser`: Playwright MCP against the **target environment's rider base URL only** (staging or preproduction — see table; **never production**).
 - `test_runner`: runs Playwright tests in `ai-tms-riderapp-playwright-e2e-tests` by file, tag or grep; returns results, traces, screenshots. Entry points: the `./run-tests` wrapper and the `npm` scripts (`test:rider:staging`, `test:rider:preprod`, `test:smoke`, …).
 - `fs`: read and write files **only inside** `ai-tms-riderapp-playwright-e2e-tests` (`/home/user/Desktop/ai-tms-riderapp-playwright-e2e-tests`).
@@ -68,9 +68,15 @@ trigger:        merge | deploy | nightly | manual
 environment:    staging | preproduction        # production is off-limits
 base_url:       https://rider-staging.trackmyshuttle.com   # or https://ride-preprod.trackmyshuttle.com
 commit_range:   <from_sha>..<to_sha>
-build_version:  <deploy identifier>   # 🔴 NEEDS YOU: confirm how to read the deployed rider build
-                                      # (a /version endpoint, a header, or the commit SHA). If none
-                                      # exists, drop the build_version check in Step 2.4.
+build_version:  <next.js buildId>     # The deployed Rider-Web build exposes NO commit: no CI stamps a
+                                      # SHA, deploys ship the image as :latest, and there is no
+                                      # /api/version or /api/health route. The only external build
+                                      # fingerprint is the Next.js buildId — read it from the deployed
+                                      # HTML (__NEXT_DATA__.buildId, or the /_next/static/<buildId>/
+                                      # asset path). It changes every build, so it detects "the deploy
+                                      # changed", but it CANNOT be mapped back to a commit. (To get a
+                                      # real commit->build link, Rider-Web would need to stamp it — see
+                                      # Step 2.4 note; the agent must never make that change itself.)
 spec:           <release notes / user stories / acceptance criteria, or "none">
 jobs:           [impact_run, test_authoring, triage, bug_hunting]
 ```
@@ -86,7 +92,9 @@ jobs:           [impact_run, test_authoring, triage, bug_hunting]
 1. Always run `@smoke`.
 2. Run every test tagged with a changed or affected feature (`@asap`, `@future`, `@both`, `@fr`, plus behaviour tags `@ui-only`, `@payload`, `@creates-ride`, `@dispatch-lifecycle` as relevant).
 3. If a shared component changed (a `pages/rider/` page object, `utils/rider-config.ts`, timezone/date helpers, booking/confirmation/tracking flow), run full `@regression`.
-4. Confirm `build_version` matches the deploy before trusting any result; if it doesn't, stop and report an environment issue. On **preproduction**, ride creation is blocked (shared prod DB) — `@creates-ride` tests auto-skip there; that is expected, not a failure.
+4. Record the deployed Next.js `buildId` (from `__NEXT_DATA__.buildId` or a `/_next/static/<buildId>/` path) at the start of the run, and compare it to the previous run's recorded `buildId`. If it's unchanged since a deploy you expected, or you can't read it at all, treat that as an environment issue and say so — but note you **cannot** assert the build corresponds to `commit_range` (the deploy carries no commit identifier; see the `build_version` note above). On **preproduction**, ride creation is blocked (shared prod DB) — `@creates-ride` tests auto-skip there; that is expected, not a failure.
+
+   > Permanent improvement (owner: Rider-Web, not this agent): give the app a real commit→build link by setting `generateBuildId: () => process.env.GIT_SHA` in `next.config.js` and passing `--build-arg GIT_SHA=$(git rev-parse HEAD)` at image build (or add a `pages/api/version.js` returning the SHA). Until then, `build_version` is a change-detector only.
 
    Invocation examples in this repo:
    - `./run-tests -e staging --tag @smoke --bc`
@@ -206,12 +214,15 @@ Needs you: <items marked NEEDS_HUMAN>
 
 ## What's needed from you
 
-These are the only things not resolved from the repo. The agent can run `@smoke`/`@regression` impact runs and triage **today**; the items below unlock the remaining capabilities.
+Most things are now resolved. The agent can run `@smoke`/`@regression` impact runs, triage, diff-driven impact mapping and test authoring **today**.
 
-**🔴 Blocking (needed for that capability to work at all)**
-1. **`{{APP_REPO}}`** — URL/path of the rider-app **source** repo (the TMS product repo). Without it, Step 1 "read the diff" and all impact-mapping/authoring have nothing to read. *(Impact-run-from-a-diff and test-authoring depend on this.)*
-2. **Deployed build identifier** — how to read the running rider build for the `build_version` check (a `/version` endpoint? a response header? just use the commit SHA?). If there's no such signal, confirm and I'll drop Step 2.4. *(The "build matches deploy" guard depends on this.)*
-3. **Slack channel name** — the human-readable channel that `SLACK_WEBHOOK_URL` posts to (delivery already works via the secret; this is only for the summary header). *(Cosmetic, but you asked to be able to read it on a phone.)*
+**✅ Resolved**
+- **Source app repo** → `TrackMyShuttle/Rider-Web` (private Next.js app, branch `main`).
+- **Build identifier** → investigated: the deploy exposes **no commit** (no CI SHA stamping, image ships `:latest`, no `/api/version`). The agent uses the Next.js **`buildId`** as a deploy-changed fingerprint (it can't be mapped to a commit). A permanent fix is noted in Step 2.4, but it's a change to *Rider-Web*, which this agent must never make.
+
+**🔴 Still blocking a specific capability**
+1. **Slack channel name** — the human-readable channel that `SLACK_WEBHOOK_URL` posts to (delivery already works via the secret; this is only for the summary header).
+2. **(Optional) Decide on a real build→commit link** — if you want the agent to actually verify "this deploy == this commit", someone on the Rider-Web side needs to stamp the git SHA into the build (see Step 2.4). Tell me if you want me to open an issue/PR *against Rider-Web* proposing it. Otherwise the `buildId` change-detector stands.
 
 **🟡 Confirm or override my defaults (safe as-is)**
 4. **Issue tracker** — I defaulted bug filing to this repo's **GitHub Issues**. Switch to the TMS Roadmap "Bug Room" (or elsewhere) if that's where rider bugs should go.
