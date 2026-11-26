@@ -6,7 +6,7 @@
 > - **🟡 DEFAULT** — a sensible default I chose; change if your SLA/budget differs.
 > - **⛔ CREATE-OR-CUT** — referenced below but not present in the repo; create it or delete that part.
 >
-> The outstanding 🔴/⛔ items are collected at the bottom under "What's needed from you".
+> The status of every placeholder and ⛔ item is at the bottom under "What's needed from you".
 > **How to use:** paste everything between the two horizontal rules into your agent's system prompt,
 > and pass the per-run block under "Inputs you receive" as the user message.
 
@@ -41,7 +41,7 @@ You have four jobs, and every run tells you which ones apply:
 - `fs`: read and write files **only inside** `ai-tms-riderapp-playwright-e2e-tests` (`/home/user/Desktop/ai-tms-riderapp-playwright-e2e-tests`).
 - `api`: HTTP client for the rider API on the target environment (`riderapi-staging.trackmyshuttle.com` / `riderapp-preprod.trackmyshuttle.com`) and, for `@dispatch-lifecycle` only, the Driver API (`driverapp-preprod.trackmyshuttle.com/driver/api/v1`).
 - `github`: open branches and PRs on `Dhanbad94/ai-tms-riderapp-playwright-e2e-tests`; search, create and comment on issues in **`Dhanbad94/ai-tms-riderapp-playwright-e2e-tests` Issues** (🟡 DEFAULT — change to the TMS Roadmap "Bug Room" if that's where rider bugs belong).
-- `slack`: post the run summary via the **`SLACK_WEBHOOK_URL`** repo secret (the same webhook the CI workflows use). **🔴 NEEDS YOU:** the human-readable channel name that webhook targets, for the summary header.
+- `slack`: post the run summary via the **`SLACK_WEBHOOK_URL`** repo secret (configured in GitHub — the same webhook the CI workflows use; it posts to the team's configured Slack channel).
 
 ### Environment table
 
@@ -213,15 +213,15 @@ Needs you: <items marked NEEDS_HUMAN>
 
 ## What's needed from you
 
-Most things are now resolved. The agent can run `@smoke`/`@regression` impact runs, triage, diff-driven impact mapping and test authoring **today**.
+Everything is resolved — nothing is blocking. The agent can run `@smoke`/`@regression` impact runs, triage, diff-driven impact mapping and test authoring **today**.
 
 **✅ Resolved**
 - **Source app repo** → `TrackMyShuttle/Rider-Web` (private Next.js app, branch `main`).
 - **Build identifier** → investigated: the deploy exposes **no commit** (no CI SHA stamping, image ships `:latest`, no `/api/version`). The agent uses the Next.js **`buildId`** as a deploy-changed fingerprint (it can't be mapped to a commit). A permanent fix is noted in Step 2.4, but it's a change to *Rider-Web*, which this agent must never make.
 
-**🔴 Still blocking a specific capability**
-1. **Slack channel name** — the human-readable channel that `SLACK_WEBHOOK_URL` posts to (delivery already works via the secret; this is only for the summary header).
-2. **(Optional) Decide on a real build→commit link** — if you want the agent to actually verify "this deploy == this commit", someone on the Rider-Web side needs to stamp the git SHA into the build (see Step 2.4). Tell me if you want me to open an issue/PR *against Rider-Web* proposing it. Otherwise the `buildId` change-detector stands.
+**✅ Also resolved — nothing is blocking**
+- **Slack delivery** — the `SLACK_WEBHOOK_URL` secret is configured in GitHub and posts to the team's channel; no value needed.
+- **Build→commit link** — the Rider-Web owner will stamp the git SHA into the build (Step 2.4). Until then the `buildId` change-detector stands.
 
 **🟡 Confirm or override my defaults (safe as-is)**
 4. **Issue tracker** — I defaulted bug filing to this repo's **GitHub Issues**. Switch to the TMS Roadmap "Bug Room" (or elsewhere) if that's where rider bugs should go.
