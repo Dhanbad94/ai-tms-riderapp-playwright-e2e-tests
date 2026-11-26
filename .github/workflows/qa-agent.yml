@@ -167,7 +167,9 @@ jobs:
           RUN_BLOCK=$(printf 'trigger: manual\nenvironment: %s\nbase_url: %s\ncommit_range: %s (Rider-Web, checked out at ./rider-web)\nbuild_version: %s (Next.js buildId)\nspec: %s\njobs: [impact_run, triage]\n' \
             "$ENV" "$BASE_URL" "$RANGE" "$BUILD_ID" "${SPEC:-none}")
 
+          # Model pinned so cost and behaviour don't drift with the CLI default.
           claude -p "$RUN_BLOCK" \
+            --model claude-opus-5-5 \
             --append-system-prompt "$PROMPT
 
           $OVERRIDE" \
