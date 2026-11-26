@@ -1,0 +1,68 @@
+name: Prune gh-pages reports
+
+# The test workflows publish a per-run dashboard folder to the shared gh-pages
+# branch with keep_files: true, so run folders accumulate forever (the same
+# unbounded growth that once made GitHub Pages rebuild slowly and 404 the Slack
+# report link). This job keeps only the most-recent N run folders and deletes
+# the rest. Run IDs are monotonically increasing, so "newest" = highest numeric
+# folder name.
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'   # Sundays 03:00 UTC
+  workflow_dispatch:
+    inputs:
+      keep:
+        description: 'Number of most-recent per-run report folders to keep'
+        required: false
+        default: '60'
+        type: string
+
+permissions:
+  contents: write   # push the pruned gh-pages branch
+
+concurrency:
+  group: gh-pages-prune
+  cancel-in-progress: false
+
+jobs:
+  prune:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 1
+
+      - name: Prune old per-run report folders
+        run: |
+          set -euo pipefail
+          KEEP="${{ github.event.inputs.keep || '60' }}"
+          case "$KEEP" in (*[!0-9]*|'') echo "Invalid keep='$KEEP'"; exit 1;; esac
+
+          # Numeric run-id folders only, oldest first (ascending numeric sort).
+          mapfile -t dirs < <(find . -maxdepth 1 -type d -regextype posix-extended -regex './[0-9]+' -printf '%f\n' | sort -n)
+          total=${#dirs[@]}
+          echo "Found $total run folders; keeping newest $KEEP."
+          if [ "$total" -le "$KEEP" ]; then
+            echo "Nothing to prune."
+            exit 0
+          fi
+
+          remove=$(( total - KEEP ))
+          echo "Removing $remove oldest folder(s)."
+          for d in "${dirs[@]:0:$remove}"; do
+            git rm -rq -- "$d"
+          done
+
+          if git diff --cached --quiet; then
+            echo "No staged changes after prune."
+            exit 0
+          fi
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "chore(gh-pages): prune old report folders, keep newest ${KEEP}"
+          git push
+          echo "Pruned $remove folder(s); $KEEP kept."
