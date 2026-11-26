@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Playwright E2E tests for TMS Rider Web App",
   "scripts": {
+    "typecheck": "tsc --noEmit",
     "test": "npx playwright test",
     "test:rider": "npx playwright test --project=rider-chromium",
     "test:rider:staging": "ENV=staging npx playwright test --project=rider-chromium",
