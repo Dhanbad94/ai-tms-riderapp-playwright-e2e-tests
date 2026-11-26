@@ -49,6 +49,13 @@ const CREATES_RIDE_FILES = /(asap|future)-(confirmation|feedback|cancellation|e2
 export default defineConfig({
   testDir: "./tests/on-demand",
 
+  // Flaky tests parked with @quarantine are excluded from EVERY run by default
+  // (grepInvert combines with any --grep, so a @quarantine test never runs even
+  // under @smoke/@regression). To intentionally run the parked set, set the env
+  // var so the exclusion is lifted, then select it:
+  //   RUN_QUARANTINE=1 npx playwright test --grep @quarantine
+  grepInvert: process.env.RUN_QUARANTINE ? undefined : /@quarantine/,
+
   fullyParallel: true,
   forbidOnly: isCI,
   retries: isCI ? 2 : 1,
