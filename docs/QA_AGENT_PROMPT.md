@@ -14,8 +14,9 @@
 > (report-only)" → Run workflow (staging or preproduction, optional commit range). It extracts the
 > section between the two rules automatically, adds a report-only override (no PRs/issues/edits),
 > posts the Slack summary and uploads `agent-runs/<timestamp>.json` as a run artifact.
-> Needs repo secrets `CLAUDE_CODE_OAUTH_TOKEN` (from `claude setup-token`, uses the Claude
-> subscription — no API billing) and `RIDER_WEB_READ_TOKEN`.
+> Needs repo secret `CLAUDE_CODE_OAUTH_TOKEN` (from `claude setup-token`, uses the Claude
+> subscription — no API billing). `RIDER_WEB_READ_TOKEN` is optional: without it the run is in
+> no-diff mode (@smoke + triage only, no change-to-feature mapping).
 
 ---
 
