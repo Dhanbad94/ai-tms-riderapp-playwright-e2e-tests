@@ -1,6 +1,6 @@
 import { test, expect } from '../../../fixtures/test-fixtures';
-import { getOrgConfig, getRiderConfig } from '../../../utils/rider-config';
-import { RIDER_TAGS } from '../../../constants';
+import { getOrgConfig, getRiderConfig, canCreateRides } from '../../../utils/rider-config';
+import { RIDER_TAGS, RIDER_TIMEOUTS } from '../../../constants';
 
 const org = getOrgConfig('asapOnly');
 const { stops, phone } = org;
@@ -181,7 +181,54 @@ test.describe(`ASAP Only — Form Fields & Behavior ${RIDER_TAGS.ASAP} ${RIDER_T
     await expect(guestFormSection.requestRideButton).toBeVisible();
   });
 
-  test.skip('ASAP_042: Verify that the entered rider details are saved so they persist across the booking', async () => {
-    // Cookie verification unreliable cross-origin on staging
+  test('ASAP_042: Verify that the entered rider details are saved so they persist across the booking', async ({ page, guestFormSection, selectLocationPage }) => {
+    // The form is submitted (request mocked below). Kept to environments where
+    // ride creation is allowed (staging) as a safety margin: if the mock ever
+    // failed to intercept, no real ride could reach preproduction/production.
+    test.skip(!canCreateRides(), 'Submits the booking form (request mocked); staging only as a safety margin');
+
+    // On submit, after validation and BEFORE posting the ride, the app saves the
+    // rider's name and phone in cookies (guestName / guestPhone, 7 days); the
+    // form pre-fills from them next time it opens. Mocking the ride request
+    // keeps this ride-free while exercising the real save.
+    let posted = false;
+    await page.route(`${rc.urls.api}/**/request`, async (route) => {
+      if (route.request().method() === 'POST') {
+        posted = true;
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ response: { status: 200, data: { response: { ride_code: 'PERSIST_TEST', ride_web_link: '' } }, message: 'ok' } }),
+        });
+      } else {
+        await route.continue();
+      }
+    });
+
+    await guestFormSection.fillRequiredFields({ name: 'Persist' });
+    // Compare against what the fields actually hold at submit time, not what was
+    // typed: the name field sanitises input (e.g. strips "_"), so the helper's
+    // returned name can differ from the value that gets saved.
+    const entered = {
+      name: await guestFormSection.nameInput.inputValue(),
+      phone: await guestFormSection.phoneInput.inputValue(),
+    };
+    expect(entered.name, 'name field should hold a value before submit').not.toBe('');
+    await guestFormSection.submitForm();
+    await expect.poll(() => posted, { timeout: RIDER_TIMEOUTS.FORM_LOAD, message: 'mocked ride request was never posted' }).toBe(true);
+
+    // Start a new booking in the same browser context (cookies carry over).
+    await selectLocationPage.goto(org.trackingId);
+    await selectLocationPage.selectBothStops(stops.pickup, stops.dropoff);
+    await selectLocationPage.clickConfirm();
+    await guestFormSection.waitForFormVisible();
+
+    // The full-page form applies saved values after a short delay, so poll.
+    await expect(guestFormSection.nameInput, 'saved rider name should pre-fill the new booking').toHaveValue(entered.name, { timeout: RIDER_TIMEOUTS.FORM_LOAD });
+    await expect
+      .poll(async () => (await guestFormSection.phoneInput.inputValue()).replace(/\D/g, ''), {
+        timeout: RIDER_TIMEOUTS.FORM_LOAD,
+        message: 'saved phone number should pre-fill the new booking',
+      })
+      .toContain(entered.phone.replace(/\D/g, ''));
   });
 });
