@@ -98,7 +98,7 @@ test.describe(`ASAP Only — Confirmation Page ${RIDER_TAGS.ASAP} ${RIDER_TAGS.C
     if (rideDetailsUrl) expect(rideDetailsUrl).toContain(code);
   });
 
-  test('Verify that the confirmation screen loads without critical application errors', async ({ page }) => {
+  test('@map Verify that the confirmation screen loads without critical application errors', async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', (err) => errors.push(err.message));
     await submitRideAndGetCode(page);

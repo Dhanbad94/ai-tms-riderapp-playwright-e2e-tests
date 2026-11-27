@@ -81,13 +81,18 @@ test.describe(`ASAP — Location ${RIDER_TAGS.UI_ONLY} ${RIDER_TAGS.SANITY}`, ()
 Use the `RIDER_TAGS` map in `constants/index.ts` — never type a bare string. Current tags:
 
 - **Mode:** `@asap` `@future` `@both` `@fr`
-- **Behaviour:** `@creates-ride` `@ui-only` `@payload` `@dispatch-lifecycle` `@negative`
+- **Behaviour:** `@creates-ride` `@ui-only` `@payload` `@dispatch-lifecycle` `@negative` `@map` `@quarantine`
 - **Execution:** `@smoke` `@regression` `@sanity` `@safe` `@prod`
 
 Meaning that matters for CI:
 - `@creates-ride` — submits a real ride; runs on staging only, serialized (`rider-creates-ride` project / `--workers 1`).
 - `@ui-only` / `@safe` / `@prod` — ride-free; safe for production. The production workflow runs `--tag "@ui-only|@prod"`.
 - `@smoke` — the fast staging gate; `@regression` — the full staging run.
+- `@map` — the test needs the real map. **MapTiler (the location-screen map) is blocked for every other test** by an auto
+  fixture in `fixtures/test-fixtures.ts`: headless Chromium draws that WebGL map in software, which made every action ~1s
+  slower (Future Booking setup 14–15s → 8–9s). Tag a test (or its describe) `@map` if it checks markers, the map theme,
+  the map/list toggle, or whole-page JS errors. Set `RENDER_MAPS=1` to render the map for every test.
+- `@quarantine` — flaky and parked: excluded from every run; run on demand with `RUN_QUARANTINE=1 npx playwright test --grep @quarantine`.
 
 CI tag selection lives in `.github/workflows/*.yml`; tag a new test so it lands in the right runs.
 

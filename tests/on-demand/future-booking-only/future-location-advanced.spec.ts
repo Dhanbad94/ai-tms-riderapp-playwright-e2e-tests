@@ -152,7 +152,7 @@ test.describe(`Future Booking — Random Stop Selection ${RIDER_TAGS.FUTURE} ${R
   });
 
   /** Verify that random pickup and drop-off stops can be selected via their map-marker pins rather than the text stop list. */
-  test('@sanity RANDOM_005: Verify that random pickup and drop-off stops can be selected using their map markers', async ({ selectLocationPage }) => {
+  test('@map @sanity RANDOM_005: Verify that random pickup and drop-off stops can be selected using their map markers', async ({ selectLocationPage }) => {
     const { pickup, dropoff } = await selectLocationPage.selectRandomStopsViaMapMarkers();
     expect(pickup).toBeTruthy();
     expect(dropoff).toBeTruthy();
@@ -171,7 +171,7 @@ test.describe(`Future Booking — Random Stop Selection ${RIDER_TAGS.FUTURE} ${R
   });
 });
 
-test.describe(`Future Booking — Map Marker Selection ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.UI_ONLY} ${RIDER_TAGS.REGRESSION} ${RIDER_TAGS.SAFE}`, () => {
+test.describe(`Future Booking — Map Marker Selection ${RIDER_TAGS.MAP} ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.UI_ONLY} ${RIDER_TAGS.REGRESSION} ${RIDER_TAGS.SAFE}`, () => {
   test.beforeEach(async ({ selectLocationPage }) => {
     test.skip(!isOrgEnabled('futureBookingOnly'), 'Future Booking org not configured for this environment — set trackingId/stops in rider-config.ts');
     await selectLocationPage.goto(org.trackingId);
@@ -210,7 +210,7 @@ test.describe(`Future Booking — Map Marker Selection ${RIDER_TAGS.FUTURE} ${RI
   });
 });
 
-test.describe(`Future Booking — Map Theme ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.UI_ONLY} ${RIDER_TAGS.REGRESSION} ${RIDER_TAGS.SAFE}`, () => {
+test.describe(`Future Booking — Map Theme ${RIDER_TAGS.MAP} ${RIDER_TAGS.FUTURE} ${RIDER_TAGS.UI_ONLY} ${RIDER_TAGS.REGRESSION} ${RIDER_TAGS.SAFE}`, () => {
   test.beforeEach(async ({ selectLocationPage }) => {
     test.skip(!isOrgEnabled('futureBookingOnly'), 'Future Booking org not configured for this environment — set trackingId/stops in rider-config.ts');
     await selectLocationPage.goto(org.trackingId);

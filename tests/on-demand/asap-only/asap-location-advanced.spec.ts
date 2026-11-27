@@ -155,7 +155,7 @@ test.describe(`ASAP Only — Random Stops & Dynamic Riders ${RIDER_TAGS.ASAP} ${
 // MAP VIEW TESTS
 // ============================================================================
 
-test.describe(`ASAP Only — Map View ${RIDER_TAGS.ASAP} ${RIDER_TAGS.UI_ONLY} ${RIDER_TAGS.REGRESSION} ${RIDER_TAGS.SAFE}`, () => {
+test.describe(`ASAP Only — Map View ${RIDER_TAGS.MAP} ${RIDER_TAGS.ASAP} ${RIDER_TAGS.UI_ONLY} ${RIDER_TAGS.REGRESSION} ${RIDER_TAGS.SAFE}`, () => {
   test.beforeEach(async ({ selectLocationPage }) => {
     await selectLocationPage.goto(org.trackingId);
   });

@@ -123,7 +123,7 @@ test.describe(`Future Booking — Confirmation Page ${RIDER_TAGS.FUTURE} ${RIDER
   });
 
   /** Verify that no critical JavaScript errors occur during a Future Booking submission. */
-  test('Verify that no critical JavaScript errors occur during a future booking submission', async ({ page }) => {
+  test('@map Verify that no critical JavaScript errors occur during a future booking submission', async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', (err) => errors.push(err.message));
     await submitFutureRideAndGetCode(page);

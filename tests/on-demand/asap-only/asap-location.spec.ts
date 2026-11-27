@@ -151,7 +151,7 @@ test.describe(`ASAP Only — Location Selection ${RIDER_TAGS.ASAP} ${RIDER_TAGS.
     await expect(selectLocationPage.pickupInput).toHaveValue('');
   });
 
-  test('Verify that the map and list view toggle is visible on the location screen', async ({ selectLocationPage }) => {
+  test('@map Verify that the map and list view toggle is visible on the location screen', async ({ selectLocationPage }) => {
     // Screen defaults to map view ("View Stop List" toggle); either label
     // satisfies the toggle's presence.
     await expect(selectLocationPage.mapListToggle).toBeVisible();
