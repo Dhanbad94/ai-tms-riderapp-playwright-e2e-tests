@@ -167,10 +167,14 @@ export class SelectLocationPage {
     // The click itself can be dropped when it lands mid re-render: the list is
     // fully shown but the input stays empty (seen on staging 2026-11-26). So
     // re-query and re-click a bounded number of times, stopping as soon as the
-    // input has a value, and re-opening the panel if it closed without one.
+    // input shows THIS stop, and re-opening the panel if it closed without it.
+    // "Selected" must mean the input holds the stop's name, not just any value:
+    // after a search the input already holds the search text (e.g. "Terminal"),
+    // and treating that as selected skipped the click (SEARCH_006, 2026-11-27).
+    const selected = this.stopValuePattern(stopName);
     const attempts = 3;
     for (let attempt = 1; attempt <= attempts; attempt++) {
-      if ((await input.inputValue()) !== '') return;
+      if (selected.test(await input.inputValue())) return;
 
       // Re-query right before clicking to avoid acting on a stale node.
       const heading = this.page.getByRole('heading', { level: 4, name: stopName }).first();
@@ -183,7 +187,7 @@ export class SelectLocationPage {
 
       const isLast = attempt === attempts;
       try {
-        await expect(input).not.toHaveValue('', {
+        await expect(input).toHaveValue(selected, {
           timeout: isLast ? RIDER_TIMEOUTS.STOP_LIST : RIDER_TIMEOUTS.STOP_SELECT_ATTEMPT,
         });
         return;
@@ -475,8 +479,14 @@ export class SelectLocationPage {
    * genuinely different value is still rejected, and keeps web-first retry.
    */
   async expectStopInputValue(input: Locator, expected: string) {
-    const escaped = expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    await expect(input).toHaveValue(new RegExp(`^\\s*${escaped}\\s*$`));
+    await expect(input).toHaveValue(this.stopValuePattern(expected));
+  }
+
+  /** Whitespace-tolerant exact match for a stop name in a stop input: the
+   *  preprod/prod build populates the input with a stray leading space. */
+  private stopValuePattern(stopName: string): RegExp {
+    const escaped = stopName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`^\\s*${escaped}\\s*$`);
   }
 
   /** Click "Use Current Location" / "Use Closest Stop" */
