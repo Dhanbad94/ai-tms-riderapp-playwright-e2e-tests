@@ -7,10 +7,10 @@
 # Driver and Live Display are out of scope for this suite.
 #
 # NOTE on `app_code`: paths are into the app repo TrackMyShuttle/Rider-Web
-# (Next.js, `tms-rider-webapp-next`) and are best-effort against its `main`
-# branch as of 2026-11-26, and were spot-checked against the repo. Rider-Web is
-# branch-sensitive — a feature may differ between `main` and `staging` — so
-# confirm the path on the branch you're diffing.
+# (Next.js, `tms-rider-webapp-next`), checked against the deployed `staging-ecs`
+# branch on 2026-11-27. Rider-Web's `main` is STALE (last commit 2025-08-21);
+# the deployed code lives on `staging-ecs` / `preprod-ecs` / `prod-ecs`, so
+# confirm a path on the branch you're diffing.
 #
 # Keep in sync: any PR that adds or moves a test must update this file
 # (QA_AGENT_PROMPT.md, Step 4.7).
@@ -19,6 +19,7 @@ meta:
   test_repo: Dhanbad94/ai-tms-riderapp-playwright-e2e-tests
   app_repo: https://github.com/TrackMyShuttle/Rider-Web
   app_stack: Next.js (tms-rider-webapp-next)
+  app_branches: { staging: staging-ecs, preproduction: preprod-ecs, production: prod-ecs }   # main is stale
   last_updated: 2026-11-26
   environments:
     staging:        { ride: https://rider-staging.trackmyshuttle.com, api: https://riderapi-staging.trackmyshuttle.com, creates_rides: true }
@@ -270,8 +271,8 @@ features:
     title: Platform — environment config-drift guard
     mode: platform
     org: n/a
-    app_code: [config.js, next.config.js, .env, .env.production]   # Rider-Web build/runtime config
+    app_code: [config.js, next.config.js]   # runtime config; values come from a secret manager (no committed .env on *-ecs)
     page_objects: []
     tests: [tests/on-demand/platform/env-config-guard.spec.ts]
     tags: ["@ui-only", "@safe", "@sanity", "@regression", "@prod", "@smoke"]
-    note: Read-only guard asserting each env's live runtimeConfig matches it. See the Bug Room card for the underlying .env issue.
+    note: Read-only guard asserting each env's live runtimeConfig matches it.

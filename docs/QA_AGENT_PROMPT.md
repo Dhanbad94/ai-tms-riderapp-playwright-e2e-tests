@@ -70,7 +70,7 @@ You have four jobs, and every run tells you which ones apply:
 ## Inputs you receive per run
 
 ```
-trigger:        merge | deploy | nightly | manual
+trigger:        merge | deploy | nightly | scheduled | manual
 environment:    staging | preproduction        # production is off-limits
 base_url:       https://rider-staging.trackmyshuttle.com   # or https://ride-preprod.trackmyshuttle.com
 commit_range:   <from_sha>..<to_sha>

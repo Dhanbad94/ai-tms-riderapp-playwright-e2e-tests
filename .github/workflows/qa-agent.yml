@@ -9,17 +9,30 @@ name: QA Agent (report-only)
 #     everything not allowlisted is auto-denied via --permission-mode dontAsk);
 #   - production is never a target (input choice + explicit deny rules).
 #
+# Runs on a schedule (Mon/Wed/Fri) and on demand. Scheduled runs analyse the
+# Rider-Web commits on the environment's deployed branch (staging-ecs /
+# preprod-ecs; main is stale) since the last successful agent run, and compare
+# the deployed buildId with that run's.
+#
 # Required repo secrets (Settings -> Secrets and variables -> Actions):
 #   CLAUDE_CODE_OAUTH_TOKEN  long-lived token from `claude setup-token` (uses the
 #                            team's Claude subscription — no per-token API billing)
+# Rider-Web read access (optional; without it the run is in NO-DIFF mode: it
+# can't map code changes to features, so it runs @smoke and triages only):
+#   RIDER_WEB_DEPLOY_KEY     private half of a READ-ONLY deploy key whose public
+#                            half a TrackMyShuttle admin added to Rider-Web
+#                            (preferred: scoped to that one repo, never expires)
+#   RIDER_WEB_READ_TOKEN     alternative: fine-grained token, Contents: read-only
+# If the key/token can't check out Rider-Web (e.g. not authorised yet), the run
+# warns and falls back to NO-DIFF mode instead of failing.
 # Optional:
-#   RIDER_WEB_READ_TOKEN     read-only token for the private TrackMyShuttle/Rider-Web
-#                            repo. Without it the run is in NO-DIFF mode: it can't map
-#                            code changes to features, so it runs @smoke and triages
-#                            failures only.
 #   SLACK_WEBHOOK_URL        already configured; the summary is posted when present
 
 on:
+  # Mon/Wed/Fri 09:30 UTC, after the staging smoke (06:00), production (07:00)
+  # and Wednesday regression (08:00) runs.
+  schedule:
+    - cron: '30 9 * * 1,3,5'
   workflow_dispatch:
     inputs:
       environment:
@@ -28,7 +41,7 @@ on:
         options: [staging, preproduction]
         default: staging
       commit_range:
-        description: 'Rider-Web commit range, e.g. abc1234..def5678 (blank = last 10 commits on main)'
+        description: 'Rider-Web commit range, e.g. abc1234..def5678 (blank = commits since the last successful agent run on the deployed branch)'
         type: string
         required: false
       spec:
@@ -38,6 +51,7 @@ on:
 
 permissions:
   contents: read
+  actions: read   # find the previous successful run and its saved result
 
 concurrency:
   group: qa-agent
@@ -57,13 +71,15 @@ jobs:
         shell: bash
     env:
       CI: true
-      ENV: ${{ inputs.environment }}
+      # Scheduled runs have no inputs, so default to staging.
+      ENV: ${{ inputs.environment || 'staging' }}
     steps:
       - name: Check secrets
         id: secrets
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           RIDER_WEB_READ_TOKEN: ${{ secrets.RIDER_WEB_READ_TOKEN }}
+          RIDER_WEB_DEPLOY_KEY: ${{ secrets.RIDER_WEB_DEPLOY_KEY }}
         run: |
           if [ -z "$CLAUDE_CODE_OAUTH_TOKEN" ]; then
             echo "::error::Missing required secret CLAUDE_CODE_OAUTH_TOKEN (create it with: claude setup-token). Add it under Settings -> Secrets and variables -> Actions."
@@ -72,25 +88,71 @@ jobs:
           case "$CLAUDE_CODE_OAUTH_TOKEN" in
             *[[:space:]]*) echo "::warning::CLAUDE_CODE_OAUTH_TOKEN contains whitespace or a line break (likely a wrapped copy/paste). It is stripped before use; re-save the secret as a single line to silence this." ;;
           esac
-          # Secrets can't be used in step `if:` conditions, so expose a flag instead.
-          if [ -n "$RIDER_WEB_READ_TOKEN" ]; then
-            echo "has_rider_web=true" >> "$GITHUB_OUTPUT"
+          # Secrets can't be used in step `if:` conditions, so expose which
+          # Rider-Web credential exists (deploy key preferred) and the branch.
+          if [ -n "$RIDER_WEB_DEPLOY_KEY" ]; then
+            echo "rider_web_auth=deploy_key" >> "$GITHUB_OUTPUT"
+          elif [ -n "$RIDER_WEB_READ_TOKEN" ]; then
+            echo "rider_web_auth=token" >> "$GITHUB_OUTPUT"
           else
-            echo "has_rider_web=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::RIDER_WEB_READ_TOKEN not set: running in NO-DIFF mode (@smoke + triage only, no change-to-feature mapping)."
+            echo "rider_web_auth=none" >> "$GITHUB_OUTPUT"
+            echo "::warning::No Rider-Web credential (RIDER_WEB_DEPLOY_KEY / RIDER_WEB_READ_TOKEN): running in NO-DIFF mode (@smoke + triage only)."
           fi
+          # The deployed code lives on the environment's *-ecs branch (main is stale).
+          case "$ENV" in
+            staging)       echo "rider_web_branch=staging-ecs" >> "$GITHUB_OUTPUT" ;;
+            preproduction) echo "rider_web_branch=preprod-ecs" >> "$GITHUB_OUTPUT" ;;
+            *) echo "::error::Refusing environment '$ENV' (only staging/preproduction)"; exit 1 ;;
+          esac
 
       - uses: actions/checkout@v4
 
-      - name: Checkout Rider-Web (read-only)
-        if: steps.secrets.outputs.has_rider_web == 'true'
+      # continue-on-error: a credential that isn't authorised yet must fall back
+      # to NO-DIFF mode, not fail the run.
+      - name: Checkout Rider-Web (deploy key, read-only)
+        id: rw_key
+        if: steps.secrets.outputs.rider_web_auth == 'deploy_key'
+        continue-on-error: true
         uses: actions/checkout@v4
         with:
           repository: TrackMyShuttle/Rider-Web
+          ref: ${{ steps.secrets.outputs.rider_web_branch }}
+          ssh-key: ${{ secrets.RIDER_WEB_DEPLOY_KEY }}
+          path: rider-web
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Checkout Rider-Web (token, read-only)
+        id: rw_token
+        if: steps.secrets.outputs.rider_web_auth == 'token'
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          repository: TrackMyShuttle/Rider-Web
+          ref: ${{ steps.secrets.outputs.rider_web_branch }}
           token: ${{ secrets.RIDER_WEB_READ_TOKEN }}
           path: rider-web
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Rider-Web access
+        id: rw
+        env:
+          AUTH: ${{ steps.secrets.outputs.rider_web_auth }}
+          KEY_OUTCOME: ${{ steps.rw_key.outcome }}
+          TOKEN_OUTCOME: ${{ steps.rw_token.outcome }}
+          BRANCH: ${{ steps.secrets.outputs.rider_web_branch }}
+        run: |
+          if [ "$KEY_OUTCOME" = "success" ] || [ "$TOKEN_OUTCOME" = "success" ]; then
+            echo "has_rider_web=true" >> "$GITHUB_OUTPUT"
+            echo "Rider-Web $BRANCH checked out via $AUTH."
+          else
+            echo "has_rider_web=false" >> "$GITHUB_OUTPUT"
+            if [ "$AUTH" != "none" ]; then
+              echo "::warning::Could not check out Rider-Web ($BRANCH) with the $AUTH (not authorised yet?). Falling back to NO-DIFF mode."
+            fi
+            rm -rf rider-web
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -126,7 +188,9 @@ jobs:
         id: inputs
         env:
           INPUT_RANGE: ${{ inputs.commit_range }}
-          HAS_RIDER_WEB: ${{ steps.secrets.outputs.has_rider_web }}
+          HAS_RIDER_WEB: ${{ steps.rw.outputs.has_rider_web }}
+          BRANCH: ${{ steps.secrets.outputs.rider_web_branch }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           case "$ENV" in
             staging)       BASE_URL=https://rider-staging.trackmyshuttle.com ;;
@@ -134,14 +198,46 @@ jobs:
             *) echo "::error::Refusing environment '$ENV' (only staging/preproduction)"; exit 1 ;;
           esac
 
-          RANGE="$INPUT_RANGE"
+          # Previous successful agent run for this environment (newest first, one
+          # whose result artifact still exists): its start time bounds the commit
+          # range, and its saved result holds the previous buildId.
+          PREV_TIME=""; PREV_BUILD="none"
+          PREV=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow qa-agent.yml --status success --limit 20 \
+                   --json databaseId,createdAt --jq '.[] | "\(.databaseId) \(.createdAt)"' 2>/dev/null || true)
+          while read -r id created; do
+            [ -z "$id" ] && continue
+            rm -rf prev-run
+            if gh run download "$id" --repo "$GITHUB_REPOSITORY" --name "qa-agent-$ENV-$id" --dir prev-run >/dev/null 2>&1; then
+              PREV_TIME="$created"
+              f=$(find prev-run -path '*agent-runs/2*.json' | sort | head -1)
+              [ -n "$f" ] && PREV_BUILD=$(jq -r '.build_version // empty' "$f" 2>/dev/null || true)
+              [ -z "$PREV_BUILD" ] && PREV_BUILD="none"
+              break
+            fi
+          done <<< "$PREV"
+          rm -rf prev-run
+
+          RANGE="$INPUT_RANGE"; RANGE_NOTE=""
           if [ "$HAS_RIDER_WEB" != "true" ]; then
-            [ -n "$RANGE" ] && echo "::warning::commit_range ignored: Rider-Web isn't available without RIDER_WEB_READ_TOKEN."
+            [ -n "$RANGE" ] && echo "::warning::commit_range ignored: Rider-Web isn't available in this run."
             RANGE="unavailable"
-          elif [ -z "$RANGE" ]; then
-            RANGE="$(git -C rider-web rev-parse HEAD~10)..$(git -C rider-web rev-parse HEAD)"
-          elif ! printf '%s' "$RANGE" | grep -qE '^[0-9a-fA-F]{7,40}\.\.[0-9a-fA-F]{7,40}$'; then
-            echo "::error::commit_range must look like <sha>..<sha> (7-40 hex chars each)"; exit 1
+          elif [ -n "$RANGE" ]; then
+            if ! printf '%s' "$RANGE" | grep -qE '^[0-9a-fA-F]{7,40}\.\.[0-9a-fA-F]{7,40}$'; then
+              echo "::error::commit_range must look like <sha>..<sha> (7-40 hex chars each)"; exit 1
+            fi
+            RANGE_NOTE="given as input"
+          else
+            HEAD_SHA=$(git -C rider-web rev-parse HEAD)
+            if [ -n "$PREV_TIME" ]; then
+              BASE=$(git -C rider-web rev-list -1 --before="$PREV_TIME" HEAD)
+              RANGE_NOTE="commits on $BRANCH since the last successful agent run ($PREV_TIME)"
+            else
+              BASE=$(git -C rider-web rev-parse HEAD~10 2>/dev/null || true)
+              RANGE_NOTE="commits since HEAD~10 on $BRANCH (no earlier agent run found)"
+            fi
+            [ -z "$BASE" ] && BASE=$(git -C rider-web rev-list --max-parents=0 HEAD | tail -1)
+            RANGE="$BASE..$HEAD_SHA"
+            RANGE_NOTE="$RANGE_NOTE; $(git -C rider-web rev-list --count "$RANGE") commit(s)"
           fi
 
           # Deployed build fingerprint (Next.js buildId) — the deploy carries no commit.
@@ -151,9 +247,11 @@ jobs:
           {
             echo "base_url=$BASE_URL"
             echo "range=$RANGE"
+            echo "range_note=$RANGE_NOTE"
             echo "build_id=$BUILD_ID"
+            echo "prev_build=$PREV_BUILD"
           } >> "$GITHUB_OUTPUT"
-          echo "env=$ENV base_url=$BASE_URL range=$RANGE build_id=$BUILD_ID"
+          echo "env=$ENV branch=$BRANCH range=$RANGE ($RANGE_NOTE) build_id=$BUILD_ID prev_build=$PREV_BUILD"
 
       - name: Run QA agent (report-only)
         env:
@@ -164,7 +262,11 @@ jobs:
           RANGE: ${{ steps.inputs.outputs.range }}
           BUILD_ID: ${{ steps.inputs.outputs.build_id }}
           SPEC: ${{ inputs.spec }}
-          HAS_RIDER_WEB: ${{ steps.secrets.outputs.has_rider_web }}
+          HAS_RIDER_WEB: ${{ steps.rw.outputs.has_rider_web }}
+          RANGE_NOTE: ${{ steps.inputs.outputs.range_note }}
+          PREV_BUILD: ${{ steps.inputs.outputs.prev_build }}
+          BRANCH: ${{ steps.secrets.outputs.rider_web_branch }}
+          TRIGGER: ${{ github.event_name == 'schedule' && 'scheduled' || 'manual' }}
         run: |
           # Tokens never contain whitespace; strip any that a wrapped copy/paste
           # added (a line break here made the first real run fail auth).
@@ -181,7 +283,7 @@ jobs:
 
           if [ "$HAS_RIDER_WEB" = "true" ]; then
             DIFF_NOTE='- The Rider-Web source is checked out read-only at ./rider-web. Read the change with `git -C rider-web log <range>` and `git -C rider-web diff <range>`.'
-            RANGE_DESC="$RANGE (Rider-Web, checked out at ./rider-web)"
+            RANGE_DESC="$RANGE — $RANGE_NOTE (Rider-Web $BRANCH, checked out at ./rider-web)"
           else
             DIFF_NOTE='- NO-DIFF MODE: Rider-Web is not available in this run, so there is no diff to read and no ./rider-web directory. Skip the change analysis in Step 1, run @smoke (Step 2.1), triage every failure, set "features_changed" to [] and state in the Slack summary that the diff was unavailable.'
             RANGE_DESC="unavailable (no Rider-Web access this run)"
@@ -211,9 +313,9 @@ jobs:
           $DIFF_NOTE
           $OVERRIDE_TAIL"
 
-          # CI runners keep no history between runs, so there is no previous buildId.
-          RUN_BLOCK=$(printf 'trigger: manual\nenvironment: %s\nbase_url: %s\ncommit_range: %s\nbuild_version: %s (Next.js buildId, read from the deployed page by this workflow)\nprevious_build_version: none (CI runs keep no history)\nspec: %s\njobs: [impact_run, triage]\n' \
-            "$ENV" "$BASE_URL" "$RANGE_DESC" "$BUILD_ID" "${SPEC:-none}")
+          # previous_build_version comes from the last successful run's saved result.
+          RUN_BLOCK=$(printf 'trigger: %s\nenvironment: %s\nbase_url: %s\ncommit_range: %s\nbuild_version: %s (Next.js buildId, read from the deployed page by this workflow)\nprevious_build_version: %s (from the last successful agent run; "none" if unavailable)\nspec: %s\njobs: [impact_run, triage]\n' \
+            "$TRIGGER" "$ENV" "$BASE_URL" "$RANGE_DESC" "$BUILD_ID" "${PREV_BUILD:-none}" "${SPEC:-none}")
 
           # Model pinned so cost and behaviour don't drift with the CLI default.
           claude -p "$RUN_BLOCK" \
@@ -273,7 +375,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: qa-agent-${{ inputs.environment }}-${{ github.run_id }}
+          name: qa-agent-${{ inputs.environment || 'staging' }}-${{ github.run_id }}
           path: |
             agent-runs/
             playwright-report/
